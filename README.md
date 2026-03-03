@@ -133,7 +133,14 @@ The LXC wizard is functional. The project currently lives as a module inside a l
 
 ## Screenshots
 
-*Coming soon — LXC wizard UI*
+### LXC Wizard — konfigurace a spuštění
+![LXC Wizard](screenshots/lxc-wizard.png)
+
+### Zálohy — správa Proxmox záloh
+![Backups](screenshots/backups.png)
+
+### Wake-on-LAN
+![Wake-on-LAN](screenshots/wol.png)
 
 ---
 
