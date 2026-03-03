@@ -25,6 +25,14 @@
   body.dark .nav-tab.active { background: #0f3460; color: #00d4ff; }
   body.light .nav-tab.active { background: #dde8f0; color: #0066aa; }
   .nav-right { display: flex; align-items: center; gap: 12px; }
+  .dash-lang-toggle { display: flex; gap: 2px; align-items: center; margin-right: 6px; padding-right: 8px; border-right: 1px solid #0f3460; }
+  .dash-flag-btn { background: none; border: 1px solid transparent; border-radius: 4px; cursor: pointer; font-size: 16px; padding: 3px 5px; line-height: 1; transition: all 0.2s; }
+  .dash-flag-btn.active { border-color: #00d4ff33; background: #00d4ff11; }
+  .dash-flag-btn:hover { border-color: #00d4ff33; }
+  body.light .dash-lang-toggle { border-right-color: #bcd; }
+  body.light .dash-flag-btn.active { border-color: #0066aa33; background: #0066aa11; }
+  #kofi-widget-overlay { opacity: 0.6 !important; transition: opacity 0.3s !important; }
+  #kofi-widget-overlay:hover { opacity: 1 !important; }
   .last-update { font-size: 11px; }
   body.dark .last-update { color: #555; }
   body.light .last-update { color: #999; }
@@ -294,6 +302,10 @@
     <span></span><span></span><span></span>
   </button>
   <div class="nav-tabs">
+    <div class="dash-lang-toggle">
+      <button class="dash-flag-btn active" onclick="setDashLang('cs')" title="Čeština">🇨🇿</button>
+      <button class="dash-flag-btn" onclick="setDashLang('en')" title="English">🇬🇧</button>
+    </div>
     <button class="nav-tab active" id="tab-monitor" onclick="showPage('monitor',this)">📊 Monitor</button>
 
     <div class="nav-dropdown">
@@ -2055,6 +2067,15 @@ function applyModules(mods) {
   }
 }
 
+var DASH_LANG = 'cs';
+function setDashLang(lang) {
+  DASH_LANG = lang;
+  document.querySelectorAll('.dash-flag-btn').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('title') === (lang === 'cs' ? 'Čeština' : 'English'));
+  });
+  // Full dashboard EN translation is a planned feature.
+}
+
 function loadWolDevices() {
   fetch('/api/wol/devices').then(function(r) { return r.json(); }).then(function(d) {
     if (!d.devices) return;
@@ -2075,5 +2096,7 @@ loadAllStats();
 loadSpeedServers();
 setInterval(function() { loadSensors(); loadAllStats(); }, 10000);
 </script>
+<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+<script type='text/javascript'>kofiwidget2.init('Is it useful? Tip me please ♥', '#72a4f2', 'J3J31VBHGB');kofiwidget2.draw();</script>
 </body>
 </html>

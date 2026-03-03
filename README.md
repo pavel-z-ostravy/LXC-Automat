@@ -50,11 +50,13 @@ A 7-step setup wizard — no SSH or config file editing needed:
 
 ### Wizard UX features
 
-- **EN/CS language switcher** — toggle in the header, switches all labels, hints and placeholders instantly
+- **Language selection screen** — full-screen EN 🇬🇧 / CS 🇨🇿 choice before the wizard starts; can be switched anytime from the header
 - **Dashboard name** — sets the browser title and dashboard navbar dynamically
 - **Password generator** — generates 32/64/128-char passwords via `crypto.getRandomValues`, shows strength bar
+- **Password match indicator** — live ✓/✗ feedback below the confirm field as you type
 - **Grey default values** — pre-filled fields (`admin`, `proxmox`, `root`) appear grey until you type something different
 - **Generic placeholders** — IP fields show `e.g. 192.168.1.x` instead of specific addresses
+- **Eye icon in review** — reveal password one last time before installing
 
 ### SSH key generation (step 3 & 4)
 
@@ -178,6 +180,7 @@ Browser  ──→  Web UI (single-page HTML + JS)
 
 ## Planned Features
 
+- [ ] Full EN translation of the dashboard UI (flag switcher already in navbar)
 - [ ] LXC template selector (not just Ubuntu 22.04)
 - [ ] Container management: start/stop/restart from dashboard
 - [ ] Resource monitoring per-container (CPU, RAM, disk)

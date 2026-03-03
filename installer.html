@@ -125,10 +125,42 @@
   .pw-strength-fill.weak   { width: 33%;  background: #ff6b6b; }
   .pw-strength-fill.medium { width: 66%;  background: #ffd93d; }
   .pw-strength-fill.strong { width: 100%; background: #6bcb77; }
+
+  /* Language selection screen */
+  #lang-select { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0d1b2a; }
+  .lang-select-btn { background: #16213e; border: 2px solid #0f3460; border-radius: 14px; color: #eee; cursor: pointer; font-family: monospace; padding: 28px 52px; transition: all 0.2s; }
+  .lang-select-btn:hover { border-color: #00d4ff; background: #1a2a4a; transform: translateY(-3px); box-shadow: 0 8px 24px #00d4ff22; }
+  .lang-select-btn:active { transform: translateY(0); }
+  .flag-icon { font-size: 38px; display: block; margin-bottom: 10px; }
+  .lang-name  { font-size: 15px; letter-spacing: 1px; }
+
+  /* Ko-fi widget opacity */
+  #kofi-widget-overlay { opacity: 0.6 !important; transition: opacity 0.3s !important; }
+  #kofi-widget-overlay:hover { opacity: 1 !important; }
 </style>
 </head>
 <body>
 
+<!-- Language selection (shown first) -->
+<div id="lang-select">
+  <div style="text-align:center;">
+    <div style="font-size:26px;color:#00d4ff;font-family:monospace;font-weight:bold;margin-bottom:6px;">🖥️ Setup Wizard</div>
+    <div style="font-size:13px;color:#555;font-family:monospace;margin-bottom:36px;">Choose language / Vyberte jazyk</div>
+    <div style="display:flex;gap:24px;justify-content:center;">
+      <button class="lang-select-btn" onclick="selectLang('en')">
+        <span class="flag-icon">🇬🇧</span>
+        <span class="lang-name">English</span>
+      </button>
+      <button class="lang-select-btn" onclick="selectLang('cs')">
+        <span class="flag-icon">🇨🇿</span>
+        <span class="lang-name">Čeština</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Wizard (shown after language selection) -->
+<div id="wizard-wrap" style="display:none">
 <div class="header">
   <div>
     <h1 id="header-title">🖥️ Setup Wizard</h1>
@@ -184,7 +216,7 @@
       <div class="field">
         <label data-t="auth_password">Password</label>
         <div class="input-row">
-          <input type="password" id="auth-password" data-t-ph="auth_password_ph" placeholder="Enter a strong password" oninput="updateStrength()">
+          <input type="password" id="auth-password" data-t-ph="auth_password_ph" placeholder="Enter a strong password" oninput="updateStrength();checkPwMatch()">
           <button class="btn-gen" onclick="togglePwGen()" data-t="auth_generate">Generate</button>
         </div>
         <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-strength-fill"></div></div>
@@ -199,7 +231,8 @@
 
       <div class="field">
         <label data-t="auth_password2">Confirm password</label>
-        <input type="password" id="auth-password2" data-t-ph="auth_password2_ph" placeholder="Repeat password">
+        <input type="password" id="auth-password2" data-t-ph="auth_password2_ph" placeholder="Repeat password" oninput="checkPwMatch()">
+        <div id="pw-match-msg" style="font-size:11px;margin-top:5px;display:none;"></div>
       </div>
     </div>
     <div class="btn-row">
@@ -405,11 +438,11 @@
         <div class="field-row">
           <div class="field">
             <label data-t="ndns_key">API Key</label>
-            <input type="password" id="nextdns-api-key" placeholder="b2d29d...">
+            <input type="password" id="nextdns-api-key" placeholder="a1b2c3d4e5f6...">
           </div>
           <div class="field">
             <label data-t="ndns_profile">Profile ID</label>
-            <input type="text" id="nextdns-profile-id" placeholder="c93d74">
+            <input type="text" id="nextdns-profile-id" placeholder="abc123">
           </div>
         </div>
       </div>
@@ -471,12 +504,14 @@
   </div>
 
 </div><!-- /container -->
+</div><!-- /wizard-wrap -->
 
 <script>
 let currentStep = 0;
 let proxAuth = 'password';
 let routerAuth = 'key';
 let pwGenOpen = false;
+let reviewPassShown = false;
 const STATE = { services: [], wol: [] };
 
 // ── i18n ──────────────────────────────────────────────────────────────────────
@@ -498,6 +533,14 @@ async function loadLocale(lang) {
 }
 
 function switchLang(lang) { loadLocale(lang); }
+
+async function selectLang(lang) {
+  await loadLocale(lang);
+  document.getElementById('lang-select').style.display = 'none';
+  document.getElementById('wizard-wrap').style.display = 'block';
+  initDefaultInputs();
+  runSysCheck();
+}
 
 function t(key, ...args) {
   let s = LOCALE[key] || key;
@@ -524,6 +567,32 @@ function updatePageTitle() {
   const base = t('wizard_title') || 'Setup Wizard';
   document.title = name ? `${name} — ${base}` : base;
   document.getElementById('header-title').textContent = name ? `🖥️ ${name}` : `🖥️ ${base}`;
+}
+
+// ── Password match check ──────────────────────────────────────────────────────
+function checkPwMatch() {
+  const p   = document.getElementById('auth-password').value;
+  const p2  = document.getElementById('auth-password2').value;
+  const msg = document.getElementById('pw-match-msg');
+  if (!p2) { msg.style.display = 'none'; return; }
+  msg.style.display = 'block';
+  if (p === p2) {
+    msg.style.color = '#6bcb77';
+    msg.textContent = '✓ ' + t('pw_match_ok');
+  } else {
+    msg.style.color = '#ff6b6b';
+    msg.textContent = '✗ ' + t('err_pass_match');
+  }
+}
+
+// ── Review password reveal ────────────────────────────────────────────────────
+function toggleReviewPass() {
+  reviewPassShown = !reviewPassShown;
+  const el  = document.getElementById('review-pass-val');
+  const btn = document.getElementById('review-pass-eye');
+  if (!el) return;
+  el.textContent   = reviewPassShown ? document.getElementById('auth-password').value : t('review_hidden');
+  btn.style.color  = reviewPassShown ? '#00d4ff' : '#555';
 }
 
 // ── Default field coloring ─────────────────────────────────────────────────────
@@ -791,7 +860,7 @@ function buildReview() {
       <h3>${t('review_access')}</h3>
       ${dashName ? `<div class="review-row"><span class="review-key">${t('review_dash_name')}</span><span class="review-val">${dashName}</span></div>` : ''}
       <div class="review-row"><span class="review-key">${t('review_user')}</span><span class="review-val">${document.getElementById('auth-username').value}</span></div>
-      <div class="review-row"><span class="review-key">${t('review_pass')}</span><span class="review-val">${t('review_hidden')}</span></div>
+      <div class="review-row"><span class="review-key">${t('review_pass')}</span><span class="review-val" style="display:flex;align-items:center;gap:6px;"><span id="review-pass-val">${t('review_hidden')}</span><button id="review-pass-eye" onclick="toggleReviewPass()" style="background:none;border:none;color:#555;cursor:pointer;padding:2px 4px;font-size:15px;line-height:1;" title="Show / Hide">👁</button></span></div>
     </div>
     <div class="review-section">
       <h3>${t('review_proxmox')}</h3>
@@ -877,12 +946,12 @@ async function install() {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-window.addEventListener('load', async () => {
-  await loadLocale('en');
-  initDefaultInputs();
-  runSysCheck();
+window.addEventListener('load', () => {
+  // Language selection is shown first; wizard starts after selectLang() is called.
   setRouterAuth('key');
 });
 </script>
+<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+<script type='text/javascript'>kofiwidget2.init('Is it useful? Tip me please ♥', '#72a4f2', 'J3J31VBHGB');kofiwidget2.draw();</script>
 </body>
 </html>

@@ -50,11 +50,13 @@ App automaticky detekuje zda existuje `config.json`:
 
 ### UX funkce wizardu
 
-- **Přepínač jazyků EN/CS** — tlačítko v hlavičce, okamžitě přeloží všechny popisky, nápovědy a placeholdery
+- **Výběr jazyka před startem** — celostránková volba EN 🇬🇧 / CS 🇨🇿 před zahájením wizardu; přepínač je i v hlavičce
 - **Název dashboardu** — dynamicky aktualizuje titulek prohlížeče i navbar dashboardu
 - **Generátor hesel** — generuje 32/64/128-znakové heslo přes `crypto.getRandomValues`, zobrazí strength bar
+- **Validace shody hesel** — živá zpětná vazba ✓/✗ pod polem pro potvrzení hesla
 - **Šedé výchozí hodnoty** — předvyplněná pole (`admin`, `proxmox`, `root`) jsou šedá dokud nezačneš psát
 - **Generické placeholdery** — IP pole zobrazují `např. 192.168.1.x` místo konkrétních adres
+- **Ikonka oka v review** — možnost zobrazit heslo naposledy před instalací
 
 ### Generování SSH klíče (kroky 3 a 4)
 
@@ -178,6 +180,7 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS)
 
 ## Plánované funkce
 
+- [ ] Plný anglický překlad UI dashboardu (přepínač vlajek v navbaru už je připravený)
 - [ ] Výběr LXC šablony (nejen Ubuntu 22.04)
 - [ ] Správa kontejnerů: start/stop/restart z dashboardu
 - [ ] Monitoring zdrojů per-kontejner (CPU, RAM, disk)
