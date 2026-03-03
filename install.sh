@@ -1,6 +1,6 @@
 #!/bin/bash
 # monitor-public installer
-# Usage: curl -sSL https://raw.githubusercontent.com/pueblo78/monitor-public/main/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/proxmox-lxc-hud/main/install.sh | sudo bash
 
 set -e
 
@@ -13,7 +13,7 @@ NC='\033[0m'
 INSTALL_DIR="/opt/monitor-public"
 REPO_URL="https://github.com/pavel-z-ostravy/proxmox-lxc-hud.git"
 SERVICE_NAME="monitor-public"
-PORT=8090
+PORT=8091
 
 log()  { echo -e "${CYAN}>>> $1${NC}"; }
 ok()   { echo -e "${GREEN}✓ $1${NC}"; }
