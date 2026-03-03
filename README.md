@@ -248,6 +248,13 @@ Full summary of all settings (passwords hidden, eye icon to reveal). Click Insta
 - Generic IP placeholders (no hardcoded private IPs in the UI)
 - `dashboard_name` saved to `config.json`, exposed via `/api/config/modules`
 
+**Security audit & fixes:**
+- Removed `shell=True` from speedtest subprocess + `server_id` validated as digits-only
+- Backup run: `vmid` validated as digits, `mode` whitelisted to `{stop, suspend, snapshot}`
+- Backup delete: `volid` validated against safe character regex
+- Backup schedule: `vmids`, `dow`, `hour`, `minute`, `maxfiles` all validated/whitelisted
+- LXC script generator: `git_name`, `git_email`, `ssh_key` wrapped with `shlex.quote()` + `printf '%s'` instead of `echo '...'` for SSH key injection prevention
+
 ---
 
 > Ideas for features, improvements and interface design are from my head, but the heavy programming work was done by Claude AI, Sonnet 🙂

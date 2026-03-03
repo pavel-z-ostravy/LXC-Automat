@@ -248,6 +248,13 @@ Souhrn všech nastavení (hesla skryta, ikonka oka pro zobrazení). Kliknutím n
 - Generické IP placeholdery (žádné hardcoded privátní IP v UI)
 - `dashboard_name` uložen do `config.json`, dostupný přes `/api/config/modules`
 
+**Bezpečnostní audit a opravy:**
+- Odstraněn `shell=True` ve speedtestu + `server_id` validován jako číslice
+- Zálohy — spuštění: `vmid` pouze číslice, `mode` whitelist `{stop, suspend, snapshot}`
+- Zálohy — smazání: `volid` validován regexem bezpečných znaků
+- Zálohy — plánování: `vmids`, `dow`, `hour`, `minute`, `maxfiles` validovány/whitelistovány
+- LXC generátor skriptů: `git_name`, `git_email`, `ssh_key` obaleny `shlex.quote()` + SSH klíč zapisován přes `printf '%s'` místo `echo '...'`
+
 ---
 
 > Nápady na funkce, vylepšení a design rozhraní jsou z mé hlavy, ale těžkou programátorskou práci dělal Claude AI, Sonnet 🙂
