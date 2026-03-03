@@ -138,6 +138,12 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS)
 
 ## Bezpečnost
 
+> ### ⚠️ Určeno pouze pro důvěryhodné lokální sítě
+> **Nevystavuj tento dashboard přímo na internet.**
+> Nemá HTTPS, ochranu proti brute-force ani rate limiting na přihlašovacím endpointu.
+> Pokud potřebuješ vzdálený přístup, použij reverzní proxy (např. Nginx nebo Caddy) s HTTPS,
+> nebo VPN / Cloudflare Tunnel.
+
 - `config.json` a `keys/` jsou gitignored — credentials se nikdy nedostanou do repo
 - Hesla uložena pouze jako SHA-256 hash
 - Cloudflare/NextDNS tokeny se nikdy nelogují

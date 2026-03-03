@@ -138,6 +138,12 @@ Browser  ──→  Web UI (single-page HTML + JS)
 
 ## Security
 
+> ### ⚠️ Designed for trusted local networks only
+> **Do not expose this dashboard directly to the internet.**
+> It has no HTTPS, no brute-force protection, and no rate limiting on the login endpoint.
+> If you need remote access, put it behind a reverse proxy (e.g. Nginx or Caddy) with HTTPS,
+> or use a VPN / Cloudflare Tunnel.
+
 - `config.json` and `keys/` are gitignored — credentials never reach the repo
 - Passwords stored as SHA-256 hash only
 - Cloudflare/NextDNS tokens never logged
