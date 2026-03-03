@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitor Setup Wizard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1b2a; color: #eee; font-family: monospace; min-height: 100vh; }
+  .header { background: #16213e; border-bottom: 1px solid #0f3460; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+  .header h1 { color: #00d4ff; font-size: 18px; }
+  .header .sub { color: #555; font-size: 12px; margin-top: 2px; }
+  .container { max-width: 720px; margin: 0 auto; padding: 32px 20px; }
+
+  /* Steps indicator */
+  .steps { display: flex; gap: 0; margin-bottom: 32px; }
+  .step-indicator { flex: 1; text-align: center; padding: 10px 4px; font-size: 11px; color: #555; border-bottom: 2px solid #1a2a3a; cursor: default; transition: all 0.2s; }
+  .step-indicator.active { color: #00d4ff; border-bottom-color: #00d4ff; }
+  .step-indicator.done { color: #6bcb77; border-bottom-color: #6bcb77; }
+
+  /* Card */
+  .card { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 28px; margin-bottom: 20px; }
+  .card h2 { color: #00d4ff; font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .card h2 .icon { font-size: 20px; }
+
+  /* Form elements */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .field input[type="text"], .field input[type="password"], .field input[type="number"],
+  .field select { width: 100%; padding: 10px 12px; background: #0d1b2a; border: 1px solid #0f3460; border-radius: 6px; color: #eee; font-family: monospace; font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .field input:focus, .field select:focus { border-color: #00d4ff; }
+  .field .hint { font-size: 11px; color: #555; margin-top: 4px; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:500px) { .field-row { grid-template-columns: 1fr; } }
+
+  /* Checkbox module toggle */
+  .module-check { display: flex; align-items: center; gap: 12px; border: 1px solid #0f3460; border-radius: 8px; padding: 14px 16px; cursor: pointer; user-select: none; margin-bottom: 10px; transition: border-color 0.2s; }
+  .module-check:hover { border-color: #00d4ff44; }
+  .module-check.checked { border-color: #00d4ff; background: #00d4ff0d; }
+  .module-check input { display: none; }
+  .check-box { width: 18px; height: 18px; border: 2px solid #555; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 11px; }
+  .module-check.checked .check-box { border-color: #00d4ff; background: #00d4ff; color: #000; }
+  .module-label { font-size: 14px; font-weight: bold; }
+  .module-desc { font-size: 11px; color: #555; margin-top: 2px; }
+  .module-fields { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid #0f3460; }
+  .module-fields.open { display: block; }
+
+  /* Dynamic list (services, wol) */
+  .list-item { display: grid; gap: 8px; align-items: center; background: #0d1b2a; border: 1px solid #0f3460; border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
+  .list-item .del-btn { background: none; border: 1px solid #ff6b6b44; color: #ff6b6b; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-family: monospace; font-size: 11px; justify-self: end; }
+  .list-item .del-btn:hover { background: #ff6b6b22; }
+  .add-btn { border: 1px dashed #0f3460; background: none; color: #555; border-radius: 8px; padding: 10px; width: 100%; cursor: pointer; font-family: monospace; font-size: 12px; transition: all 0.2s; margin-bottom: 16px; }
+  .add-btn:hover { border-color: #00d4ff; color: #00d4ff; }
+
+  /* Buttons */
+  .btn { padding: 12px 28px; border-radius: 8px; font-family: monospace; font-size: 14px; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-primary { background: #00d4ff; color: #000; font-weight: bold; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff; }
+  .btn-secondary:hover { opacity: 0.8; }
+  .btn-test { background: #0f3460; color: #6bcb77; border: 1px solid #6bcb7744; font-size: 12px; padding: 8px 16px; }
+  .btn-test:hover { border-color: #6bcb77; }
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 12px; }
+
+  /* Test result */
+  .test-result { margin-top: 8px; font-size: 12px; padding: 8px 12px; border-radius: 6px; display: none; }
+  .test-result.ok { background: #6bcb7722; color: #6bcb77; border: 1px solid #6bcb7744; display: block; }
+  .test-result.err { background: #ff6b6b22; color: #ff6b6b; border: 1px solid #ff6b6b44; display: block; }
+
+  /* System check items */
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #0f346033; font-size: 13px; }
+  .check-item:last-child { border-bottom: none; }
+  .check-ok { color: #6bcb77; font-size: 16px; }
+  .check-warn { color: #ffd93d; font-size: 16px; }
+  .check-err { color: #ff6b6b; font-size: 16px; }
+
+  /* Public key box */
+  .pubkey-box { background: #0d1b2a; border: 1px solid #0f3460; border-radius: 8px; padding: 12px 14px; font-size: 11px; color: #aaa; word-break: break-all; margin: 10px 0; font-family: monospace; position: relative; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff44; border-radius: 4px; padding: 3px 10px; cursor: pointer; font-size: 11px; font-family: monospace; }
+  .copy-btn:hover { opacity: 0.8; }
+
+  /* Review */
+  .review-section { margin-bottom: 16px; }
+  .review-section h3 { font-size: 12px; color: #00d4ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .review-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #0f346033; font-size: 12px; }
+  .review-row:last-child { border-bottom: none; }
+  .review-key { color: #888; }
+  .review-val { color: #eee; font-weight: bold; text-align: right; max-width: 60%; word-break: break-word; }
+
+  /* Progress */
+  .progress-wrap { display: none; }
+  .progress-wrap.show { display: block; }
+  .progress-bar { height: 4px; background: #0f3460; border-radius: 4px; overflow: hidden; margin: 12px 0; }
+  .progress-fill { height: 100%; background: #00d4ff; width: 0%; border-radius: 4px; transition: width 0.5s; }
+  .progress-msg { font-size: 13px; color: #888; text-align: center; padding: 8px 0; }
+
+  select option { background: #16213e; }
+  .auth-toggle { display: flex; gap: 10px; margin-bottom: 16px; }
+  .auth-opt { flex: 1; padding: 10px; border: 1px solid #0f3460; border-radius: 6px; text-align: center; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+  .auth-opt.active { border-color: #00d4ff; background: #00d4ff11; color: #00d4ff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🖥️ Monitor-Public Setup Wizard</h1>
+    <div class="sub">Konfigurace homelab dashboardu</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Steps indicator -->
+  <div class="steps" id="stepsBar">
+    <div class="step-indicator active" id="si-0">1. Systém</div>
+    <div class="step-indicator" id="si-1">2. Přístup</div>
+    <div class="step-indicator" id="si-2">3. Proxmox</div>
+    <div class="step-indicator" id="si-3">4. Moduly</div>
+    <div class="step-indicator" id="si-4">5. Služby</div>
+    <div class="step-indicator" id="si-5">6. WoL</div>
+    <div class="step-indicator" id="si-6">7. Review</div>
+  </div>
+
+  <!-- ── STEP 0: System check ── -->
+  <div id="step-0" class="step">
+    <div class="card">
+      <h2><span class="icon">🔍</span> Kontrola systému</h2>
+      <div id="syscheck-loading" style="color:#555;font-size:13px;padding:10px 0;">Probíhá kontrola...</div>
+      <div id="syscheck-results"></div>
+    </div>
+    <div class="btn-row">
+      <div></div>
+      <button class="btn btn-primary" id="step0-next" onclick="goStep(1)" disabled>Další →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 1: Auth credentials ── -->
+  <div id="step-1" class="step" style="display:none">
+    <div class="card">
+      <h2><span class="icon">🔐</span> Přihlašovací údaje dashboardu</h2>
+      <div class="field">
+        <label>Uživatelské jméno</label>
+        <input type="text" id="auth-username" value="admin" placeholder="admin">
+      </div>
+      <div class="field">
+        <label>Heslo</label>
+        <input type="password" id="auth-password" placeholder="Zadej silné heslo">
+        <div class="hint">Heslo bude uloženo jako SHA-256 hash — nikdy v plaintextu</div>
+      </div>
+      <div class="field">
+        <label>Potvrzení hesla</label>
+        <input type="password" id="auth-password2" placeholder="Zopakuj heslo">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(0)">← Zpět</button>
+      <button class="btn btn-primary" onclick="validateAuth()">Další →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: Proxmox ── -->
+  <div id="step-2" class="step" style="display:none">
+    <div class="card">
+      <h2><span class="icon">🖥️</span> Proxmox připojení</h2>
+      <div class="field-row">
+        <div class="field">
+          <label>IP adresa Proxmoxu</label>
+          <input type="text" id="prox-ip" placeholder="10.0.1.9">
+        </div>
+        <div class="field">
+          <label>Node name</label>
+          <input type="text" id="prox-node" value="proxmox" placeholder="proxmox">
+        </div>
+      </div>
+      <div class="field">
+        <label>SSH uživatel</label>
+        <input type="text" id="prox-user" value="root" placeholder="root">
+      </div>
+      <div class="field">
+        <label>Způsob autentizace</label>
+        <div class="auth-toggle">
+          <div class="auth-opt active" id="prox-auth-pw" onclick="setProxAuth('password')">🔑 Heslo</div>
+          <div class="auth-opt" id="prox-auth-key" onclick="setProxAuth('key')">📄 SSH klíč</div>
+        </div>
+      </div>
+      <div id="prox-pw-field" class="field">
+        <label>SSH heslo</label>
+        <input type="password" id="prox-password" placeholder="root heslo">
+      </div>
+      <div id="prox-key-field" style="display:none">
+        <div id="prox-keygen-section">
+          <p style="font-size:12px;color:#888;margin-bottom:10px;">Vygeneruj SSH keypair — pak přidej public key do <code>~/.ssh/authorized_keys</code> na Proxmoxu.</p>
+          <button class="btn btn-secondary" style="font-size:12px;padding:8px 16px;" onclick="generateKey('proxmox')">🔑 Vygenerovat keypair</button>
+        </div>
+        <div id="prox-pubkey-section" style="display:none;margin-top:12px;">
+          <label style="font-size:11px;color:#888;">Veřejný klíč — přidej na Proxmox:</label>
+          <div class="pubkey-box" id="prox-pubkey-content">
+            <button class="copy-btn" onclick="copyPubKey('prox-pubkey-content')">Copy</button>
+            <span id="prox-pubkey-text"></span>
+          </div>
+          <p style="font-size:11px;color:#888;margin-top:4px;">Na Proxmoxu spusť: <code>echo '&lt;public key&gt;' >> ~/.ssh/authorized_keys</code></p>
+        </div>
+        <input type="hidden" id="prox-key-path">
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-test" onclick="testProxSSH()">▶ Test SSH připojení</button>
+        <div class="test-result" id="prox-test-result"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Zpět</button>
+      <button class="btn btn-primary" onclick="validateProxmox()">Další →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: Modules ── -->
+  <div id="step-3" class="step" style="display:none">
+    <div class="card">
+      <h2><span class="icon">🧩</span> Volitelné moduly</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:20px;">Zaškrtni moduly, které chceš aktivovat. Ostatní budou skryty v dashboardu.</p>
+
+      <!-- Home Assistant -->
+      <div class="module-check" id="mc-ha" onclick="toggleModule('ha')">
+        <input type="checkbox" id="mod-ha">
+        <div class="check-box" id="cb-ha"></div>
+        <div>
+          <div class="module-label">🏠 Home Assistant</div>
+          <div class="module-desc">SSH připojení pro statistiky HA VM</div>
+        </div>
+      </div>
+      <div class="module-fields" id="mf-ha">
+        <div class="field-row">
+          <div class="field">
+            <label>IP adresa HA</label>
+            <input type="text" id="ha-ip" placeholder="10.0.1.22">
+          </div>
+          <div class="field">
+            <label>SSH port</label>
+            <input type="number" id="ha-ssh-port" value="22">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>SSH uživatel</label>
+            <input type="text" id="ha-ssh-user" value="root" placeholder="root">
+          </div>
+          <div class="field">
+            <label>SSH heslo</label>
+            <input type="password" id="ha-ssh-password" placeholder="heslo">
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <button class="btn btn-test" onclick="testSSH('ha')">▶ Test</button>
+          <div class="test-result" id="ha-test-result"></div>
+        </div>
+      </div>
+
+      <!-- Router -->
+      <div class="module-check" id="mc-router" onclick="toggleModule('router')" style="margin-top:10px;">
+        <input type="checkbox" id="mod-router">
+        <div class="check-box" id="cb-router"></div>
+        <div>
+          <div class="module-label">🌐 Router</div>
+          <div class="module-desc">Monitorování sítě přes SSH (conntrack)</div>
+        </div>
+      </div>
+      <div class="module-fields" id="mf-router">
+        <div class="field-row">
+          <div class="field">
+            <label>IP adresa routeru</label>
+            <input type="text" id="router-ip" placeholder="10.0.1.1">
+          </div>
+          <div class="field">
+            <label>SSH port</label>
+            <input type="number" id="router-ssh-port" value="22">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>SSH uživatel</label>
+            <input type="text" id="router-ssh-user" value="root">
+          </div>
+          <div class="field">
+            <label>Subnet (pro filtrování)</label>
+            <input type="text" id="router-subnet" placeholder="10.0.1." value="10.0.1.">
+          </div>
+        </div>
+        <div class="field">
+          <label>Autentizace</label>
+          <div class="auth-toggle">
+            <div class="auth-opt" id="router-auth-pw" onclick="setRouterAuth('password')">🔑 Heslo</div>
+            <div class="auth-opt active" id="router-auth-key" onclick="setRouterAuth('key')">📄 SSH klíč</div>
+          </div>
+        </div>
+        <div id="router-pw-field" style="display:none" class="field">
+          <label>SSH heslo</label>
+          <input type="password" id="router-ssh-password" placeholder="heslo">
+        </div>
+        <div id="router-key-section">
+          <button class="btn btn-secondary" style="font-size:12px;padding:8px 16px;" onclick="generateKey('router')">🔑 Vygenerovat keypair</button>
+          <div id="router-pubkey-section" style="display:none;margin-top:10px;">
+            <div class="pubkey-box" id="router-pubkey-content">
+              <button class="copy-btn" onclick="copyPubKey('router-pubkey-content')">Copy</button>
+              <span id="router-pubkey-text"></span>
+            </div>
+          </div>
+          <input type="hidden" id="router-key-path">
+        </div>
+        <div style="margin-top:8px;">
+          <button class="btn btn-test" onclick="testSSH('router')">▶ Test</button>
+          <div class="test-result" id="router-test-result"></div>
+        </div>
+      </div>
+
+      <!-- Cloudflare -->
+      <div class="module-check" id="mc-cf" onclick="toggleModule('cf')" style="margin-top:10px;">
+        <input type="checkbox" id="mod-cf">
+        <div class="check-box" id="cb-cf"></div>
+        <div>
+          <div class="module-label">☁️ Cloudflare</div>
+          <div class="module-desc">Tunnel status, DNS záznamy, metriky</div>
+        </div>
+      </div>
+      <div class="module-fields" id="mf-cf">
+        <div class="field">
+          <label>API Token</label>
+          <input type="password" id="cf-token" placeholder="CF API token (Read Only: Zone, Tunnel)">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Account ID</label>
+            <input type="text" id="cf-account-id" placeholder="51eba25...">
+          </div>
+          <div class="field">
+            <label>Zone ID</label>
+            <input type="text" id="cf-zone-id" placeholder="3acb43...">
+          </div>
+        </div>
+        <div class="field">
+          <label>Tunnel ID</label>
+          <input type="text" id="cf-tunnel-id" placeholder="44a3faf0-ae05-...">
+        </div>
+      </div>
+
+      <!-- NextDNS -->
+      <div class="module-check" id="mc-nextdns" onclick="toggleModule('nextdns')" style="margin-top:10px;">
+        <input type="checkbox" id="mod-nextdns">
+        <div class="check-box" id="cb-nextdns"></div>
+        <div>
+          <div class="module-label">🛡️ NextDNS</div>
+          <div class="module-desc">DNS statistiky a zablokované domény</div>
+        </div>
+      </div>
+      <div class="module-fields" id="mf-nextdns">
+        <div class="field-row">
+          <div class="field">
+            <label>API klíč</label>
+            <input type="password" id="nextdns-api-key" placeholder="b2d29d...">
+          </div>
+          <div class="field">
+            <label>Profile ID</label>
+            <input type="text" id="nextdns-profile-id" placeholder="c93d74">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Zpět</button>
+      <button class="btn btn-primary" onclick="goStep(4)">Další →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: Services ── -->
+  <div id="step-4" class="step" style="display:none">
+    <div class="card">
+      <h2><span class="icon">🌐</span> Monitorované služby</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:16px;">Přidej URL adresy, jejichž dostupnost chceš sledovat.</p>
+      <div id="services-list"></div>
+      <button class="add-btn" onclick="addService()">+ Přidat službu</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(3)">← Zpět</button>
+      <button class="btn btn-primary" onclick="goStep(5)">Další →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: WoL devices ── -->
+  <div id="step-5" class="step" style="display:none">
+    <div class="card">
+      <h2><span class="icon">⚡</span> Wake-on-LAN zařízení</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:16px;">Přidej zařízení, která chceš probouzet přes WoL.</p>
+      <div id="wol-list"></div>
+      <button class="add-btn" onclick="addWol()">+ Přidat zařízení</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(4)">← Zpět</button>
+      <button class="btn btn-primary" onclick="goStep(6)">Přejít na review →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 6: Review + Install ── -->
+  <div id="step-6" class="step" style="display:none">
+    <div class="card">
+      <h2><span class="icon">✅</span> Review konfigurace</h2>
+      <div id="review-content"></div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="progress-wrap" id="install-progress">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-msg" id="progress-msg">Ukládám konfiguraci...</div>
+      </div>
+      <div id="install-success" style="display:none;color:#6bcb77;font-size:14px;text-align:center;padding:20px 0;">
+        ✓ Dashboard se spouští...<br>
+        <span style="font-size:12px;color:#888;margin-top:8px;display:block;">Stránka se za chvíli přesměruje...</span>
+      </div>
+    </div>
+    <div class="btn-row" id="install-btn-row">
+      <button class="btn btn-secondary" onclick="goStep(5)">← Zpět</button>
+      <button class="btn btn-primary" id="install-btn" onclick="install()">🚀 Nainstalovat a spustit</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+let currentStep = 0;
+let proxAuth = 'password';
+let routerAuth = 'key';
+const STATE = {
+  services: [],
+  wol: [],
+};
+
+// ── Navigation ──────────────────────────────────────────────────────────────
+function goStep(n) {
+  document.getElementById(`step-${currentStep}`).style.display = 'none';
+  document.getElementById(`si-${currentStep}`).className = 'step-indicator done';
+  currentStep = n;
+  document.getElementById(`step-${n}`).style.display = 'block';
+  document.getElementById(`si-${n}`).className = 'step-indicator active';
+  if (n === 6) buildReview();
+}
+
+// ── Step 0: System check ────────────────────────────────────────────────────
+async function runSysCheck() {
+  const r = await fetch('/api/installer/check').then(r=>r.json()).catch(()=>null);
+  const el = document.getElementById('syscheck-results');
+  document.getElementById('syscheck-loading').style.display = 'none';
+  if (!r) { el.innerHTML = '<div class="check-item"><span class="check-err">✗</span> Nelze se spojit s installerem</div>'; return; }
+
+  const items = [
+    { label: `Python ${r.python}`, ok: true },
+    { label: 'sshpass', ok: r.sshpass, warn: !r.sshpass },
+    { label: 'paramiko (SSH library)', ok: r.paramiko },
+    { label: `Lokální IP: ${r.local_ip}`, ok: true },
+  ];
+
+  el.innerHTML = items.map(i => `
+    <div class="check-item">
+      <span class="${i.ok ? 'check-ok' : (i.warn ? 'check-warn' : 'check-err')}">${i.ok ? '✓' : (i.warn ? '⚠' : '✗')}</span>
+      ${i.label}
+    </div>`).join('');
+
+  if (r.issues.length > 0) {
+    el.innerHTML += r.issues.map(iss => `
+      <div class="check-item"><span class="check-warn">⚠</span> ${iss}</div>`).join('');
+  }
+
+  document.getElementById('step0-next').disabled = !r.paramiko;
+}
+
+// ── Step 1: Auth ────────────────────────────────────────────────────────────
+function validateAuth() {
+  const u = document.getElementById('auth-username').value.trim();
+  const p = document.getElementById('auth-password').value;
+  const p2 = document.getElementById('auth-password2').value;
+  if (!u) { alert('Zadej uživatelské jméno'); return; }
+  if (p.length < 6) { alert('Heslo musí mít alespoň 6 znaků'); return; }
+  if (p !== p2) { alert('Hesla se neshodují'); return; }
+  goStep(2);
+}
+
+// ── Step 2: Proxmox ─────────────────────────────────────────────────────────
+function setProxAuth(mode) {
+  proxAuth = mode;
+  document.getElementById('prox-auth-pw').className = 'auth-opt' + (mode==='password'?' active':'');
+  document.getElementById('prox-auth-key').className = 'auth-opt' + (mode==='key'?' active':'');
+  document.getElementById('prox-pw-field').style.display = mode==='password' ? 'block' : 'none';
+  document.getElementById('prox-key-field').style.display = mode==='key' ? 'block' : 'none';
+}
+
+async function generateKey(role) {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Generuji...';
+  const r = await fetch('/api/installer/generate_key', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({name: role})
+  }).then(r=>r.json()).catch(()=>null);
+  btn.disabled = false; btn.textContent = '🔑 Vygenerovat keypair';
+  if (!r || !r.ok) { alert('Chyba při generování klíče'); return; }
+
+  if (role === 'proxmox') {
+    document.getElementById('prox-pubkey-text').textContent = r.public_key;
+    document.getElementById('prox-pubkey-section').style.display = 'block';
+    document.getElementById('prox-key-path').value = r.key_path;
+  } else if (role === 'router') {
+    document.getElementById('router-pubkey-text').textContent = r.public_key;
+    document.getElementById('router-pubkey-section').style.display = 'block';
+    document.getElementById('router-key-path').value = r.key_path;
+  }
+}
+
+function copyPubKey(containerId) {
+  const text = document.getElementById(containerId).querySelector('span').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(containerId).querySelector('.copy-btn');
+    btn.textContent = '✓ Zkopírováno';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+async function testProxSSH() {
+  const ip = document.getElementById('prox-ip').value.trim();
+  const user = document.getElementById('prox-user').value.trim() || 'root';
+  const res = document.getElementById('prox-test-result');
+  res.className = 'test-result';
+  res.textContent = 'Testování...'; res.style.display = 'block';
+
+  const payload = { ip, user, auth: proxAuth, port: 22 };
+  if (proxAuth === 'password') payload.password = document.getElementById('prox-password').value;
+  else payload.key_path = document.getElementById('prox-key-path').value;
+
+  const r = await fetch('/api/installer/test_ssh', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  }).then(r=>r.json()).catch(()=>null);
+
+  if (r && r.ok) {
+    res.className = 'test-result ok';
+    res.textContent = `✓ Připojeno — hostname: ${r.hostname}`;
+  } else {
+    res.className = 'test-result err';
+    res.textContent = `✗ Chyba: ${r ? r.error : 'Nelze se spojit'}`;
+  }
+}
+
+function validateProxmox() {
+  const ip = document.getElementById('prox-ip').value.trim();
+  if (!ip) { alert('Zadej IP adresu Proxmoxu'); return; }
+  goStep(3);
+}
+
+// ── Step 3: Modules ──────────────────────────────────────────────────────────
+function toggleModule(id) {
+  const cb = document.getElementById(`cb-${id}`);
+  const mc = document.getElementById(`mc-${id}`);
+  const mf = document.getElementById(`mf-${id}`);
+  const inp = document.getElementById(`mod-${id}`);
+  const checked = !inp.checked;
+  inp.checked = checked;
+  cb.textContent = checked ? '✓' : '';
+  mc.className = 'module-check' + (checked ? ' checked' : '');
+  mf.className = 'module-fields' + (checked ? ' open' : '');
+}
+
+function setRouterAuth(mode) {
+  routerAuth = mode;
+  document.getElementById('router-auth-pw').className = 'auth-opt' + (mode==='password'?' active':'');
+  document.getElementById('router-auth-key').className = 'auth-opt' + (mode==='key'?' active':'');
+  document.getElementById('router-pw-field').style.display = mode==='password' ? 'block' : 'none';
+  document.getElementById('router-key-section').style.display = mode==='key' ? 'block' : 'none';
+}
+
+async function testSSH(mod) {
+  let ip, user, port, auth, password, keyPath;
+  const res = document.getElementById(`${mod}-test-result`);
+  res.className = 'test-result'; res.textContent = 'Testování...'; res.style.display = 'block';
+
+  if (mod === 'ha') {
+    ip = document.getElementById('ha-ip').value.trim();
+    user = document.getElementById('ha-ssh-user').value.trim() || 'root';
+    port = parseInt(document.getElementById('ha-ssh-port').value) || 22;
+    auth = 'password';
+    password = document.getElementById('ha-ssh-password').value;
+  } else if (mod === 'router') {
+    ip = document.getElementById('router-ip').value.trim();
+    user = document.getElementById('router-ssh-user').value.trim() || 'root';
+    port = parseInt(document.getElementById('router-ssh-port').value) || 22;
+    auth = routerAuth;
+    password = document.getElementById('router-ssh-password').value;
+    keyPath = document.getElementById('router-key-path').value;
+  }
+
+  const payload = { ip, user, port, auth };
+  if (auth === 'password') payload.password = password;
+  else payload.key_path = keyPath;
+
+  const r = await fetch('/api/installer/test_ssh', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  }).then(r=>r.json()).catch(()=>null);
+
+  if (r && r.ok) {
+    res.className = 'test-result ok';
+    res.textContent = `✓ Připojeno — hostname: ${r.hostname}`;
+  } else {
+    res.className = 'test-result err';
+    res.textContent = `✗ Chyba: ${r ? r.error : 'Nelze se spojit'}`;
+  }
+}
+
+// ── Step 4: Services ─────────────────────────────────────────────────────────
+function addService() {
+  const list = document.getElementById('services-list');
+  const idx = STATE.services.length;
+  STATE.services.push({name:'', url:''});
+  const div = document.createElement('div');
+  div.className = 'list-item';
+  div.style.gridTemplateColumns = '1fr 2fr auto';
+  div.id = `svc-${idx}`;
+  div.innerHTML = `
+    <input type="text" placeholder="Nextcloud" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.services[${idx}].name=this.value">
+    <input type="text" placeholder="http://10.0.1.150:8080" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.services[${idx}].url=this.value">
+    <button class="del-btn" onclick="removeSvc(${idx})">✕</button>`;
+  list.appendChild(div);
+}
+function removeSvc(idx) {
+  STATE.services[idx] = null;
+  document.getElementById(`svc-${idx}`).remove();
+}
+
+// ── Step 5: WoL ──────────────────────────────────────────────────────────────
+function addWol() {
+  const list = document.getElementById('wol-list');
+  const idx = STATE.wol.length;
+  STATE.wol.push({name:'', mac:'', ip:''});
+  const div = document.createElement('div');
+  div.className = 'list-item';
+  div.style.gridTemplateColumns = '1fr 1.5fr 1fr auto';
+  div.id = `wol-${idx}`;
+  div.innerHTML = `
+    <input type="text" placeholder="Proxmox" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.wol[${idx}].name=this.value">
+    <input type="text" placeholder="48:4d:7e:ef:14:ee" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.wol[${idx}].mac=this.value">
+    <input type="text" placeholder="10.0.1.9" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.wol[${idx}].ip=this.value">
+    <button class="del-btn" onclick="removeWol(${idx})">✕</button>`;
+  list.appendChild(div);
+}
+function removeWol(idx) {
+  STATE.wol[idx] = null;
+  document.getElementById(`wol-${idx}`).remove();
+}
+
+// ── Step 6: Review ───────────────────────────────────────────────────────────
+function buildReview() {
+  const modules = [];
+  ['ha','router','cf','nextdns'].forEach(m => {
+    if (document.getElementById(`mod-${m}`)?.checked) {
+      modules.push({ha:'Home Assistant',router:'Router',cf:'Cloudflare',nextdns:'NextDNS'}[m]);
+    }
+  });
+  const svcs = STATE.services.filter(s=>s && s.name && s.url);
+  const wols = STATE.wol.filter(w=>w && w.name && w.mac);
+
+  document.getElementById('review-content').innerHTML = `
+    <div class="review-section">
+      <h3>Přístup</h3>
+      <div class="review-row"><span class="review-key">Uživatel</span><span class="review-val">${document.getElementById('auth-username').value}</span></div>
+      <div class="review-row"><span class="review-key">Heslo</span><span class="review-val">••••••••</span></div>
+    </div>
+    <div class="review-section">
+      <h3>Proxmox</h3>
+      <div class="review-row"><span class="review-key">IP</span><span class="review-val">${document.getElementById('prox-ip').value}</span></div>
+      <div class="review-row"><span class="review-key">Node</span><span class="review-val">${document.getElementById('prox-node').value}</span></div>
+      <div class="review-row"><span class="review-key">SSH auth</span><span class="review-val">${proxAuth}</span></div>
+    </div>
+    <div class="review-section">
+      <h3>Aktivní moduly</h3>
+      <div class="review-row"><span class="review-key">Moduly</span><span class="review-val">${modules.length ? modules.join(', ') : '— žádné —'}</span></div>
+    </div>
+    <div class="review-section">
+      <h3>Služby a WoL</h3>
+      <div class="review-row"><span class="review-key">Monitorované služby</span><span class="review-val">${svcs.length}</span></div>
+      <div class="review-row"><span class="review-key">WoL zařízení</span><span class="review-val">${wols.length}</span></div>
+    </div>`;
+}
+
+// ── Install ───────────────────────────────────────────────────────────────────
+async function install() {
+  document.getElementById('install-btn-row').style.display = 'none';
+  const prog = document.getElementById('install-progress');
+  const fill = document.getElementById('progress-fill');
+  const msg = document.getElementById('progress-msg');
+  prog.className = 'progress-wrap show';
+
+  fill.style.width = '30%'; msg.textContent = 'Ukládám konfiguraci...';
+
+  const payload = {
+    username: document.getElementById('auth-username').value,
+    password: document.getElementById('auth-password').value,
+    proxmox_ip: document.getElementById('prox-ip').value,
+    proxmox_node: document.getElementById('prox-node').value,
+    proxmox_ssh_user: document.getElementById('prox-user').value || 'root',
+    proxmox_ssh_auth: proxAuth,
+    proxmox_ssh_password: document.getElementById('prox-password').value,
+    proxmox_ssh_key_path: document.getElementById('prox-key-path').value,
+    proxmox_ssh_port: 22,
+    ha_enabled: document.getElementById('mod-ha').checked,
+    ha_ip: document.getElementById('ha-ip').value,
+    ha_ssh_user: document.getElementById('ha-ssh-user').value || 'root',
+    ha_ssh_password: document.getElementById('ha-ssh-password').value,
+    ha_ssh_port: parseInt(document.getElementById('ha-ssh-port').value) || 22,
+    router_enabled: document.getElementById('mod-router').checked,
+    router_ip: document.getElementById('router-ip').value,
+    router_ssh_user: document.getElementById('router-ssh-user').value || 'root',
+    router_ssh_port: parseInt(document.getElementById('router-ssh-port').value) || 22,
+    router_ssh_auth: routerAuth,
+    router_ssh_password: document.getElementById('router-ssh-password').value,
+    router_ssh_key_path: document.getElementById('router-key-path').value,
+    router_subnet: document.getElementById('router-subnet').value,
+    cf_enabled: document.getElementById('mod-cf').checked,
+    cf_token: document.getElementById('cf-token').value,
+    cf_account_id: document.getElementById('cf-account-id').value,
+    cf_zone_id: document.getElementById('cf-zone-id').value,
+    cf_tunnel_id: document.getElementById('cf-tunnel-id').value,
+    nextdns_enabled: document.getElementById('mod-nextdns').checked,
+    nextdns_api_key: document.getElementById('nextdns-api-key').value,
+    nextdns_profile_id: document.getElementById('nextdns-profile-id').value,
+    services: STATE.services.filter(s => s && s.name && s.url),
+    wol_devices: STATE.wol.filter(w => w && w.name && w.mac),
+  };
+
+  fill.style.width = '60%'; msg.textContent = 'Zapisuji config.json...';
+
+  const r = await fetch('/api/installer/save', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  }).then(r=>r.json()).catch(()=>null);
+
+  if (r && r.ok) {
+    fill.style.width = '100%'; msg.textContent = 'Hotovo!';
+    setTimeout(() => {
+      prog.style.display = 'none';
+      document.getElementById('install-success').style.display = 'block';
+    }, 600);
+    setTimeout(() => { window.location.href = '/'; }, 4000);
+  } else {
+    fill.style.width = '0%';
+    msg.textContent = `Chyba: ${r ? r.error || r.detail : 'Neznámá chyba'}`;
+    msg.style.color = '#ff6b6b';
+    document.getElementById('install-btn-row').style.display = 'flex';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  runSysCheck();
+  setRouterAuth('key');
+});
+</script>
+</body>
+</html>

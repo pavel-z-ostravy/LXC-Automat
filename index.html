@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><style>
+  * { box-sizing: border-box; }
+  body { font-family: monospace; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+  body.dark { background: #1a1a2e; color: #eee; }
+  body.light { background: #f0f4f8; color: #222; }
+  .navbar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 52px; flex-wrap: wrap; }
+  body.dark .navbar { background: #16213e; border-bottom: 1px solid #0f3460; }
+  body.light .navbar { background: #ffffff; border-bottom: 1px solid #bcd; box-shadow: 0 2px 8px #ccc; }
+  .nav-brand { font-size: 16px; font-weight: bold; }
+  body.dark .nav-brand { color: #00d4ff; }
+  body.light .nav-brand { color: #0066aa; }
+  .nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .nav-tab { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: monospace; border: none; background: none; transition: background 0.2s; }
+  body.dark .nav-tab { color: #aaa; }
+  body.light .nav-tab { color: #666; }
+  body.dark .nav-tab:hover { background: #0f3460; color: #eee; }
+  body.light .nav-tab:hover { background: #eef4f8; color: #222; }
+  body.dark .nav-tab.active { background: #0f3460; color: #00d4ff; }
+  body.light .nav-tab.active { background: #dde8f0; color: #0066aa; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .last-update { font-size: 11px; }
+  body.dark .last-update { color: #555; }
+  body.light .last-update { color: #999; }
+  .theme-btn { border: none; border-radius: 20px; padding: 4px 12px; cursor: pointer; font-size: 13px; font-family: monospace; }
+  body.dark .theme-btn { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff; }
+  body.light .theme-btn { background: #dde8f0; color: #0066aa; border: 1px solid #0066aa; }
+  .page { display: none; padding: 20px; max-width: 960px; margin: 0 auto; }
+  .page.active { display: block; }
+  .card { border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  body.dark .card { background: #16213e; border: 1px solid #0f3460; }
+  body.light .card { background: #ffffff; border: 1px solid #bcd; box-shadow: 0 2px 8px #ccc; }
+  .card h2 { margin-top: 0; display: flex; align-items: center; gap: 8px; font-size: 16px; }
+  body.dark .card h2 { color: #00d4ff; }
+  body.light .card h2 { color: #0066aa; }
+  .uptime-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .uptime-item { font-size: 12px; padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; }
+  body.dark .uptime-item { background: #0f3460; color: #00d4ff; }
+  body.light .uptime-item { background: #dde8f0; color: #0066aa; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot-green { background: #6bcb77; }
+  .dot-red { background: #ff6b6b; }
+  .dot-gray { background: #888; }
+  .sensors-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+  .sensor-block { border-radius: 8px; padding: 12px 16px; min-width: 140px; flex: 1; }
+  body.dark .sensor-block { background: #0d0d0d; border: 1px solid #0f3460; }
+  body.light .sensor-block { background: #eef4f8; border: 1px solid #bcd; }
+  .sensor-block h3 { margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .sensor-line { font-size: 13px; margin: 3px 0; font-weight: bold; }
+  .sensor-warn { color: #ff6b6b !important; }
+  .sensor-hot { color: #ff9f43 !important; }
+  .chart-container { position: relative; height: 250px; }
+  .stat-row { display: flex; flex-direction: column; gap: 10px; }
+  .stat-item label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; display: block; }
+  body.dark .stat-item label { color: #00d4ff; }
+  body.light .stat-item label { color: #0066aa; }
+  .stat-item .val { font-size: 13px; margin-bottom: 4px; }
+  .bar-bg { background: #0d0d0d; border-radius: 4px; height: 8px; overflow: hidden; }
+  body.light .bar-bg { background: #dde8f0; }
+  .bar-fill { height: 8px; border-radius: 4px; transition: width 0.5s; }
+  .bar-green { background: #6bcb77; }
+  .bar-yellow { background: #ffd93d; }
+  .bar-red { background: #ff6b6b; }
+  .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .service-item { border-radius: 8px; padding: 14px; display: flex; align-items: center; gap: 10px; }
+  body.dark .service-item { background: #0d0d0d; border: 1px solid #0f3460; }
+  body.light .service-item { background: #eef4f8; border: 1px solid #bcd; }
+  .service-name { font-size: 13px; font-weight: bold; }
+  .service-status { font-size: 11px; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; padding: 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  body.dark th { color: #00d4ff; border-bottom: 1px solid #0f3460; }
+  body.light th { color: #0066aa; border-bottom: 1px solid #bcd; }
+  td { padding: 6px 8px; }
+  body.dark tr:hover td { background: #0f3460; }
+  body.light tr:hover td { background: #eef4f8; }
+  .state-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+  .state-REACHABLE { background: #6bcb7733; color: #6bcb77; }
+  .state-STALE { background: #ffd93d33; color: #ffd93d; }
+  .state-DELAY { background: #ff9f4333; color: #ff9f43; }
+  .state-UNKNOWN { background: #88888833; color: #888; }
+  .btop-card { border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+  body.dark .btop-card { background: #16213e; border: 1px solid #0f3460; }
+  body.light .btop-card { background: #ffffff; border: 1px solid #bcd; box-shadow: 0 2px 8px #ccc; }
+  .btop-card h2 { margin-top: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 16px; }
+  body.dark .btop-card h2 { color: #00d4ff; }
+  body.light .btop-card h2 { color: #0066aa; }
+  iframe { width: 100%; height: 600px; border: none; border-radius: 5px; }
+  .wol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+  .wol-item { border-radius: 8px; padding: 16px; text-align: center; }
+  body.dark .wol-item { background: #0d0d0d; border: 1px solid #0f3460; }
+  body.light .wol-item { background: #eef4f8; border: 1px solid #bcd; }
+  .wol-name { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+  .wol-mac { font-size: 11px; margin-bottom: 12px; }
+  body.dark .wol-mac { color: #666; }
+  body.light .wol-mac { color: #999; }
+  .wol-btn, .run-btn, .refresh-btn {
+    border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-family: monospace; font-size: 13px;
+  }
+  .run-btn { padding: 10px 24px; font-size: 14px; }
+  .refresh-btn { padding: 6px 14px; margin-bottom: 15px; }
+  body.dark .wol-btn, body.dark .run-btn, body.dark .refresh-btn { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff; }
+  body.light .wol-btn, body.light .run-btn, body.light .refresh-btn { background: #dde8f0; color: #0066aa; border: 1px solid #0066aa; }
+  .wol-btn { width: 100%; }
+  .wol-btn:hover, .run-btn:hover { opacity: 0.8; }
+  .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .wol-msg { font-size: 11px; margin-top: 8px; min-height: 16px; }
+  .proc-table { margin-top: 15px; }
+  .mobile-stats { display: none; }
+  .desktop-btop { display: block; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; border: none; background: none; }
+  .hamburger span { display: block; width: 22px; height: 2px; border-radius: 2px; transition: all 0.3s; }
+  body.dark .hamburger span { background: #00d4ff; }
+  body.light .hamburger span { background: #0066aa; }
+  .mobile-menu { display: none; position: fixed; top: 52px; left: 0; right: 0; z-index: 99; padding: 10px; flex-direction: column; gap: 4px; }
+  body.dark .mobile-menu { background: #16213e; border-bottom: 1px solid #0f3460; }
+  body.light .mobile-menu { background: #ffffff; border-bottom: 1px solid #bcd; box-shadow: 0 4px 12px #ccc; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu .nav-tab { text-align: left; padding: 10px 16px; font-size: 14px; border-radius: 8px; }
+  .speed-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+  .speed-item { border-radius: 8px; padding: 16px; text-align: center; }
+  body.dark .speed-item { background: #0d0d0d; border: 1px solid #0f3460; }
+  body.light .speed-item { background: #eef4f8; border: 1px solid #bcd; }
+  .speed-val { font-size: 28px; font-weight: bold; }
+  body.dark .speed-val { color: #00d4ff; }
+  body.light .speed-val { color: #0066aa; }
+  .speed-label { font-size: 11px; text-transform: uppercase; margin-top: 4px; }
+  body.dark .speed-label { color: #666; }
+  body.light .speed-label { color: #999; }
+  .dns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 15px; }
+  .dns-item { border-radius: 8px; padding: 14px; text-align: center; }
+  body.dark .dns-item { background: #0d0d0d; border: 1px solid #0f3460; }
+  body.light .dns-item { background: #eef4f8; border: 1px solid #bcd; }
+  .dns-val { font-size: 24px; font-weight: bold; }
+  body.dark .dns-val { color: #00d4ff; }
+  body.light .dns-val { color: #0066aa; }
+  .dns-label { font-size: 11px; text-transform: uppercase; margin-top: 4px; }
+  body.dark .dns-label { color: #666; }
+  body.light .dns-label { color: #999; }
+  .offline-msg { color: #ff6b6b; padding: 10px 0; }
+  .disk-card { border-radius: 8px; padding: 16px; margin-bottom: 12px; border: 1px solid #0f3460; }
+  body.dark .disk-card { background: #0d1b2a; }
+  body.light .disk-card { background: #f0f4f8; border-color: #bcd; }
+  .disk-card.warn { border-color: #ffd93d; }
+  .disk-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .disk-model { font-weight: bold; font-size: 14px; }
+  .disk-sub { font-size: 11px; color: #888; margin-top: 2px; }
+  .disk-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .disk-metric { text-align: center; padding: 10px; border-radius: 6px; }
+  body.dark .disk-metric { background: #0a1520; }
+  body.light .disk-metric { background: #e8eef4; }
+  .disk-metric-val { font-size: 22px; font-weight: bold; }
+  .disk-metric-label { font-size: 10px; color: #888; margin-top: 2px; }
+  .disk-detail { display: flex; justify-content: space-between; padding: 4px 0; border-top: 1px solid #0f346033; font-size: 12px; }
+  .usage-row { display: grid; grid-template-columns: 160px 1fr 130px; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+  .usage-label { color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .usage-info { font-size: 12px; text-align: right; }
+  .lsblk-header { display: grid; grid-template-columns: minmax(110px,1fr) minmax(180px,2fr) 90px; gap: 8px; padding: 0 0 6px 0; border-bottom: 1px solid #0f3460; margin-bottom: 2px; font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+  .lsblk-row { display: grid; grid-template-columns: minmax(110px,1fr) minmax(180px,2fr) 90px; gap: 8px; align-items: center; padding: 5px 0; border-bottom: 1px solid #0f346018; }
+  .lsblk-row:last-child { border-bottom: none; }
+  .lsblk-name-cell { min-width: 0; overflow: hidden; }
+  .lsblk-name-line { display: flex; align-items: center; }
+  .lsblk-prefix { font-family: monospace; color: #333; white-space: pre; font-size: 12px; flex-shrink: 0; }
+  .lsblk-devname { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lsblk-subtitle { font-size: 10px; color: #666; margin-top: 1px; display: none; }
+  .lsblk-usage-cell { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .lsblk-bar-bg { width: 80px; height: 7px; background: #0a1520; border-radius: 4px; flex-shrink: 0; }
+  .lsblk-bar-fill { height: 100%; border-radius: 4px; }
+  .lsblk-usage-pct { font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0; }
+  .lsblk-usage-sub { font-size: 10px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lsblk-sub-mobile { display: none; }
+  .lsblk-note-col { font-size: 11px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lsblk-toggle { font-size: 11px; color: #00d4ff; margin-right: 6px; user-select: none; flex-shrink: 0; }
+  .lsblk-disk-hdr { cursor: pointer; }
+  .lsblk-collapsed-summary { font-size: 10px; color: #666; margin-top: 2px; }
+  @media (max-width: 600px) {
+    .lsblk-header { grid-template-columns: 1fr auto; }
+    .lsblk-row { grid-template-columns: 1fr auto; }
+    .lsblk-note-col { display: none; }
+    .lsblk-subtitle { display: block; }
+    .lsblk-bar-bg { display: none; }
+    .lsblk-usage-cell { flex-direction: column; align-items: flex-end; gap: 1px; }
+    .lsblk-sub-desktop { display: none; }
+    .lsblk-sub-mobile { display: block; font-size: 10px; }
+  }
+  @media (max-width: 1200px) { .mobile-stats { display: block; } .desktop-btop { display: none; } }
+  @media (max-width: 768px) { .nav-tabs { display: none; } .hamburger { display: flex; } .speed-grid { grid-template-columns: 1fr 1fr; } .page { padding: 12px; } .disk-metrics { grid-template-columns: 1fr 1fr; } .usage-row { grid-template-columns: 120px 1fr 100px; } }
+  .desktop-only { display: inline; }
+  .state-dot { display: none; width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .state-dot-REACHABLE { background: #6bcb77; }
+  .state-dot-STALE { background: #ffd93d; }
+  .state-dot-DELAY { background: #ff9f43; }
+  .state-dot-UNKNOWN { background: #555; }
+  .net-legend { display: none; font-size: 10px; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .net-legend-item { display: flex; align-items: center; gap: 3px; }
+  @media (max-width: 768px) { .state-badge { display: none; } .state-dot { display: inline-block; } .net-legend { display: flex; } .net-stav { display: none; } }
+  .mobile-only { display: none; }
+  @media (max-width: 768px) { .desktop-only { display: none; } .mobile-only { display: inline; } .net-mac { display: none; } .net-table th:nth-child(3), .net-table td:nth-child(3) { display: none; } table { font-size: 11px; } td, th { padding: 5px 4px; } }
+  @media (max-width: 500px) { .speed-grid { grid-template-columns: 1fr; } }
+
+  /* Dropdown navigace */
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 4px; }
+  .nav-dropdown-trigger .arrow { font-size: 9px; opacity: 0.6; transition: transform 0.2s; }
+  .nav-dropdown:hover .nav-dropdown-trigger .arrow { transform: rotate(180deg); }
+  .nav-dropdown-menu {
+    display: none; position: absolute; top: 100%; left: 0;
+    z-index: 200; min-width: 150px; border-radius: 8px; padding: 4px; padding-top: 8px;
+    flex-direction: column; gap: 2px;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu { display: flex; }
+  body.dark .nav-dropdown-menu { background: #16213e; border: 1px solid #0f3460; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+  body.light .nav-dropdown-menu { background: #fff; border: 1px solid #bcd; box-shadow: 0 4px 16px #ccc; }
+  .nav-dropdown-menu .nav-tab { text-align: left; width: 100%; border-radius: 5px; padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+
+  /* LXC generátor — přizpůsobeno designu dashboardu */
+  .lxc-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .lxc-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media(max-width:600px) { .lxc-grid2, .lxc-grid3 { grid-template-columns: 1fr; } }
+  .lxc-field { display: flex; flex-direction: column; gap: 5px; }
+  .lxc-field.full { grid-column: 1 / -1; }
+  .lxc-input, .lxc-textarea { border-radius: 6px; font-family: monospace; font-size: 13px; padding: 8px 12px; outline: none; width: 100%; transition: border-color 0.2s; }
+  body.dark .lxc-input, body.dark .lxc-textarea { background: #0d1b2a; border: 1px solid #0f3460; color: #eee; }
+  body.light .lxc-input, body.light .lxc-textarea { background: #eef4f8; border: 1px solid #bcd; color: #222; }
+  body.dark .lxc-input:focus, body.dark .lxc-textarea:focus { border-color: #00d4ff; }
+  body.light .lxc-input:focus, body.light .lxc-textarea:focus { border-color: #0066aa; }
+  .lxc-textarea { resize: vertical; min-height: 70px; }
+  .lxc-hint { font-size: 11px; }
+  body.dark .lxc-hint { color: #555; }
+  body.light .lxc-hint { color: #999; }
+  .lxc-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 8px; }
+  .lxc-check { display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 11px 13px; cursor: pointer; transition: all 0.2s; user-select: none; }
+  body.dark .lxc-check { background: #0d0d0d; border: 1px solid #0f3460; }
+  body.light .lxc-check { background: #eef4f8; border: 1px solid #bcd; }
+  body.dark .lxc-check:hover { border-color: #00d4ff; }
+  body.light .lxc-check:hover { border-color: #0066aa; }
+  .lxc-check input[type="checkbox"] { display: none; }
+  .lxc-box { width: 16px; height: 16px; border: 1.5px solid #555; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 10px; }
+  .lxc-clabel { font-size: 13px; font-weight: bold; display: block; }
+  body.dark .lxc-clabel { color: #eee; }
+  body.light .lxc-clabel { color: #222; }
+  .lxc-cdesc { font-size: 10px; display: block; margin-top: 2px; }
+  body.dark .lxc-cdesc { color: #555; }
+  body.light .lxc-cdesc { color: #999; }
+  .lxc-output { border-radius: 10px; overflow: hidden; display: none; margin-top: 16px; }
+  body.dark .lxc-output { border: 1px solid #0f3460; }
+  body.light .lxc-output { border: 1px solid #bcd; }
+  .lxc-output.visible { display: block; }
+  .lxc-out-hdr { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; }
+  body.dark .lxc-out-hdr { background: #16213e; border-bottom: 1px solid #0f3460; }
+  body.light .lxc-out-hdr { background: #dde8f0; border-bottom: 1px solid #bcd; }
+  .lxc-out-title { font-size: 12px; }
+  body.dark .lxc-out-title { color: #00d4ff; }
+  body.light .lxc-out-title { color: #0066aa; }
+  .lxc-copied { font-size: 11px; color: #6bcb77; display: none; }
+  .lxc-copied.show { display: inline; }
+  pre.lxc-pre { padding: 16px; font-family: monospace; font-size: 12px; line-height: 1.7; overflow-x: auto; max-height: 480px; overflow-y: auto; margin: 0; }
+  body.dark pre.lxc-pre { background: #0d0d0d; color: #aaa; }
+  body.light pre.lxc-pre { background: #f0f4f8; color: #334; }
+  #page-lxc .lc { color: #555; }
+  body.dark #page-lxc .lv { color: #6bcb77; }
+  body.light #page-lxc .lv { color: #227744; }
+  body.dark #page-lxc .ls { color: #00d4ff; font-weight: bold; }
+  body.light #page-lxc .ls { color: #0066aa; font-weight: bold; }
+  .lxc-step-toggle { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border-radius: 4px; padding: 2px 0; transition: opacity 0.15s; }
+  .lxc-step-toggle:hover { opacity: 0.75; }
+  body.dark .lxc-step-toggle { color: #00d4ff; }
+  body.light .lxc-step-toggle { color: #0066aa; }
+  .lxc-step-arrow { font-size: 9px; transition: transform 0.2s; display: inline-block; }
+  .lxc-expand { display: none; margin-top: 10px; border-radius: 8px; padding: 14px 16px; font-size: 12px; line-height: 1.7; }
+  body.dark .lxc-expand { background: #0d1b2a; border: 1px solid #0f3460; }
+  body.light .lxc-expand { background: #eef4f8; border: 1px solid #bcd; }
+  .lxc-expand.open { display: block; }
+  .lxc-expand pre { margin: 8px 0 4px; padding: 10px 14px; border-radius: 6px; font-size: 12px; line-height: 1.6; overflow-x: auto; }
+  body.dark .lxc-expand pre { background: #060d17; color: #aaa; border: 1px solid #0f3460; }
+  body.light .lxc-expand pre { background: #e0e8f0; color: #234; border: 1px solid #bcd; }
+  .lxc-expand code { font-family: monospace; }
+  body.dark .lxc-expand code { color: #00d4ff; }
+  body.light .lxc-expand code { color: #0066aa; }
+  .lxc-expand .note { font-size: 11px; opacity: 0.6; margin-top: 6px; }
+</style>
+</head>
+<body class="dark">
+
+<nav class="navbar">
+  <span class="nav-brand" id="navBrand">🖥️ Dashboard</span>
+  <button class="hamburger" onclick="toggleMobileMenu()" id="hamburgerBtn">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-monitor" onclick="showPage('monitor',this)">📊 Monitor</button>
+
+    <div class="nav-dropdown">
+      <button class="nav-tab nav-dropdown-trigger" id="tab-zdroje">Zdroje <span class="arrow">▾</span></button>
+      <div class="nav-dropdown-menu">
+        <button class="nav-tab" onclick="showPage('smart',this)">💾 Disky</button>
+        <button class="nav-tab" onclick="showPage('backups',this)">🗄️ Zálohy</button>
+        <button class="nav-tab" onclick="showPage('network',this)">🌐 Síť</button>
+        <button class="nav-tab" onclick="showPage('services',this)">🔌 Služby</button>
+      </div>
+    </div>
+
+    <div class="nav-dropdown">
+      <button class="nav-tab nav-dropdown-trigger" id="tab-nastroje">Nástroje <span class="arrow">▾</span></button>
+      <div class="nav-dropdown-menu">
+        <button class="nav-tab" onclick="showPage('lxc',this)">⚙️ LXC Generátor</button>
+        <button class="nav-tab" onclick="showPage('dns',this)">🛡️ NextDNS</button>
+        <button class="nav-tab" onclick="showPage('cloudflare',this)">☁️ Cloudflare</button>
+        <button class="nav-tab" onclick="showPage('speed',this)">⚡ Speedtest</button>
+        <button class="nav-tab" onclick="showPage('wol',this)">⚡ WoL</button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="last-update" id="lastUpdate">-</span>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
+    <form method="post" action="/logout" style="display:inline"><button class="theme-btn" type="submit" title="Odhlásit">⏻</button></form>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="nav-tab" onclick="showPage('monitor',this);closeMobileMenu()">📊 Monitor</button>
+  <div style="font-size:10px;color:#555;padding:6px 16px 2px;text-transform:uppercase;letter-spacing:0.1em">Zdroje</div>
+  <button class="nav-tab" onclick="showPage('smart',this);closeMobileMenu()">💾 Disky</button>
+  <button class="nav-tab" onclick="showPage('backups',this);closeMobileMenu()">🗄️ Zálohy</button>
+  <button class="nav-tab" onclick="showPage('network',this);closeMobileMenu()">🌐 Síť</button>
+  <button class="nav-tab" onclick="showPage('services',this);closeMobileMenu()">🔌 Služby</button>
+  <div style="font-size:10px;color:#555;padding:6px 16px 2px;text-transform:uppercase;letter-spacing:0.1em">Nástroje</div>
+  <button class="nav-tab" onclick="showPage('lxc',this);closeMobileMenu()">⚙️ LXC Generátor</button>
+  <button class="nav-tab" onclick="showPage('dns',this);closeMobileMenu()">🛡️ NextDNS</button>
+  <button class="nav-tab" onclick="showPage('cloudflare',this);closeMobileMenu()">☁️ Cloudflare</button>
+  <button class="nav-tab" onclick="showPage('speed',this);closeMobileMenu()">⚡ Speedtest</button>
+  <button class="nav-tab" onclick="showPage('wol',this);closeMobileMenu()">⚡ WoL</button>
+</div>
+
+<!-- MONITOR -->
+<div id="page-monitor" class="page active">
+  <div class="uptime-bar">
+    <span class="uptime-item"><span class="status-dot dot-gray" id="dotProxmox"></span><svg width="14" height="14" viewBox="0 0 100 100"><rect width="100" height="100" rx="15" fill="#E57000"/><text y="72" x="50" font-size="60" text-anchor="middle" fill="white" font-weight="bold">P</text></svg> Proxmox: <span id="uptimeProxmox">...</span></span>
+    <span class="uptime-item"><span class="status-dot dot-gray" id="dotVM"></span><svg width="14" height="14" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#E95420"/><circle cx="50" cy="50" r="20" fill="none" stroke="white" stroke-width="12"/><circle cx="50" cy="15" r="10" fill="white"/><circle cx="82" cy="68" r="10" fill="white"/><circle cx="18" cy="68" r="10" fill="white"/></svg> nextcloud: <span id="uptimeVM">...</span></span>
+    <span class="uptime-item"><span class="status-dot dot-gray" id="dotHA"></span><svg width="14" height="14" viewBox="0 0 100 100"><rect width="100" height="100" rx="15" fill="#18BCF2"/><text y="72" x="50" font-size="55" text-anchor="middle" fill="white">H</text></svg> HA: <span id="uptimeHA">...</span></span>
+  </div>
+  <div class="card">
+    <h2>🌡️ Teploty</h2>
+    <button class="refresh-btn" onclick="loadSensors()">↻ Obnovit</button>
+    <div class="sensors-grid" id="sensors"><span>Nacitam...</span></div>
+  </div>
+  <div class="card">
+    <h2>📈 Graf teplot</h2>
+    <div class="chart-container"><canvas id="tempChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>📈 Graf CPU & RAM</h2>
+    <div class="chart-container"><canvas id="statsChart"></canvas></div>
+  </div>
+  <div class="mobile-stats">
+    <div class="card">
+      <h2>Proxmox host</h2>
+      <div class="stat-row" id="statRows">Nacitam...</div>
+      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="procTable"></tbody></table></div>
+    </div>
+    <div class="card">
+      <h2 id="vmTitle">homelab-server VM</h2>
+      <div class="stat-row" id="vmStatRows">Nacitam...</div>
+      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="vmProcTable"></tbody></table></div>
+    </div>
+    <div class="card">
+      <h2>Home Assistant</h2>
+      <div class="stat-row" id="haStatRows">Nacitam...</div>
+      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="haProcTable"></tbody></table></div>
+    </div>
+  </div>
+  <div class="desktop-btop">
+    <div class="btop-card"><h2>btop — Proxmox host</h2><iframe src="http://10.0.1.9:7681" title="btop proxmox"></iframe></div>
+    <div class="btop-card"><h2 id="btopVmTitle">btop — homelab-server VM</h2><iframe src="http://10.0.1.9:7682" title="btop vm"></iframe></div>
+    <div class="btop-card"><h2>btop — Home Assistant</h2><iframe src="http://10.0.1.9:7683" title="btop ha"></iframe></div>
+  </div>
+</div>
+
+<!-- SMART / DISKY -->
+<div id="page-smart" class="page">
+  <div class="card">
+    <h2>💾 Úložiště serveru</h2>
+    <button class="refresh-btn" onclick="loadStorage()">↻ Obnovit</button>
+    <div id="storageServerContent"><span style="color:#888">Načítám...</span></div>
+  </div>
+  <div class="card">
+    <h2>🔌 Úložiště — externí disky</h2>
+    <div id="storageExtContent"><span style="color:#888">Načítám...</span></div>
+  </div>
+  <div class="card">
+    <h2>🔬 S.M.A.R.T. diagnostika</h2>
+    <button class="refresh-btn" onclick="loadSmart()">↻ Obnovit</button>
+    <div id="smartContent">Načítám...</div>
+  </div>
+</div>
+
+<!-- ZÁLOHY -->
+<div id="page-backups" class="page">
+  <div class="card">
+    <h2>🗄️ Zálohy</h2>
+    <button class="refresh-btn" onclick="loadBackups()">↻ Obnovit</button>
+    <div id="backupsList" style="margin-top:15px"></div>
+  </div>
+  <div class="card">
+    <h2>▶ Spustit zálohu</h2>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <select id="backupVmid" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px">
+        <option value="">Vyber VM...</option>
+      </select>
+      <select id="backupMode" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px">
+        <option value="stop">Stop (bezpecne)</option>
+        <option value="suspend">Suspend</option>
+        
+      </select>
+      <button class="run-btn" onclick="startBackup()">▶ Zálohovat nyní</button>
+    </div>
+    <div id="backupRunStatus" style="font-size:13px;color:#ffd93d;margin-top:5px"></div>
+  </div>
+  <div class="card">
+    <h2>⏰ Automatické zálohy (Proxmox job)</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:15px">
+      <div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">VM (oddělené čárkou)</div>
+        <input id="schedVmids" type="text" placeholder="100,101" value="100,101" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+      </div>
+      <div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Hodina</div>
+        <input id="schedHour" type="number" min="0" max="23" value="2" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+      </div>
+      <div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Minuta</div>
+        <input id="schedMinute" type="number" min="0" max="59" value="0" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+      </div>
+      <div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Den v týdnu</div>
+        <select id="schedDow" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+          <option value="sun">Neděle</option>
+          <option value="mon">Pondělí</option>
+          <option value="tue">Úterý</option>
+          <option value="wed">Středa</option>
+          <option value="thu">Čtvrtek</option>
+          <option value="fri">Pátek</option>
+          <option value="sat">Sobota</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Max zálohy</div>
+        <input id="schedMaxfiles" type="number" min="1" max="10" value="1" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+      </div>
+    </div>
+    <div id="schedCurrent" style="font-size:12px;color:#888;margin-bottom:12px;padding:10px;background:#0a1520;border-radius:6px;font-family:monospace"></div>
+    <button class="run-btn" onclick="saveSchedule()">💾 Uložit plán</button>
+    <div id="schedStatus" style="font-size:13px;color:#6bcb77;margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- SLUŽBY -->
+<div id="page-services" class="page">
+  <div class="card">
+    <h2>🔌 Stav služeb</h2>
+    <button class="refresh-btn" onclick="loadServices()">↻ Obnovit</button>
+    <div class="services-grid" id="servicesGrid">Nacitam...</div>
+  </div>
+</div>
+
+<!-- CLOUDFLARE -->
+<div id="page-cloudflare" class="page">
+  <div class="card">
+    <h2>☁️ Cloudflare Tunnel</h2>
+    <button class="refresh-btn" onclick="loadCloudflare()">↻ Obnovit</button>
+    <div id="cfTunnelStatus">Nacitam...</div>
+  </div>
+  <div class="card">
+    <h2>📊 Tunnel live metriky</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:15px" id="cfMetricsGrid">
+      <div class="speed-item"><div class="speed-val" id="cfConcurrent">-</div><div class="speed-label">Aktivní req</div></div>
+      <div class="speed-item"><div class="speed-val" id="cfHaConn">-</div><div class="speed-label">HA spojení</div></div>
+      <div class="speed-item"><div class="speed-val" id="cfTotal">-</div><div class="speed-label">Total req</div></div>
+      <div class="speed-item"><div class="speed-val" id="cfErrors">-</div><div class="speed-label">Chyby</div></div>
+    </div>
+    <div class="chart-container"><canvas id="cfChart"></canvas></div>
+  </div>
+</div>
+
+<!-- SÍŤ -->
+<div id="page-network" class="page">
+  <div class="card">
+    <h2>🌐 Zařízení v síti</h2>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:15px">
+      <button class="refresh-btn" style="margin-bottom:0" onclick="loadNetwork()">↻ Obnovit</button>
+      <div class="net-legend">
+        <div class="net-legend-item"><div class="state-dot state-dot-REACHABLE"></div><span style="color:#6bcb77">Online</span></div>
+        <div class="net-legend-item"><div class="state-dot state-dot-STALE"></div><span style="color:#ffd93d">Stale</span></div>
+        <div class="net-legend-item"><div class="state-dot state-dot-UNKNOWN"></div><span style="color:#555">Unknown</span></div>
+      </div>
+    </div>
+    <table class="net-table">
+      <thead><tr><th>IP</th><th>Název</th><th class="net-mac">MAC</th><th class="net-stav">Stav</th><th><span class="desktop-only">⬇ rx / ⬆ tx</span><span class="mobile-only">⬇⬆</span></th></tr></thead>
+      <tbody id="networkTable"><tr><td colspan="5">Nacitam...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SPEEDTEST -->
+<div id="page-speed" class="page">
+  <div class="card">
+    <h2>⚡ Speedtest</h2>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <button class="run-btn" id="speedBtn" onclick="runSpeedtest()">▶ Spustit test</button>
+      <select id="serverSelect" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px;font-family:monospace">
+        <option value="">Automatický výběr</option>
+      </select>
+      <button class="refresh-btn" style="margin-bottom:0" onclick="loadSpeedServers()">↻ Servery</button>
+    </div>
+    <div id="speedStatus" style="font-size:12px;margin:10px 0;min-height:20px;color:#ffd93d;"></div>
+    <div id="termOutput" style="font-family:monospace;font-size:13px;line-height:1.8;min-height:120px;padding:10px;border-radius:8px;background:#0d0d0d;border:1px solid #0f3460;">
+      <span style="color:#555">Čekám na spuštění testu...</span>
+    </div>
+  </div>
+  <div class="card" id="speedResultCard" style="display:none">
+    <h2>📊 Výsledek</h2>
+    <div class="speed-grid" id="speedGrid">
+      <div class="speed-item"><div class="speed-val" id="speedDown">-</div><div class="speed-label">⬇ Download Mbps</div></div>
+      <div class="speed-item"><div class="speed-val" id="speedUp">-</div><div class="speed-label">⬆ Upload Mbps</div></div>
+      <div class="speed-item"><div class="speed-val" id="speedPing">-</div><div class="speed-label">🏓 Ping ms</div></div>
+    </div>
+    <div id="speedServer" style="font-size:12px;margin-top:10px;color:#888;"></div>
+  </div>
+  <div class="card" id="speedHistoryCard">
+    <h2>📈 Historie</h2>
+    <div class="chart-container"><canvas id="speedChart"></canvas></div>
+    <div id="speedHistoryTable" style="margin-top:15px"></div>
+  </div>
+</div>
+
+<!-- NEXTDNS -->
+<div id="page-dns" class="page">
+  <div class="card">
+    <h2>🛡️ NextDNS — statistiky dnes</h2>
+    <button class="refresh-btn" onclick="loadDNS()">↻ Obnovit</button>
+    <div class="dns-grid" id="dnsGrid">Nacitam...</div>
+    <div id="dnsTopDevices" style="margin-top:15px"></div>
+  </div>
+</div>
+
+
+<!-- WOL -->
+<div id="page-wol" class="page">
+  <div class="card">
+    <h2>⚡ Wake-on-LAN</h2>
+    <div class="wol-grid" id="wolGrid"></div>
+  </div>
+</div>
+
+<!-- LXC GENERÁTOR -->
+<div id="page-lxc" class="page">
+  <div class="card">
+    <h2>⚙️ LXC Setup Generátor</h2>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:-4px;opacity:0.5">01 — Identifikace kontejneru</div>
+    <div class="lxc-grid3" style="margin-bottom:6px">
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>CT ID</label></label>
+        <input type="number" id="lxc_ct_id" class="lxc-input" value="202" min="100" max="999" oninput="lxcSyncInst()">
+      </div>
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>Hostname</label></label>
+        <input type="text" id="lxc_hostname" class="lxc-input" value="webdev-new" placeholder="webdev-projekt">
+      </div>
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>IP adresa</label></label>
+        <input type="text" id="lxc_ip" class="lxc-input" value="10.0.1." placeholder="10.0.1.93" oninput="lxcSyncInst();lxcCheckIpDebounce()">
+        <span class="lxc-hint">nastav rezervaci na routeru</span>
+        <span id="lxc_ip_status" style="font-size:11px;margin-top:3px;display:block"></span>
+      </div>
+    </div>
+    <div class="lxc-grid3" style="margin-top:10px">
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>RAM (MB)</label></label>
+        <input type="number" id="lxc_ram" class="lxc-input" value="2048" min="512" step="512">
+      </div>
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>CPU jader</label></label>
+        <input type="number" id="lxc_cores" class="lxc-input" value="2" min="1" max="8">
+      </div>
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>Disk (GB)</label></label>
+        <input type="number" id="lxc_disk" class="lxc-input" value="8" min="4" max="500">
+      </div>
+    </div>
+    <div class="lxc-grid2" style="margin-top:10px">
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>Root heslo</label></label>
+        <input type="text" id="lxc_password" class="lxc-input" placeholder="changeme123">
+      </div>
+      <div class="lxc-field" style="display:flex;align-items:flex-end">
+        <button class="refresh-btn" style="margin:0" onclick="lxcGenPassword()">generovat heslo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔧 Git konfigurace</h2>
+    <div class="lxc-grid2">
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>Git jméno</label></label>
+        <input type="text" id="lxc_git_name" class="lxc-input" placeholder="Pavel Novák">
+      </div>
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>Git email</label></label>
+        <input type="email" id="lxc_git_email" class="lxc-input" placeholder="pavel@email.com">
+      </div>
+      <div class="lxc-field full">
+        <label class="stat-item" style="display:block"><label>GitHub SSH veřejný klíč (volitelně)</label></label>
+        <textarea id="lxc_ssh_key" class="lxc-textarea" placeholder="ssh-ed25519 AAAA... tvuj@email.com&#10;Nech prázdné pokud chceš klíč vygenerovat"></textarea>
+        <span class="lxc-hint">prázdné → skript vygeneruje nový klíč a zobrazí ho</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📦 Co instalovat</h2>
+    <div class="lxc-checks" id="lxc_packages">
+      <label class="lxc-check">
+        <input type="checkbox" value="docker" checked>
+        <div class="lxc-box">✓</div>
+        <div><span class="lxc-clabel">Docker</span><span class="lxc-cdesc">+ daemon.json overlay2</span></div>
+      </label>
+      <label class="lxc-check">
+        <input type="checkbox" value="node" checked>
+        <div class="lxc-box">✓</div>
+        <div><span class="lxc-clabel">Node.js LTS</span><span class="lxc-cdesc">přes nvm</span></div>
+      </label>
+      <label class="lxc-check">
+        <input type="checkbox" value="pnpm" checked>
+        <div class="lxc-box">✓</div>
+        <div><span class="lxc-clabel">pnpm</span><span class="lxc-cdesc">rychlejší npm</span></div>
+      </label>
+      <label class="lxc-check">
+        <input type="checkbox" value="vercel" checked>
+        <div class="lxc-box">✓</div>
+        <div><span class="lxc-clabel">Vercel CLI</span><span class="lxc-cdesc">npm install -g vercel</span></div>
+      </label>
+      <label class="lxc-check">
+        <input type="checkbox" value="claude" checked>
+        <div class="lxc-box">✓</div>
+        <div><span class="lxc-clabel">Claude Code</span><span class="lxc-cdesc">@anthropic-ai/claude-code</span></div>
+      </label>
+      <label class="lxc-check">
+        <input type="checkbox" value="micro">
+        <div class="lxc-box"></div>
+        <div><span class="lxc-clabel">micro</span><span class="lxc-cdesc">lepší editor než nano</span></div>
+      </label>
+      <label class="lxc-check">
+        <input type="checkbox" value="supabase_note">
+        <div class="lxc-box"></div>
+        <div><span class="lxc-clabel">Supabase info</span><span class="lxc-cdesc">instrukce per-projekt</span></div>
+      </label>
+    </div>
+  </div>
+
+  <button class="run-btn" onclick="lxcWizardStart()" id="lxc_wizard_btn" style="width:100%;margin-bottom:12px">&#9881; Vytvořit LXC a nainstalovat</button>
+
+  <div id="lxc_wizard_panel" style="display:none;margin-bottom:16px">
+    <div class="lxc-out-hdr">
+      <span class="lxc-out-title">// Wizard log</span>
+      <span id="lxc_wizard_status" style="font-size:12px;color:#ffd93d">Spouštím...</span>
+    </div>
+    <pre id="lxc_wizard_log" class="lxc-pre" style="max-height:420px;overflow-y:auto;background:#050d14"></pre>
+  </div>
+
+  <div style="margin-bottom:8px">
+    <span class="lxc-step-toggle" onclick="lxcToggle('generator')" id="lxc-toggle-generator">
+      Ruční režim — Generovat setup.sh
+      <span class="lxc-step-arrow" id="lxc-arrow-generator">&#9658;</span>
+    </span>
+  </div>
+  <div class="lxc-expand" id="lxc-expand-generator">
+    <div class="card" style="font-size:13px;line-height:1.9;margin-bottom:16px">
+      <h2 style="margin-bottom:14px">📋 Jak postupovat</h2>
+      <ol style="margin:0 0 0 18px;padding:0;display:flex;flex-direction:column;gap:12px">
+        <li>Vytvoř nový LXC v Proxmox webUI — <em>Ubuntu 22.04, privileged, 2 CPU, 2 GB RAM</em></li>
+        <li>
+          <span class="lxc-step-toggle" onclick="lxcToggle('conf')" id="lxc-toggle-conf">
+            Uprav <code>/etc/pve/lxc/[CT_ID].conf</code> na Proxmox hostu
+            <span class="lxc-step-arrow" id="lxc-arrow-conf">▶</span>
+          </span>
+          <div class="lxc-expand" id="lxc-expand-conf">
+            SSH na Proxmox a uprav conf soubor:
+            <pre>ssh root@10.0.1.9
+nano /etc/pve/lxc/<span class="inst_ctid">202</span>.conf</pre>
+            Na konec souboru přidej tyto tři řádky (nutné pro Docker v LXC):
+            <pre>lxc.apparmor.profile: unconfined
+lxc.cgroup2.devices.allow: a
+lxc.cap.drop:</pre>
+            Ulož <code>Ctrl+O → Enter → Ctrl+X</code>, pak restartuj LXC:
+            <pre>pct reboot <span class="inst_ctid">202</span></pre>
+            <div class="note">Bez těchto řádků Docker v LXC kontejneru nefunguje.</div>
+          </div>
+        </li>
+        <li>
+          <span class="lxc-step-toggle" onclick="lxcToggle('upload')" id="lxc-toggle-upload">
+            Nahraj <code>setup.sh</code> do LXC a spusť ho
+            <span class="lxc-step-arrow" id="lxc-arrow-upload">▶</span>
+          </span>
+          <div class="lxc-expand" id="lxc-expand-upload">
+            <strong>Možnost A — pct push z Proxmox hostu (doporučeno)</strong> — klikni "☁ uložit na server", pak <strong>na Proxmox hostu</strong> (ssh root@10.0.1.9):
+            <pre>pct push <span class="inst_ctid">202</span> /tmp/setup-lxc.sh /root/setup.sh
+pct exec <span class="inst_ctid">202</span> -- bash /root/setup.sh</pre>
+            <div class="note">Příkazy <code>pct</code> patří na Proxmox host — nespouštěj je uvnitř kontejneru.</div>
+            <strong>Možnost B — přes konzoli LXC</strong> (alternativa):
+            <pre>pct enter <span class="inst_ctid">202</span>
+# uvnitř kontejneru:
+bash &lt;(cat &lt;&lt; 'EOF'
+# ... vlož celý obsah vygenerovaného setup.sh ...
+EOF
+)</pre>
+            <strong>Možnost C — scp + SSH</strong> (jen pokud SSH už funguje):
+            <pre>scp ~/setup.sh root@<span class="inst_ip">10.0.1.X</span>:/root/
+ssh root@<span class="inst_ip">10.0.1.X</span>
+bash setup.sh</pre>
+            <div class="note">Skript sám vypíše SSH klíč k přidání na GitHub — počkej na konec výstupu.</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+    <button class="run-btn" onclick="lxcGenerate()" style="width:100%;margin-bottom:20px">⚡ Generovat setup.sh</button>
+    <div class="lxc-output" id="lxc_output">
+      <div class="lxc-out-hdr">
+        <span class="lxc-out-title">// setup.sh — vygenerováno</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="lxc-copied" id="lxc_copied">✓ zkopírováno</span>
+          <span class="lxc-copied" id="lxc_saved">✓ uloženo na server</span>
+          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcCopy()">kopírovat</button>
+          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcDownload()">⬇ stáhnout</button>
+          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcSaveToServer()">☁ uložit na server</button>
+        </div>
+      </div>
+      <pre class="lxc-pre" id="lxc_script_out"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+var COLORS = ["#00d4ff","#ff6b6b","#ffd93d","#6bcb77","#ff9f43","#a29bfe","#fd79a8","#55efc4"];
+var sensorColors = {};
+var chartLabels = [];
+var chartDatasets = {};
+var tempChart = null;
+var statsChart = null;
+var statsLabels = [];
+var speedChartObj = null;
+var cfChartObj = null;
+var cfHistory = {concurrent:[], total:[], errors:[], labels:[]};
+var networkSpeeds = {};
+
+function fmt(bytes) {
+  if (bytes > 1073741824) return (bytes/1073741824).toFixed(1) + " GB";
+  if (bytes > 1048576) return (bytes/1048576).toFixed(1) + " MB";
+  if (bytes > 1024) return (bytes/1024).toFixed(1) + " KB";
+  return bytes + " B";
+}
+function barColor(pct) {
+  if (pct < 65) return "bar-green";
+  if (pct < 85) return "bar-yellow";
+  return "bar-red";
+}
+function fmtSpeed(kbps) {
+  if (!kbps || kbps < 0.01) return '<span style="color:#555">—</span>';
+  if (kbps >= 1024) return '<span style="color:#00d4ff">' + (kbps/1024).toFixed(1) + ' MB/s</span>';
+  return '<span style="color:#6bcb77">' + kbps.toFixed(1) + ' KB/s</span>';
+}
+
+function toggleMobileMenu() {
+  var menu = document.getElementById("mobileMenu");
+  menu.classList.toggle("open");
+}
+function closeMobileMenu() {
+  document.getElementById("mobileMenu").classList.remove("open");
+}
+
+function showPage(name, el) {
+  document.querySelectorAll(".page").forEach(function(p) { p.classList.remove("active"); });
+  document.querySelectorAll(".nav-tab").forEach(function(t) { t.classList.remove("active"); });
+  document.querySelectorAll(".nav-dropdown-trigger").forEach(function(t) { t.classList.remove("active"); });
+  document.getElementById("page-" + name).classList.add("active");
+  if (el) {
+    el.classList.add("active");
+    var dropdown = el.closest(".nav-dropdown");
+    if (dropdown) {
+      var trigger = dropdown.querySelector(".nav-dropdown-trigger");
+      if (trigger) trigger.classList.add("active");
+    }
+  }
+  if (name === "services") loadServices();
+  if (name === "cloudflare") { loadCloudflare(); startCfMetrics(); }
+  if (name === "network") { loadNetwork(); startNetworkSpeeds(); }
+  if (name === "dns") loadDNS();
+  if (name === "wol") { renderWol(); startWolRefresh(); }
+  if (name === "smart") { loadSmart(); loadStorage(); startStorageExtRefresh(); }
+  if (name === "backups") loadBackups();
+  if (name === "speed") loadSpeedHistory();
+}
+
+function applyTheme(theme) {
+  document.body.classList.remove("dark","light");
+  document.body.classList.add(theme);
+  document.getElementById("themeBtn").textContent = theme === "dark" ? "☀️" : "🌙";
+}
+function toggleTheme() {
+  var current = document.body.classList.contains("dark") ? "dark" : "light";
+  var next = current === "dark" ? "light" : "dark";
+  localStorage.setItem("theme", next);
+  applyTheme(next);
+}
+function initTheme() {
+  var saved = localStorage.getItem("theme");
+  applyTheme(saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+}
+
+function getColorForSensor(key) {
+  if (!sensorColors[key]) sensorColors[key] = COLORS[Object.keys(sensorColors).length % COLORS.length];
+  return sensorColors[key];
+}
+
+function parseSensors(raw) {
+  var blocks = {};
+  var current = null;
+  var lines = raw.split("\n");
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    if (line.indexOf("Adapter:") !== -1) continue;
+    if (line.trim() === "") { current = null; continue; }
+    if (line.charAt(0) !== " " && line.indexOf("-") !== -1 && line.indexOf(":") === -1) {
+      current = line.replace(/-virtual-0|-acpi-0|-isa-0000/g,"").trim();
+      blocks[current] = [];
+    } else if (current && line.indexOf(":") !== -1 && line.indexOf("°C") !== -1) {
+      var parts = line.split(":");
+      var name = parts[0].trim();
+      var temp = parseFloat(parts[1].trim().split(" ")[0].replace("+",""));
+      if (!isNaN(temp)) blocks[current].push({ name: name, temp: temp });
+    }
+  }
+  return blocks;
+}
+
+function initTempChart() {
+  var ctx = document.getElementById("tempChart").getContext("2d");
+  tempChart = new Chart(ctx, {
+    type: "line", data: { labels: [], datasets: [] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#aaa", maxTicksLimit: 10 } },
+        y: { min: 20, max: 100, grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#aaa", callback: function(v) { return v + "°C"; } } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function initStatsChart() {
+  var ctx = document.getElementById("statsChart").getContext("2d");
+  statsChart = new Chart(ctx, {
+    type: "line",
+    data: { labels: [], datasets: [
+      { label: "Proxmox CPU%", data: [], borderColor: "#00d4ff", backgroundColor: "#00d4ff22", borderWidth: 2, pointRadius: 1, tension: 0.3 },
+      { label: "Proxmox RAM%", data: [], borderColor: "#ff6b6b", backgroundColor: "#ff6b6b22", borderWidth: 2, pointRadius: 1, tension: 0.3 },
+      { label: "VM CPU%", data: [], borderColor: "#ffd93d", backgroundColor: "#ffd93d22", borderWidth: 2, pointRadius: 1, tension: 0.3 },
+      { label: "VM RAM%", data: [], borderColor: "#6bcb77", backgroundColor: "#6bcb7722", borderWidth: 2, pointRadius: 1, tension: 0.3 }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#aaa", maxTicksLimit: 10 } },
+        y: { min: 0, max: 100, grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#aaa", callback: function(v) { return v + "%"; } } }
+      },
+      plugins: { legend: { labels: { color: "#aaa", font: { size: 11 } } } }
+    }
+  });
+}
+
+async function loadHistory() {
+  try {
+    var res = await fetch("/api/temp_history");
+    var data = await res.json();
+    var history = data.history || [];
+    for (var i = 0; i < history.length; i++) {
+      var entry = history[i];
+      chartLabels.push(entry.time);
+      for (var key in entry.sensors) {
+        var color = getColorForSensor(key);
+        if (!chartDatasets[key]) {
+          chartDatasets[key] = { data: [] };
+          tempChart.data.datasets.push({ label: key, data: chartDatasets[key].data, borderColor: color, backgroundColor: color + "22", borderWidth: 2, pointRadius: 1, tension: 0.3 });
+        }
+        chartDatasets[key].data.push(entry.sensors[key]);
+      }
+    }
+    tempChart.data.labels = chartLabels;
+    tempChart.update();
+  } catch(e) {}
+}
+
+async function loadStatsHistory() {
+  try {
+    var res = await fetch("/api/stats_history");
+    var data = await res.json();
+    var history = data.history || [];
+    for (var i = 0; i < history.length; i++) {
+      var e = history[i];
+      statsChart.data.labels.push(e.time);
+      statsChart.data.datasets[0].data.push(e.proxmox_cpu || 0);
+      statsChart.data.datasets[1].data.push(e.proxmox_ram || 0);
+      statsChart.data.datasets[2].data.push(e.vm_cpu || 0);
+      statsChart.data.datasets[3].data.push(e.vm_ram || 0);
+    }
+    statsChart.update();
+  } catch(e) {}
+}
+
+function updateTempChart(blocks) {
+  var now = new Date().toLocaleTimeString("cs-CZ");
+  chartLabels.push(now);
+  if (chartLabels.length > 1440) chartLabels.shift();
+  tempChart.data.labels = chartLabels;
+  var sensors = {};
+  for (var blockName in blocks) {
+    for (var i = 0; i < blocks[blockName].length; i++) {
+      var key = blockName + " / " + blocks[blockName][i].name;
+      var color = getColorForSensor(key);
+      sensors[key] = blocks[blockName][i].temp;
+      if (!chartDatasets[key]) {
+        chartDatasets[key] = { data: [] };
+        tempChart.data.datasets.push({ label: key, data: chartDatasets[key].data, borderColor: color, backgroundColor: color + "22", borderWidth: 2, pointRadius: 1, tension: 0.3 });
+      }
+      chartDatasets[key].data.push(blocks[blockName][i].temp);
+      if (chartDatasets[key].data.length > 1440) chartDatasets[key].data.shift();
+    }
+  }
+  tempChart.update();
+  fetch("/api/temp_history/save", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({sensors: sensors}) }).catch(function(){});
+}
+
+function updateStatsChart(proxmox, vm) {
+  var now = new Date().toLocaleTimeString("cs-CZ");
+  var labels = statsChart.data.labels;
+  labels.push(now);
+  if (labels.length > 1440) labels.shift();
+  var entry = { proxmox_cpu: 0, proxmox_ram: 0, vm_cpu: 0, vm_ram: 0 };
+  if (proxmox && proxmox.online !== false) {
+    entry.proxmox_cpu = proxmox.cpu || 0;
+    entry.proxmox_ram = proxmox.mem ? proxmox.mem.pct : 0;
+    statsChart.data.datasets[0].data.push(entry.proxmox_cpu);
+    statsChart.data.datasets[1].data.push(entry.proxmox_ram);
+  } else { statsChart.data.datasets[0].data.push(null); statsChart.data.datasets[1].data.push(null); }
+  if (vm && vm.online) {
+    entry.vm_cpu = vm.cpu || 0;
+    entry.vm_ram = vm.mem ? vm.mem.pct : 0;
+    statsChart.data.datasets[2].data.push(entry.vm_cpu);
+    statsChart.data.datasets[3].data.push(entry.vm_ram);
+  } else { statsChart.data.datasets[2].data.push(null); statsChart.data.datasets[3].data.push(null); }
+  statsChart.data.datasets.forEach(function(ds) { if (ds.data.length > 1440) ds.data.shift(); });
+  statsChart.update();
+  fetch("/api/stats_history/save", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(entry) }).catch(function(){});
+}
+
+async function loadSensors() {
+  try {
+    var res = await fetch("/api/sensors");
+    var data = await res.json();
+    var blocks = parseSensors(data.output);
+    var container = document.getElementById("sensors");
+    container.innerHTML = "";
+    for (var blockName in blocks) {
+      var sensors = blocks[blockName];
+      if (sensors.length === 0) continue;
+      var div = document.createElement("div");
+      div.className = "sensor-block";
+      var html = "<h3>" + blockName + "</h3>";
+      for (var i = 0; i < sensors.length; i++) {
+        var key = blockName + " / " + sensors[i].name;
+        var color = getColorForSensor(key);
+        var tempClass = sensors[i].temp >= 80 ? "sensor-warn" : sensors[i].temp >= 65 ? "sensor-hot" : "";
+        var tempColor = tempClass ? "" : 'style="color:' + color + '"';
+        html += '<div class="sensor-line ' + tempClass + '" ' + tempColor + '>' + sensors[i].name + ": " + sensors[i].temp + "°C";
+        if (sensors[i].temp >= 80) html += " &#9888;";
+        html += "</div>";
+      }
+      div.innerHTML = html;
+      container.appendChild(div);
+    }
+    updateTempChart(blocks);
+  } catch(e) { document.getElementById("sensors").innerHTML = "Chyba: " + e.message; }
+}
+
+function renderStats(d, rowsId, procId) {
+  if (!d || !d.online) {
+    document.getElementById(rowsId).innerHTML = '<div class="offline-msg">Server offline</div>';
+    if (procId) document.getElementById(procId).innerHTML = "";
+    return;
+  }
+  var html = "";
+  html += '<div class="stat-item"><label>CPU</label><div class="val">' + d.cpu.toFixed(1) + '%</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.cpu) + '" style="width:' + Math.min(d.cpu,100) + '%"></div></div></div>';
+  html += '<div class="stat-item"><label>RAM</label><div class="val">' + fmt(d.mem.used) + ' / ' + fmt(d.mem.total) + ' (' + d.mem.pct + '%)</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.mem.pct) + '" style="width:' + d.mem.pct + '%"></div></div></div>';
+  html += '<div class="stat-item"><label>Disk /</label><div class="val">' + fmt(d.disk.used) + ' / ' + fmt(d.disk.total) + ' (' + d.disk.pct + '%)</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.disk.pct) + '" style="width:' + d.disk.pct + '%"></div></div></div>';
+  if (d.uptime) html += '<div class="stat-item"><label>Uptime</label><div class="val">' + d.uptime + '</div></div>';
+  document.getElementById(rowsId).innerHTML = html;
+  if (procId) {
+    var tbody = document.getElementById(procId);
+    tbody.innerHTML = "";
+    for (var i = 0; i < d.processes.length; i++) {
+      var p = d.processes[i];
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td>' + p.pid + '</td><td>' + p.cpu + '</td><td>' + p.mem + '</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + p.name + '</td>';
+      tbody.appendChild(tr);
+    }
+  }
+}
+
+var lastProxmox = null, lastVM = null;
+
+async function loadAllStats() {
+  try {
+    var res = await fetch("/api/stats");
+    lastProxmox = await res.json();
+    document.getElementById("uptimeProxmox").textContent = lastProxmox.uptime || "N/A";
+    document.getElementById("dotProxmox").className = "status-dot dot-green";
+    if (window.innerWidth <= 1200) renderStats(lastProxmox, "statRows", "procTable");
+  } catch(e) { document.getElementById("dotProxmox").className = "status-dot dot-red"; lastProxmox = null; }
+  try {
+    var res2 = await fetch("/api/vm_stats");
+    lastVM = await res2.json();
+    document.getElementById("uptimeVM").textContent = lastVM.online ? (lastVM.uptime || "N/A") : "offline";
+    if (lastVM.hostname) { document.getElementById("vmTitle").textContent = lastVM.hostname; document.getElementById("btopVmTitle").textContent = "btop — " + lastVM.hostname; }
+    document.getElementById("dotVM").className = "status-dot " + (lastVM.online ? "dot-green" : "dot-red");
+    if (window.innerWidth <= 1200) renderStats(lastVM, "vmStatRows", "vmProcTable");
+  } catch(e) { document.getElementById("dotVM").className = "status-dot dot-red"; lastVM = null; }
+  try {
+    var res3 = await fetch("/api/ha_stats");
+    var ha = await res3.json();
+    document.getElementById("uptimeHA").textContent = ha.online ? (ha.uptime || "N/A") : "offline";
+    document.getElementById("dotHA").className = "status-dot " + (ha.online ? "dot-green" : "dot-red");
+    if (window.innerWidth <= 1200) renderStats(ha, "haStatRows", "haProcTable");
+  } catch(e) { document.getElementById("dotHA").className = "status-dot dot-red"; }
+  updateStatsChart(lastProxmox, lastVM);
+  document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString("cs-CZ");
+}
+
+async function loadServices() {
+  document.getElementById("servicesGrid").innerHTML = "Nacitam...";
+  try {
+    var res = await fetch("/api/services");
+    var data = await res.json();
+    var html = "";
+    data.services.forEach(function(svc) {
+      html += '<div class="service-item">';
+      html += '<span class="status-dot ' + (svc.online ? "dot-green" : "dot-red") + '"></span>';
+      html += '<div><div class="service-name">' + svc.name + '</div>';
+      html += '<div class="service-status" style="color:' + (svc.online ? "#6bcb77" : "#ff6b6b") + '">' + (svc.online ? "Online" : "Offline") + '</div></div>';
+      html += '</div>';
+    });
+    document.getElementById("servicesGrid").innerHTML = html;
+  } catch(e) { document.getElementById("servicesGrid").innerHTML = "Chyba: " + e.message; }
+}
+
+async function loadNetwork() {
+  try {
+    var res = await fetch("/api/network");
+    var data = await res.json();
+    renderNetworkTable(networkSpeeds, data.devices);
+  } catch(e) {}
+}
+
+function renderNetworkTable(speeds, devices) {
+  if (!devices) return;
+  var sorted = devices.slice().sort(function(a,b) {
+    var sa = speeds[a.ip] ? speeds[a.ip].rx_kbps : 0;
+    var sb = speeds[b.ip] ? speeds[b.ip].rx_kbps : 0;
+    return sb - sa;
+  });
+  var html = "";
+  sorted.forEach(function(d) {
+    var spd = speeds[d.ip] || {rx_kbps: 0, tx_kbps: 0};
+    html += '<tr>';
+    var stateColor = {REACHABLE:'#6bcb77',STALE:'#ffd93d',DELAY:'#ff9f43',UNKNOWN:'#888'}[d.state] || '#888';
+    html += '<td><b>' + d.ip + '</b></td>';
+    html += '<td style="color:' + stateColor + '">' + (d.name || '<span style="color:#666">-</span>') + '</td>';
+    html += '<td class="net-mac" style="font-size:11px;color:#888">' + d.mac + '</td>'; html += '<td class="net-stav"><span class="state-badge state-' + d.state + '">' + d.state + '</span></td>';
+
+    html += '<td><span class="desktop-only">' + fmtSpeed(spd.rx_kbps) + ' / ' + fmtSpeed(spd.tx_kbps) + '</span><span class="mobile-only" style="font-size:11px">' + fmtSpeed(spd.rx_kbps) + '<br>' + fmtSpeed(spd.tx_kbps) + '</span></td>';
+    html += '</tr>';
+  });
+  document.getElementById("networkTable").innerHTML = html;
+}
+
+var networkSpeedInterval = null;
+async function startNetworkSpeeds() {
+  if (networkSpeedInterval) return;
+  networkSpeedInterval = setInterval(async function() {
+    try {
+      var r = await fetch("/api/network/speeds");
+      var d = await r.json();
+      if (d.speeds) {
+        networkSpeeds = d.speeds;
+        var res = await fetch("/api/network");
+        var nd = await res.json();
+        renderNetworkTable(networkSpeeds, nd.devices);
+      }
+    } catch(e) {}
+  }, 2000);
+}
+
+// SPEEDTEST
+function formatSpeedLine(line) {
+  line = line.replace(/speedtest-go (v[\d.]+.*)/, '<span style="color:#6bcb77">speedtest-go $1</span>');
+  line = line.replace(/✓ ISP: (.+)/, '✓ <span style="color:#888">ISP:</span> <span style="color:#eee">$1</span>');
+  line = line.replace(/✓ Test Server: (.+)/, '✓ <span style="color:#888">Server:</span> <span style="color:#00d4ff">$1</span>');
+  line = line.replace(/✓ Latency: ([\d.]+ms)(.*)/, '✓ <span style="color:#888">Ping:</span> <span style="color:#ffd93d;font-weight:bold">$1</span><span style="color:#555">$2</span>');
+  line = line.replace(/(Download:)\s+([\d.]+ Mbps)(.*)/, '$1 <span style="color:#00d4ff;font-size:15px;font-weight:bold">$2</span><span style="color:#555">$3</span>');
+  line = line.replace(/(Upload:)\s+([\d.]+ Mbps)(.*)/, '$1 <span style="color:#6bcb77;font-size:15px;font-weight:bold">$2</span><span style="color:#555">$3</span>');
+  line = line.replace(/✓ Packet Loss: (.+)/, '✓ <span style="color:#888">Packet Loss:</span> <span style="color:#eee">$1</span>');
+  return line;
+}
+
+async function runSpeedtest() {
+  var btn = document.getElementById("speedBtn");
+  var serverId = document.getElementById("serverSelect") ? document.getElementById("serverSelect").value : "";
+  btn.disabled = true; btn.textContent = "⏳ Probíhá...";
+  document.getElementById("speedStatus").textContent = "";
+  document.getElementById("speedResultCard").style.display = "none";
+  var term = document.getElementById("termOutput");
+  term.innerHTML = "";
+  var selEl = document.getElementById("serverSelect");
+  var selText = selEl && selEl.selectedIndex > 0 ? selEl.options[selEl.selectedIndex].text : "Automatický výběr";
+  function addLine(html) {
+    var div = document.createElement("div"); div.innerHTML = html; term.appendChild(div); term.scrollTop = term.scrollHeight;
+    return div;
+  }
+  addLine('<span style="color:#6bcb77">speedtest-go @showwin</span>');
+  addLine('<span style="color:#555">──────────────────────────────────────</span>');
+  addLine('<span style="color:#888">✦ Server: </span><span style="color:#00d4ff">' + selText + '</span>');
+  addLine('<span style="color:#888">✦ Připojuji se...</span>');
+  var phases = [
+    { label: "Ping test", duration: 8000, color: "#ffd93d" },
+    { label: "Download test", duration: 25000, color: "#00d4ff" },
+    { label: "Upload test", duration: 20000, color: "#6bcb77" }
+  ];
+  var phaseIdx = 0, phaseStart = Date.now();
+  var progressLine = addLine("");
+  var spinFrames = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"];
+  var spinIdx = 0;
+  var animInterval = setInterval(function() {
+    var phase = phases[phaseIdx];
+    var elapsed = Date.now() - phaseStart;
+    var pct = Math.min(elapsed / phase.duration * 100, 99);
+    var bar = "";
+    var filled = Math.floor(pct / 5);
+    for (var i = 0; i < 20; i++) bar += i < filled ? "█" : "░";
+    spinIdx = (spinIdx + 1) % spinFrames.length;
+    progressLine.innerHTML = '<span style="color:' + phase.color + '">' + spinFrames[spinIdx] + ' ' + phase.label + '</span> <span style="color:#555">[' + bar + ']</span> <span style="color:#888">' + pct.toFixed(0) + '%</span>';
+    if (elapsed > phase.duration && phaseIdx < phases.length - 1) {
+      addLine('<span style="color:#6bcb77">✓ ' + phase.label + ' dokončen</span>');
+      phaseIdx++;
+      phaseStart = Date.now();
+      progressLine = addLine("");
+    }
+  }, 100);
+  try {
+    var startUrl = "/api/speedtest/start" + (serverId ? "?server_id=" + serverId : "");
+    var sr = await fetch(startUrl);
+    var sd = await sr.json();
+    if (sd.error) throw new Error(sd.error);
+    var jobId = sd.job_id;
+    await new Promise(function(resolve) {
+      var pollInterval = setInterval(async function() {
+        try {
+          var pr = await fetch("/api/speedtest/poll/" + jobId);
+          var pd = await pr.json();
+          if (pd.done) { clearInterval(pollInterval); resolve(pd); }
+        } catch(e) {}
+      }, 500);
+    }).then(function(pd) {
+      clearInterval(animInterval);
+      if (progressLine) progressLine.remove();
+      addLine('<span style="color:#555">──────────────────────────────────────</span>');
+      if (pd.result) {
+        addLine('<span style="color:#6bcb77">✓</span> <span style="color:#888">Server:</span> <span style="color:#eee">' + pd.result.server + '</span>');
+        addLine('<span style="color:#6bcb77">✓</span> <span style="color:#888">Ping:</span> <span style="color:#ffd93d;font-weight:bold">' + pd.result.ping + ' ms</span>');
+        addLine('<span style="color:#6bcb77">✓</span> <span style="color:#888">Download:</span> <span style="color:#00d4ff;font-size:16px;font-weight:bold">' + pd.result.download + ' Mbps</span>');
+        addLine('<span style="color:#6bcb77">✓</span> <span style="color:#888">Upload:</span> <span style="color:#6bcb77;font-size:16px;font-weight:bold">' + pd.result.upload + ' Mbps</span>');
+        addLine('<span style="color:#555">──────────────────────────────────────</span>');
+        document.getElementById("speedDown").textContent = pd.result.download.toFixed ? pd.result.download.toFixed(1) : pd.result.download;
+        document.getElementById("speedUp").textContent = pd.result.upload.toFixed ? pd.result.upload.toFixed(1) : pd.result.upload;
+        document.getElementById("speedPing").textContent = pd.result.ping.toFixed ? pd.result.ping.toFixed(0) : pd.result.ping;
+        document.getElementById("speedResultCard").style.display = "block";
+        document.getElementById("speedServer").textContent = "Server: " + pd.result.server;
+        loadSpeedHistory();
+      }
+    });
+  } catch(e) {
+    clearInterval(animInterval);
+    addLine('<span style="color:#ff6b6b">✗ Chyba: ' + e.message + '</span>');
+  }
+  btn.disabled = false; btn.textContent = "▶ Spustit test";
+}
+
+async function loadSpeedServers() {
+  try {
+    var r = await fetch("/api/speedtest/servers");
+    var d = await r.json();
+    var sel = document.getElementById("serverSelect");
+    sel.innerHTML = '<option value="">Automatický výběr</option>';
+    if (d.servers) d.servers.forEach(function(s) {
+      sel.innerHTML += '<option value="' + s.id + '">' + s.name + ' — ' + s.location + ' (' + s.distance + ' / ' + s.ping + ')</option>';
+    });
+  } catch(e) {}
+}
+
+async function loadSpeedHistory() {
+  try {
+    var r = await fetch("/api/speedtest/history");
+    var d = await r.json();
+    var history = d.history || [];
+    if (!speedChartObj) {
+      var ctx = document.getElementById("speedChart").getContext("2d");
+      speedChartObj = new Chart(ctx, {
+        type: "bar",
+        data: { labels: [], datasets: [
+          { label: "Download Mbps", data: [], backgroundColor: "#00d4ff88", borderColor: "#00d4ff", borderWidth: 1 },
+          { label: "Upload Mbps", data: [], backgroundColor: "#6bcb7788", borderColor: "#6bcb77", borderWidth: 1 }
+        ]},
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#aaa" } },
+            y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#aaa" } }
+          },
+          plugins: { legend: { labels: { color: "#aaa" } } }
+        }
+      });
+    }
+    var rev = history.slice().reverse();
+    speedChartObj.data.labels = rev.map(function(h) { return h.time; });
+    speedChartObj.data.datasets[0].data = rev.map(function(h) { return h.download; });
+    speedChartObj.data.datasets[1].data = rev.map(function(h) { return h.upload; });
+    speedChartObj.update();
+    var tableHtml = '<table><thead><tr><th>Čas</th><th>Download</th><th>Upload</th><th>Ping</th><th>Server</th></tr></thead><tbody>';
+    history.slice().reverse().forEach(function(h) {
+      tableHtml += '<tr><td>' + h.time + '</td><td style="color:#00d4ff">' + h.download + ' Mbps</td><td style="color:#6bcb77">' + h.upload + ' Mbps</td><td style="color:#ffd93d">' + h.ping + ' ms</td><td style="color:#888;font-size:11px">' + h.server + '</td></tr>';
+    });
+    tableHtml += '</tbody></table>';
+    document.getElementById("speedHistoryTable").innerHTML = tableHtml;
+  } catch(e) {}
+}
+
+// NEXTDNS
+async function loadDNS() {
+  document.getElementById("dnsGrid").innerHTML = "Nacitam...";
+  try {
+    var res = await fetch("/api/nextdns");
+    var data = await res.json();
+    if (data.error) { document.getElementById("dnsGrid").innerHTML = "Chyba: " + data.error; return; }
+    var html = "";
+    // Status karticka
+    var statusColors = {default:"#00d4ff", blocked:"#ff6b6b", allowed:"#6bcb77"};
+    if (data.status && data.status.length > 0) {
+      data.status.forEach(function(item) {
+        var col = statusColors[item.status] || "#aaa";
+        html += '<div class="dns-item"><div class="dns-val" style="color:' + col + '">' + (item.queries || 0).toLocaleString() + '</div><div class="dns-label">' + (item.status || "Dotazy") + '</div></div>';
+      });
+    }
+    document.getElementById("dnsGrid").innerHTML = html || "Žádná data";
+    // Top devices z dat co uz mame
+    if (data.devices && data.devices.length > 0) {
+      var t = '<h3 style="color:#00d4ff;margin-bottom:10px">Top zařízení</h3><table><thead><tr><th>Zařízení</th><th>IP</th><th>Dotazy</th></tr></thead><tbody>';
+      data.devices.slice(0,10).forEach(function(dev) {
+        t += '<tr><td>' + (dev.name || dev.model || dev.id || "?") + '</td><td style="color:#888;font-size:11px">' + (dev.localIp || '-') + '</td><td>' + (dev.queries || 0) + '</td></tr>';
+      });
+      t += '</tbody></table>';
+      document.getElementById("dnsTopDevices").innerHTML = t;
+    }
+  } catch(e) { document.getElementById("dnsGrid").innerHTML = "Chyba: " + e.message; }
+}
+
+// CLOUDFLARE
+async function loadCloudflare() {
+  try {
+    var r = await fetch("/api/cloudflare");
+    var d = await r.json();
+    if (d.error) { document.getElementById("cfTunnelStatus").innerHTML = '<span style="color:#ff6b6b">' + d.error + '</span>'; return; }
+    var statusColor = d.status === "healthy" ? "#6bcb77" : "#ff6b6b";
+    var html = '<div style="padding:10px;background:#0d1b2a;border-radius:6px;margin-bottom:12px;border:1px solid #0f3460">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px;color:#00d4ff">' + (d.tunnel_name || "tunnel") + '</b><span style="color:' + statusColor + ';font-weight:bold">' + (d.status || "unknown") + '</span></div>';
+    html += '<div style="font-size:11px;color:#888;margin-top:4px">Připojení: ' + (d.connections || 0) + ' | Colos: ' + (d.colos || []).join(", ") + '</div>';
+    html += '</div>';
+    // Public hostnames
+    if (d.domains && d.domains.length > 0) {
+      html += '<div style="font-size:12px;color:#00d4ff;margin-bottom:6px;font-weight:bold">🌐 Public Hostnames (' + d.domains.length + ')</div>';
+      d.domains.forEach(function(dom) {
+        var proxied = dom.proxied ? '<span style="color:#f6821f">proxied</span>' : '<span style="color:#888">dns only</span>';
+        html += '<div style="display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px solid #0f3460;font-size:12px">';
+        html += '<span>' + dom.name + '</span><span>' + proxied + '</span></div>';
+      });
+    }
+    document.getElementById("cfTunnelStatus").innerHTML = html;
+  } catch(e) { document.getElementById("cfTunnelStatus").innerHTML = '<span style="color:#ff6b6b">Chyba: ' + e.message + '</span>'; }
+}
+
+var cfMetricsInterval = null;
+function startCfMetrics() {
+  if (cfMetricsInterval) return;
+  if (!cfChartObj) {
+    var ctx = document.getElementById("cfChart").getContext("2d");
+    cfChartObj = new Chart(ctx, {
+      type: "line",
+      data: { labels: [], datasets: [
+        { label: "Aktivní req", data: [], borderColor: "#00d4ff", backgroundColor: "#00d4ff22", borderWidth: 2, pointRadius: 0, tension: 0.3, yAxisID: "y" },
+        { label: "Total req", data: [], borderColor: "#6bcb77", backgroundColor: "#6bcb7722", borderWidth: 2, pointRadius: 0, tension: 0.3, yAxisID: "y" },
+        { label: "Chyby", data: [], borderColor: "#ff6b6b", backgroundColor: "#ffd93d22", borderWidth: 2, pointRadius: 0, tension: 0.3, yAxisID: "y2" }
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#aaa", maxTicksLimit: 10 } },
+          y: { position: "left", grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#aaa" }, title: { display: true, text: "Počet", color: "#aaa" } },
+          y2: { position: "right", grid: { drawOnChartArea: false }, ticks: { color: "#ffd93d" }, title: { display: true, text: "Req/s", color: "#ffd93d" } }
+        },
+        plugins: { legend: { labels: { color: "#aaa", font: { size: 11 } } } }
+      }
+    });
+  }
+  cfMetricsInterval = setInterval(async function() {
+    try {
+      var r = await fetch("/api/cloudflare/metrics");
+      var d = await r.json();
+      var now = new Date().toLocaleTimeString("cs-CZ");
+      document.getElementById("cfConcurrent").textContent = d.concurrent || 0;
+      document.getElementById("cfHaConn").textContent = d.ha_connections || 0;
+      
+      document.getElementById("cfTotal").textContent = d.total_requests || 0;
+      document.getElementById("cfErrors").textContent = d.errors || 0;
+      cfHistory.labels.push(now);
+      cfHistory.concurrent.push(d.concurrent || 0);
+      cfHistory.total.push(d.total_requests || 0);
+      cfHistory.errors.push(d.errors || 0);
+      if (cfHistory.labels.length > 60) {
+        cfHistory.labels.shift(); cfHistory.concurrent.shift(); cfHistory.total.shift(); cfHistory.errors.shift();
+      }
+      cfChartObj.data.labels = cfHistory.labels;
+      cfChartObj.data.datasets[0].data = cfHistory.concurrent;
+      cfChartObj.data.datasets[1].data = cfHistory.total;
+      cfChartObj.data.datasets[2].data = cfHistory.errors;
+      cfChartObj.update();
+    } catch(e) {}
+  }, 5000);
+}
+
+// STORAGE
+var DISK_NOTES = {
+  "sda": "SSD Proxmox",
+  "pve-root": "Proxmox OS",
+  "pve-swap": "Swap",
+  "pve-data": "VM/kontejnery",
+  "pve-data_tdata": "", "pve-data_tmeta": "",
+  "sdb": "USB záloha",
+  "sdb_crypt": "Šifrovaný",
+};
+
+function fmtBlkBytes(b) {
+  b = parseInt(b);
+  if (!b || isNaN(b)) return "—";
+  if (b >= 1099511627776) return (b/1099511627776).toFixed(1)+"T";
+  if (b >= 1073741824) return (b/1073741824).toFixed(0)+"G";
+  if (b >= 1048576) return (b/1048576).toFixed(0)+"M";
+  return b+"B";
+}
+
+function buildUsageCell(pct, totalBytes) {
+  if (pct === null || isNaN(pct)) return '<div class="lsblk-usage-cell"><span style="color:#2a2a2a;font-size:11px">—</span></div>';
+  var bc = pct < 60 ? "#6bcb77" : pct < 80 ? "#ffd93d" : "#ff6b6b";
+  var sub = "", subMobile = "";
+  if (totalBytes > 0) {
+    var usedB = Math.round(totalBytes * pct / 100);
+    var freeB = totalBytes - usedB;
+    subMobile = fmtBlkBytes(usedB) + " / " + fmtBlkBytes(totalBytes);
+    sub = subMobile + " (" + fmtBlkBytes(freeB) + " volno)";
+  }
+  return '<div class="lsblk-usage-cell">' +
+    '<div class="lsblk-bar-bg"><div class="lsblk-bar-fill" style="width:'+pct+'%;background:'+bc+'"></div></div>' +
+    '<span class="lsblk-usage-pct" style="color:'+bc+'">'+pct+'%</span>' +
+    (sub ? '<span class="lsblk-usage-sub lsblk-sub-desktop">'+sub+'</span>' : '') +
+    (subMobile ? '<span class="lsblk-usage-sub lsblk-sub-mobile">'+subMobile+'</span>' : '') +
+    '</div>';
+}
+
+function collectUsage(dev) {
+  var results = [];
+  function walk(d) {
+    var pct = d['fsuse%'] ? parseInt(String(d['fsuse%']).replace('%','')) : null;
+    if (pct !== null && !isNaN(pct) && pct > 0) results.push({name: d.name, pct: pct, size: parseInt(d.size)||0});
+    if (d.children) d.children.forEach(walk);
+  }
+  if (dev.children) dev.children.forEach(walk);
+  return results;
+}
+
+function toggleDiskTree(name) {
+  var tree = document.getElementById('tree-' + name);
+  var btn = document.getElementById('toggle-' + name);
+  var sum = document.getElementById('summary-' + name);
+  if (!tree) return;
+  var open = tree.style.display !== 'none';
+  tree.style.display = open ? 'none' : '';
+  btn.textContent = open ? '+' : '−';
+  if (sum) sum.style.display = open ? '' : 'none';
+}
+
+function renderBlkRows(devs, depth, lastFlags) {
+  var html = "";
+  devs.forEach(function(dev, idx) {
+    var last = idx === devs.length - 1;
+    var name = dev.name || "";
+    var type = dev.type || "";
+    var note = DISK_NOTES[name] !== undefined ? DISK_NOTES[name] : (dev.model ? dev.model.trim() : "");
+    var fsusePct = dev["fsuse%"];
+    var pct = (fsusePct !== null && fsusePct !== undefined && fsusePct !== "") ? parseInt(String(fsusePct).replace('%','')) : null;
+    if (isNaN(pct)) pct = null;
+    if (type === "disk" && depth === 0) {
+      var displayName = note ? note + ' (' + name + ')' : name;
+      var usageItems = collectUsage(dev);
+      var summaryHtml = usageItems.map(function(u) {
+        var bc = u.pct < 60 ? "#6bcb77" : u.pct < 80 ? "#ffd93d" : "#ff6b6b";
+        var usedB = u.size > 0 ? Math.round(u.size * u.pct / 100) : 0;
+        var sizes = u.size > 0 ? ' <span style="color:#555">(' + fmtBlkBytes(usedB) + '/' + fmtBlkBytes(u.size) + ')</span>' : '';
+        return '<span style="color:#555">' + u.name + ':</span>\u00a0<span style="color:' + bc + ';font-weight:bold">' + u.pct + '%</span>' + sizes;
+      }).join('<br>');
+      html += '<div class="lsblk-row lsblk-disk-hdr" onclick="toggleDiskTree(\'' + name + '\')">';
+      html += '<div class="lsblk-name-cell">';
+      html += '<div class="lsblk-name-line"><span id="toggle-' + name + '" class="lsblk-toggle">+</span><span class="lsblk-devname" style="color:#00d4ff;font-weight:bold">' + displayName + '</span></div>';
+      if (summaryHtml) html += '<div id="summary-' + name + '" class="lsblk-collapsed-summary">' + summaryHtml + '</div>';
+      html += '</div>';
+      html += buildUsageCell(pct, parseInt(dev.size) || 0);
+      html += '<div class="lsblk-note-col"></div>';
+      html += '</div>';
+      if (dev.children && dev.children.length) {
+        html += '<div id="tree-' + name + '" style="display:none">';
+        html += renderBlkRows(dev.children, depth + 1, [last]);
+        html += '</div>';
+      }
+    } else {
+      var prefix = "";
+      for (var i = 0; i < depth; i++) {
+        prefix += (i === depth-1) ? (last ? "└─ " : "├─ ") : (lastFlags[i] ? "   " : "│  ");
+      }
+      var nc = type === "disk" ? "#00d4ff" : type === "crypt" ? "#a29bfe" : "#ccc";
+      var fw = type === "disk" ? "bold" : "normal";
+      html += '<div class="lsblk-row">';
+      html += '<div class="lsblk-name-cell"><div class="lsblk-name-line"><span class="lsblk-prefix">'+prefix+'</span><span class="lsblk-devname" style="color:'+nc+';font-weight:'+fw+'">'+name+'</span></div>';
+      if (note) html += '<div class="lsblk-subtitle">'+note+'</div>';
+      html += '</div>';
+      html += buildUsageCell(pct, parseInt(dev.size) || 0);
+      html += '<div class="lsblk-note-col">'+(note||'')+'</div>';
+      html += '</div>';
+      if (dev.children && dev.children.length) html += renderBlkRows(dev.children, depth+1, lastFlags.concat([last]));
+    }
+  });
+  return html;
+}
+
+function renderVmRows(vms) {
+  var html = "";
+  vms.forEach(function(vm) {
+    html += '<div class="lsblk-row">';
+    html += '<div class="lsblk-name-cell"><div class="lsblk-name-line"><span class="lsblk-devname" style="color:#00d4ff;font-weight:bold">'+vm.name+'</span></div>';
+    if (vm.label) html += '<div class="lsblk-subtitle">'+vm.label+'</div>';
+    html += '</div>';
+    html += buildUsageCell(Math.round(vm.pct || 0), vm.total || 0);
+    html += '<div class="lsblk-note-col">'+(vm.label||'')+'</div>';
+    html += '</div>';
+  });
+  return html;
+}
+
+function renderBlkSection(elId, devs, vms) {
+  var el = document.getElementById(elId);
+  if ((!devs || !devs.length) && (!vms || !vms.length)) { el.innerHTML = '<span style="color:#888">Žádná data</span>'; return; }
+  var hdr = '<div class="lsblk-header"><span>Zařízení</span><span>Využití</span><span>Info</span></div>';
+  var content = "";
+  if (vms && vms.length) content += renderVmRows(vms);
+  if (vms && vms.length && devs && devs.length) content += '<div style="height:6px"></div>';
+  if (devs && devs.length) content += renderBlkRows(devs, 0, []);
+  el.innerHTML = hdr + content;
+}
+
+var storageExtInterval = null;
+
+async function loadStorage() {
+  document.getElementById("storageServerContent").innerHTML = '<span style="color:#888">Načítám...</span>';
+  document.getElementById("storageExtContent").innerHTML = '<span style="color:#888">Načítám...</span>';
+  try {
+    var r = await fetch("/api/storage");
+    var d = await r.json();
+    renderBlkSection("storageServerContent", d.server || [], (d.vms || []).concat(d.pools || []));
+    renderBlkSection("storageExtContent", d.external || []);
+  } catch(e) {
+    document.getElementById("storageServerContent").innerHTML = '<span style="color:#ff6b6b">Chyba: '+e.message+'</span>';
+  }
+}
+
+async function refreshStorageExt() {
+  try {
+    var r = await fetch("/api/storage/external");
+    var d = await r.json();
+    renderBlkSection("storageExtContent", d.external || []);
+  } catch(e) {}
+}
+
+function startStorageExtRefresh() {
+  if (storageExtInterval) return;
+  storageExtInterval = setInterval(refreshStorageExt, 30000);
+}
+
+// SMART
+async function loadSmart() {
+  document.getElementById("smartContent").innerHTML = "Nacitam...";
+  try {
+    var r = await fetch("/api/smart");
+    var d = await r.json();
+    var html = "";
+    // Disks
+    if (d.disks && d.disks.length > 0) {
+      d.disks.forEach(function(disk) {
+        var warn = disk.reallocated > 0 || disk.pending > 0;
+        var healthColor = disk.health === "PASSED" ? "#6bcb77" : "#ff6b6b";
+        var tempColor = disk.temp >= 55 ? "#ff6b6b" : disk.temp >= 45 ? "#ffd93d" : "#ff9f43";
+        var yearsStr = (disk.hours / 8760).toFixed(1) + " let";
+        html += '<div class="disk-card' + (warn ? ' warn' : '') + '">';
+        html += '<div class="disk-header">';
+        html += '<div><div class="disk-model">' + (warn ? '⚠️' : '✅') + ' ' + (disk.model || disk.dev) + '</div>';
+        html += '<div class="disk-sub">' + disk.host + ' · ' + disk.dev + ' · ' + (disk.size || '?') + '</div></div>';
+        html += '<div style="font-size:18px;font-weight:bold;color:' + healthColor + '">' + (disk.health || '?') + '</div>';
+        html += '</div>';
+        html += '<div class="disk-metrics">';
+        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + tempColor + '">' + (disk.temp || '?') + '°C</div><div class="disk-metric-label">Teplota</div></div>';
+        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:#00d4ff">' + yearsStr + '</div><div class="disk-metric-label">Provoz (' + (disk.hours || 0).toLocaleString() + ' h)</div></div>';
+        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + (disk.reallocated > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.reallocated || 0) + '</div><div class="disk-metric-label">Reallocated</div></div>';
+        html += '</div>';
+        html += '<div class="disk-detail"><span>Reallocated sectors</span><span style="color:' + (disk.reallocated > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.reallocated || 0) + '</span></div>';
+        html += '<div class="disk-detail"><span>Pending sectors</span><span style="color:' + (disk.pending > 0 ? '#ffd93d' : '#6bcb77') + '">' + (disk.pending || 0) + '</span></div>';
+        html += '<div class="disk-detail"><span>Uncorrectable</span><span style="color:' + (disk.uncorrectable > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.uncorrectable || 0) + '</span></div>';
+        html += '</div>';
+      });
+    }
+    document.getElementById("smartContent").innerHTML = html || '<span style="color:#888">Žádná data</span>';
+  } catch(e) { document.getElementById("smartContent").innerHTML = "Chyba: " + e.message; }
+}
+
+// ZÁLOHY
+async function loadBackups() {
+  try {
+    var r = await fetch("/api/backups"); var d = await r.json();
+    var sel = document.getElementById("backupVmid");
+    sel.innerHTML = '<option value="">Vyber VM...</option>' +
+      (d.vms || []).map(function(v) { return '<option value="' + v.vmid + '">' + v.vmid + ' — ' + v.name + '</option>'; }).join("");
+    var bl = document.getElementById("backupsList");
+    var storagePaths = {
+      "local": "/var/lib/vz/dump/",
+      
+    };
+    var storageNotes = {
+      "local": "Proxmox local",
+      
+    };
+    var pathsHtml = Object.keys(storagePaths).map(function(sid) {
+      return '<div style="margin-bottom:8px;padding:10px;background:#0a1520;border-radius:6px;border:1px solid #0f3460">' +
+        '<div style="color:#00d4ff;font-weight:bold;font-size:13px;margin-bottom:4px">📁 ' + sid + ' <span style="color:#555;font-size:11px;font-weight:normal">' + storageNotes[sid] + '</span></div>' +
+        '<div style="font-family:monospace;font-size:12px;color:#aaa;cursor:pointer;padding:4px 8px;background:#111;border-radius:4px;display:inline-block" onclick="navigator.clipboard.writeText(\'' + storagePaths[sid] + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#aaa\',1000)">' + storagePaths[sid] + ' <span style="color:#555;font-size:10px">✂ kopírovat</span></div>' +
+        '</div>';
+    }).join("");
+    if (!d.backups || d.backups.length === 0) {
+      bl.innerHTML = pathsHtml + '<div style="color:#888">Žádné zálohy nenalezeny</div>';
+    } else {
+      var tableHtml = '<table><thead><tr><th>Datum</th><th>VM</th><th>Velikost</th><th>Storage</th><th>Soubor</th><th>Poznámka</th></tr></thead><tbody>';
+      d.backups.slice().reverse().forEach(function(b) {
+        var dt = new Date(b.ctime * 1000).toLocaleString("cs");
+        var size = b.size > 1073741824 ? (b.size/1073741824).toFixed(2) + " GB" : (b.size/1048576).toFixed(0) + " MB";
+        var storageId = b.storage || "local";
+        var storePath = storagePaths[storageId] || storagePaths["local"];
+        var filename = b.volid.split("/").pop();
+        var fullpath = storePath + filename;
+        tableHtml += '<tr><td>' + dt + '</td><td>VM ' + b.vmid + '</td><td>' + size + '</td><td style="color:#00d4ff;font-size:11px">' + storageId + '</td>' +
+          '<td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer" onclick="navigator.clipboard.writeText(\'' + fullpath + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#888\',1000)" title="Klikni pro kopírování">' + filename + '</td>' +
+          '<td style="color:#888">' + (b.notes||"—") + '</td></tr>';
+      });
+      tableHtml += '</tbody></table>';
+      bl.innerHTML = pathsHtml + tableHtml;
+    }
+    var rs = await fetch("/api/backups/schedule"); var ds = await rs.json();
+    loadBackupSchedule();
+  } catch(e) { console.log(e); }
+}
+
+async function startBackup() {
+  var vmid = document.getElementById("backupVmid").value;
+  var mode = document.getElementById("backupMode").value;
+  if (!vmid) { alert("Vyber VM!"); return; }
+  var status = document.getElementById("backupRunStatus");
+  status.textContent = "⏳ Spouštím zálohu VM " + vmid + "...";
+  try {
+    var r = await fetch("/api/backups/run?vmid=" + vmid + "&mode=" + mode, {method:"POST"});
+    var d = await r.json();
+    if (d.error) { status.style.color="#ff6b6b"; status.textContent = "✗ Chyba: " + d.error; }
+    else { status.style.color="#6bcb77"; status.textContent = "✓ Záloha spuštěna (PID: " + d.pid + ") — může trvat několik minut"; }
+  } catch(e) { status.style.color="#ff6b6b"; status.textContent = "✗ Chyba: " + e.message; }
+}
+
+async function saveSchedule() {
+  var vmids = document.getElementById("schedVmids").value;
+  var hour = document.getElementById("schedHour").value;
+  var minute = document.getElementById("schedMinute").value;
+  var dow = document.getElementById("schedDow").value;
+  var maxfiles = document.getElementById("schedMaxfiles").value;
+  var status = document.getElementById("schedStatus");
+  try {
+    var url = "/api/backups/schedule?vmids=" + encodeURIComponent(vmids) + "&hour=" + hour + "&minute=" + minute + "&dow=" + dow + "&maxfiles=" + maxfiles;
+    var r = await fetch(url, {method:"POST"});
+    var d = await r.json();
+    if (d.error) { status.style.color="#ff6b6b"; status.textContent = "✗ Chyba: " + d.error; }
+    else { status.style.color="#6bcb77"; status.textContent = "✓ Plán uložen!"; loadBackupSchedule(); }
+  } catch(e) { status.style.color="#ff6b6b"; status.textContent = "✗ Chyba: " + e.message; }
+}
+
+async function loadBackupSchedule() {
+  try {
+    var rs = await fetch("/api/backups/schedule");
+    var ds = await rs.json();
+    var sc = document.getElementById("schedCurrent");
+    if (ds.schedule) {
+      sc.innerHTML = "📅 <b>" + ds.schedule + "</b> &nbsp;|&nbsp; VM: <b>" + ds.vmids + "</b> &nbsp;|&nbsp; Max zálohy: <b>" + ds.maxfiles + "</b> &nbsp;|&nbsp; Storage: local &nbsp;|&nbsp; Mode: stop";
+      document.getElementById("schedVmids").value = ds.vmids || "";
+      var parts = ds.schedule.split(" ");
+      if (parts.length >= 2) {
+        var timeParts = parts[1].split(":");
+        document.getElementById("schedHour").value = timeParts[0] || 2;
+        document.getElementById("schedMinute").value = timeParts[1] || 0;
+        document.getElementById("schedDow").value = parts[0] || "sun";
+      }
+      document.getElementById("schedMaxfiles").value = ds.maxfiles || 1;
+    } else {
+      sc.textContent = "Žádný plán není nastaven";
+    }
+  } catch(e) {}
+}
+
+// WOL — devices loaded from config via API
+var WOL_DEVICES = [];
+
+var wolRefreshInterval = null;
+function startWolRefresh() {
+  if (wolRefreshInterval) return;
+  wolRefreshInterval = setInterval(checkWolPing, 30000);
+}
+
+function renderWol() {
+  var html = "";
+  WOL_DEVICES.forEach(function(d) {
+    html += '<div class="wol-item">';
+    html += '<div class="wol-name">' + d.name + '</div>';
+    html += '<div class="wol-mac">' + d.mac + '</div>';
+    html += '<div id="wol-ping-' + d.mac.replace(/:/g,"-") + '" style="font-size:11px;color:#888;margin-bottom:8px">Zjišťuji stav...</div>';
+    html += '<button class="wol-btn" id="wol-btn-' + d.mac.replace(/:/g,"-") + '" onclick="sendWol(\'' + d.mac + '\', \'' + d.name + '\')">⚡ Zapnout</button>';
+    html += '<div class="wol-msg" id="wol-' + d.mac.replace(/:/g,'-') + '"></div>';
+    html += '</div>';
+  });
+  document.getElementById("wolGrid").innerHTML = html;
+  checkWolPing();
+}
+
+async function checkWolPing() {
+  try {
+    var r = await fetch("/api/wol/ping");
+    var d = await r.json();
+    WOL_DEVICES.forEach(function(dev) {
+      var el = document.getElementById("wol-ping-" + dev.mac.replace(/:/g,"-"));
+      if (!el) return;
+      var status = d[dev.ip];
+      var btn = document.getElementById("wol-btn-" + dev.mac.replace(/:/g,"-"));
+      if (status === true) {
+        el.textContent = "🟢 Online"; el.style.color = "#6bcb77";
+        if (btn) { btn.disabled = true; btn.style.opacity = "0.35"; btn.style.cursor = "not-allowed"; }
+      } else if (status === false) {
+        el.textContent = "🔴 Offline"; el.style.color = "#ff6b6b";
+        if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.style.cursor = ""; }
+      } else {
+        el.textContent = "⚪ Neznámý"; el.style.color = "#888";
+        if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.style.cursor = ""; }
+      }
+    });
+  } catch(e) {}
+}
+
+async function sendWol(mac, name) {
+  var msgId = "wol-" + mac.replace(/:/g,"-");
+  document.getElementById(msgId).textContent = "Odesílám...";
+  try {
+    var res = await fetch("/api/wol", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({mac: mac}) });
+    var data = await res.json();
+    document.getElementById(msgId).textContent = data.ok ? "✓ Odesláno!" : "✗ " + data.error;
+    document.getElementById(msgId).style.color = data.ok ? "#6bcb77" : "#ff6b6b";
+  } catch(e) {
+    document.getElementById(msgId).textContent = "✗ Chyba";
+    document.getElementById(msgId).style.color = "#ff6b6b";
+  }
+}
+
+// LXC GENERÁTOR
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll("#lxc_packages .lxc-check input[type='checkbox']").forEach(function(cb) {
+    lxcSyncBox(cb);
+    cb.addEventListener("change", function() { lxcSyncBox(cb); });
+  });
+});
+
+function lxcToggle(id) {
+  var el = document.getElementById("lxc-expand-" + id);
+  var arrow = document.getElementById("lxc-arrow-" + id);
+  var open = el.classList.toggle("open");
+  arrow.style.transform = open ? "rotate(90deg)" : "";
+}
+
+function lxcSyncBox(cb) {
+  var box = cb.parentElement.querySelector(".lxc-box");
+  if (!box) return;
+  if (cb.checked) { box.textContent = "✓"; box.style.background = "#00d4ff"; box.style.borderColor = "#00d4ff"; box.style.color = "#000"; }
+  else { box.textContent = ""; box.style.background = "transparent"; box.style.borderColor = "#64748b"; }
+}
+
+function lxcSyncInst() {
+  var ctid = document.getElementById("lxc_ct_id").value || "202";
+  var ip = document.getElementById("lxc_ip").value || "10.0.1.X";
+  document.querySelectorAll(".inst_ctid").forEach(function(el) { el.textContent = ctid; });
+  document.querySelectorAll(".inst_ip").forEach(function(el) { el.textContent = ip; });
+}
+
+var lxcScript = "";
+
+function lxcGenerate() {
+  var ct_id = document.getElementById("lxc_ct_id").value || "202";
+  var hostname = document.getElementById("lxc_hostname").value || "webdev-new";
+  var ip = document.getElementById("lxc_ip").value || "10.0.1.X";
+  var git_name = document.getElementById("lxc_git_name").value;
+  var git_email = document.getElementById("lxc_git_email").value;
+  var ssh_key = document.getElementById("lxc_ssh_key").value.trim();
+  var pkgs = Array.from(document.querySelectorAll("#lxc_packages input:checked")).map(function(cb){ return cb.value; });
+  var L = [];
+  L.push("#!/bin/bash");
+  L.push("# ============================================");
+  L.push("# LXC Webdev Setup Script");
+  L.push("# Generováno: " + new Date().toLocaleString("cs-CZ"));
+  L.push("# CT ID: " + ct_id + " | Hostname: " + hostname + " | IP: " + ip);
+  L.push("# ============================================");
+  L.push("set -e");
+  L.push("export DEBIAN_FRONTEND=noninteractive");
+  L.push("YELLOW='\\033[1;33m'"); L.push("GREEN='\\033[0;32m'"); L.push("NC='\\033[0m'");
+  L.push("log() { echo -e \"\\${YELLOW}>>> $1\\${NC}\"; }");
+  L.push("ok()  { echo -e \"\\${GREEN}\\u2713 $1\\${NC}\"; }");
+  L.push("");
+  L.push("log \"Aktualizace systému...\"");
+  L.push("apt-get update && apt-get upgrade -y -o Dpkg::Options::='--force-confold'");
+  L.push("apt-get install -y -o Dpkg::Options::='--force-confold' curl wget git nano unzip build-essential");
+  L.push("ok \"Základní balíčky nainstalovány\""); L.push("");
+  L.push("log \"Povolení SSH přihlášení pro roota...\"");
+  L.push("sed -i '/PermitRootLogin/d' /etc/ssh/sshd_config");
+  L.push("echo \"PermitRootLogin yes\" >> /etc/ssh/sshd_config");
+  L.push("systemctl restart ssh");
+  L.push("ok \"SSH root přihlášení povoleno\""); L.push("");
+  if (pkgs.includes("docker")) {
+    L.push("log \"Instalace Dockeru...\"");
+    L.push("curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg");
+    L.push("echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | tee /etc/apt/sources.list.d/docker.list > /dev/null");
+    L.push("apt-get update && apt-get install -y -o Dpkg::Options::='--force-confold' docker-ce docker-ce-cli containerd.io docker-compose-plugin");
+    L.push("systemctl stop docker && rm -rf /var/lib/docker && mkdir -p /etc/docker");
+    L.push("cat > /etc/docker/daemon.json << 'EOF'"); L.push("{"); L.push("  \"storage-driver\": \"overlay2\","); L.push("  \"no-new-privileges\": false"); L.push("}"); L.push("EOF");
+    L.push("systemctl start docker");
+    L.push("docker run --rm hello-world > /dev/null 2>&1 && ok \"Docker funguje\" || echo \"VAROVÁNÍ: Docker test selhal. Zkontroluj /etc/pve/lxc/" + ct_id + ".conf\"");
+    L.push("");
+  }
+  if (pkgs.includes("node")) {
+    L.push("log \"Instalace nvm a Node.js LTS...\"");
+    L.push("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash");
+    L.push("export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\"");
+    L.push("echo 'export NVM_DIR=\"$HOME/.nvm\"' >> ~/.bashrc");
+    L.push("echo '[ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\"' >> ~/.bashrc");
+    L.push("nvm install --lts && nvm use --lts && nvm alias default node");
+    L.push("ok \"Node.js $(node --version) nainstalován\""); L.push("");
+  }
+  if (pkgs.includes("pnpm")) { L.push("npm install -g pnpm"); L.push("ok \"pnpm $(pnpm --version) nainstalován\""); L.push(""); }
+  if (pkgs.includes("vercel")) { L.push("npm install -g vercel"); L.push("ok \"Vercel CLI $(vercel --version) nainstalován\""); L.push(""); }
+  if (pkgs.includes("claude")) { L.push("npm install -g @anthropic-ai/claude-code"); L.push("ok \"Claude Code nainstalován\""); L.push(""); }
+  if (pkgs.includes("micro")) { L.push("apt install -y micro"); L.push("ok \"micro nainstalován\""); L.push(""); }
+  if (git_name || git_email) {
+    L.push("log \"Nastavení Gitu...\"");
+    if (git_name) L.push("git config --global user.name \"" + git_name + "\"");
+    if (git_email) L.push("git config --global user.email \"" + git_email + "\"");
+    L.push("git config --global init.defaultBranch main"); L.push("ok \"Git nakonfigurován\""); L.push("");
+  }
+  if (ssh_key) {
+    L.push("mkdir -p ~/.ssh && chmod 700 ~/.ssh");
+    L.push("cat > ~/.ssh/id_ed25519.pub << 'SSHEOF'"); L.push(ssh_key); L.push("SSHEOF");
+    L.push("chmod 600 ~/.ssh/id_ed25519.pub"); L.push("ok \"SSH klíč uložen\"");
+  } else {
+    var eml = git_email || "webdev@lxc";
+    L.push("ssh-keygen -t ed25519 -C \"" + eml + "\" -f ~/.ssh/id_ed25519 -N \"\"");
+    L.push("echo \"\" && echo \"══ Přidej tento klíč na GitHub → Settings → SSH Keys ══\"");
+    L.push("cat ~/.ssh/id_ed25519.pub && echo \"══ Po přidání: ssh -T git@github.com ══\"");
+  }
+  L.push("");
+  if (pkgs.includes("supabase_note")) {
+    L.push("# Supabase CLI — instaluje se per-projekt:");
+    L.push("#   npm install supabase && npx supabase init && npx supabase start"); L.push("");
+  }
+  L.push("echo \"\" && echo -e \"\\${GREEN}══ Setup dokončen! " + hostname + " je připraven. ══\\${NC}\" && echo \"\"");
+  if (pkgs.includes("docker")) L.push("echo \"  Docker:  $(docker --version)\"");
+  if (pkgs.includes("node")) L.push("echo \"  Node.js: $(node --version)\"");
+  L.push("echo \"  SSH: ssh root@" + ip + "\"");
+
+  lxcScript = L.join("\n");
+  var hi = lxcScript.split("\n").map(function(line) {
+    if (line.startsWith("#")) return "<span class='lc'>" + lxcEsc(line) + "</span>";
+    if (line.startsWith("log ") || line.startsWith("ok ")) return "<span class='lv'>" + lxcEsc(line) + "</span>";
+    if (line.includes("══")) return "<span class='ls'>" + lxcEsc(line) + "</span>";
+    return lxcEsc(line);
+  }).join("\n");
+  document.getElementById("lxc_script_out").innerHTML = hi;
+  var out = document.getElementById("lxc_output");
+  out.classList.add("visible");
+  out.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function lxcEsc(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function lxcCopy() {
+  var msg = document.getElementById("lxc_copied");
+  function showMsg() { msg.classList.add("show"); setTimeout(function() { msg.classList.remove("show"); }, 2000); }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(lxcScript).then(showMsg);
+  } else {
+    var ta = document.createElement("textarea");
+    ta.value = lxcScript;
+    ta.style.cssText = "position:fixed;top:-9999px;left:-9999px";
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showMsg();
+  }
+}
+
+function lxcSaveToServer() {
+  if (!lxcScript) return;
+  fetch("/api/setup/save", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({content: lxcScript})
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    var msg = document.getElementById("lxc_saved");
+    if (d.ok) {
+      msg.textContent = d.proxmox ? "✓ uloženo (server + Proxmox)" : "✓ uloženo na server (Proxmox selhal)";
+      msg.classList.add("show");
+      setTimeout(function() { msg.classList.remove("show"); }, 3000);
+    }
+  });
+}
+
+function lxcDownload() {
+  var blob = new Blob([lxcScript], { type: "text/plain" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "setup-" + (document.getElementById("lxc_hostname").value || "webdev") + ".sh";
+  a.click();
+}
+
+var _lxcIpTimer = null;
+function lxcCheckIpDebounce() {
+  clearTimeout(_lxcIpTimer);
+  _lxcIpTimer = setTimeout(lxcCheckIp, 600);
+}
+function lxcCheckIp() {
+  var ip = document.getElementById("lxc_ip").value;
+  var el = document.getElementById("lxc_ip_status");
+  if (!ip || ip === "10.0.1." || ip.endsWith(".")) { el.textContent = ""; return; }
+  el.style.color = "#888"; el.textContent = "kontroluji...";
+  fetch("/api/ping?ip=" + encodeURIComponent(ip))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.online) {
+        el.style.color = "#ff6b6b"; el.textContent = "⚠ IP obsazena!";
+      } else {
+        el.style.color = "#6bcb77"; el.textContent = "✓ volná";
+      }
+    }).catch(function() { el.textContent = ""; });
+}
+
+function lxcGenPassword() {
+  var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$";
+  var pwd = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map(function(b) { return chars[b % chars.length]; }).join("");
+  document.getElementById("lxc_password").value = pwd;
+}
+
+var _lxcWizardInterval = null;
+
+function lxcWizardStart() {
+  var btn    = document.getElementById("lxc_wizard_btn");
+  var panel  = document.getElementById("lxc_wizard_panel");
+  var logEl  = document.getElementById("lxc_wizard_log");
+  var status = document.getElementById("lxc_wizard_status");
+
+  var ip  = document.getElementById("lxc_ip").value;
+  var pwd = document.getElementById("lxc_password").value;
+  if (!ip || ip === "10.0.1." || ip.endsWith(".")) { alert("Zadej platnou IP adresu kontejneru!"); return; }
+  if (!pwd) { alert("Zadej root heslo nebo klikni 'generovat heslo'!"); return; }
+  var ipStatus = document.getElementById("lxc_ip_status").textContent;
+  if (ipStatus.includes("obsazena") && !confirm("IP " + ip + " je obsazená (ping odpovídá). Opravdu pokračovat?")) return;
+
+  var pkgs = Array.from(document.querySelectorAll("#lxc_packages input:checked"))
+               .map(function(cb) { return cb.value; });
+
+  var payload = {
+    ct_id:    document.getElementById("lxc_ct_id").value,
+    hostname: document.getElementById("lxc_hostname").value,
+    ip:       ip,
+    ram:      parseInt(document.getElementById("lxc_ram").value) || 2048,
+    cores:    parseInt(document.getElementById("lxc_cores").value) || 2,
+    disk:     parseInt(document.getElementById("lxc_disk").value) || 8,
+    password: pwd,
+    git_name: document.getElementById("lxc_git_name").value,
+    git_email:document.getElementById("lxc_git_email").value,
+    ssh_key:  document.getElementById("lxc_ssh_key").value,
+    packages: pkgs
+  };
+
+  btn.disabled = true;
+  btn.textContent = "Probíhá...";
+  logEl.textContent = "";
+  panel.style.display = "block";
+  status.textContent = "Spouštím...";
+  status.style.color = "#ffd93d";
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  fetch("/api/lxc/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.error) {
+      logEl.textContent = "Chyba: " + d.error;
+      status.textContent = "Chyba";
+      status.style.color = "#ff6b6b";
+      btn.disabled = false; btn.textContent = "⚙ Vytvořit LXC a nainstalovat";
+      return;
+    }
+    _lxcWizardInterval = setInterval(function() {
+      lxcWizardPoll(d.job_id, btn, status, logEl);
+    }, 700);
+  })
+  .catch(function(err) {
+    logEl.textContent = "Chyba: " + err;
+    btn.disabled = false; btn.textContent = "⚙ Vytvořit LXC a nainstalovat";
+  });
+}
+
+function lxcWizardPoll(jobId, btn, status, logEl) {
+  fetch("/api/lxc/poll/" + jobId)
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.lines && d.lines.length) {
+      logEl.textContent += d.lines.join("\n") + "\n";
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    if (d.done) {
+      clearInterval(_lxcWizardInterval);
+      btn.disabled = false; btn.textContent = "⚙ Vytvořit LXC a nainstalovat";
+      if (d.error) {
+        status.textContent = "✗ Chyba: " + d.error;
+        status.style.color = "#ff6b6b";
+      } else {
+        status.textContent = "✓ Hotovo!";
+        status.style.color = "#6bcb77";
+        var pwd = document.getElementById("lxc_password").value;
+        var ip  = document.getElementById("lxc_ip").value;
+        logEl.textContent += "\n";
+        logEl.textContent += "╔══════════════════════════════════════════════╗\n";
+        logEl.textContent += "  Přihlaš se:\n";
+        logEl.textContent += "  ssh root@" + ip + "\n";
+        logEl.textContent += "  Heslo: " + pwd + "\n";
+        logEl.textContent += "╚══════════════════════════════════════════════╝\n";
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+    }
+  })
+  .catch(function() {
+    clearInterval(_lxcWizardInterval);
+    status.textContent = "Chyba polling";
+    status.style.color = "#ff6b6b";
+    btn.disabled = false; btn.textContent = "⚙ Vytvořit LXC a nainstalovat";
+  });
+}
+
+// ── Module config ──────────────────────────────────────────────────────────
+function applyModules(mods) {
+  // Hide/show nav items and pages based on active modules
+  function setVisible(selector, visible) {
+    document.querySelectorAll(selector).forEach(function(el) {
+      el.style.display = visible ? '' : 'none';
+    });
+  }
+
+  if (!mods.cloudflare) {
+    setVisible('[onclick*="cloudflare"]', false);
+    setVisible('#page-cloudflare', false);
+  }
+  if (!mods.nextdns) {
+    setVisible('[onclick*="dns"]', false);
+    setVisible('#page-dns', false);
+  }
+  if (!mods.wol) {
+    setVisible('[onclick*="wol"]', false);
+    setVisible('#page-wol', false);
+  }
+  if (!mods.services) {
+    setVisible('[onclick*="services"]', false);
+    setVisible('#page-services', false);
+  }
+  if (!mods.home_assistant) {
+    // Hide HA uptime bar entry
+    document.querySelectorAll('[id*="HA"], [id*="Ha"]').forEach(function(el) { el.style.display = 'none'; });
+  }
+}
+
+function loadWolDevices() {
+  fetch('/api/wol/devices').then(function(r) { return r.json(); }).then(function(d) {
+    if (!d.devices) return;
+    WOL_DEVICES = d.devices;
+  }).catch(function() {});
+}
+
+// INIT
+initTheme();
+fetch('/api/config/modules').then(function(r) { return r.json(); }).then(applyModules).catch(function() {});
+loadWolDevices();
+initTempChart();
+initStatsChart();
+loadHistory();
+loadStatsHistory();
+loadSensors();
+loadAllStats();
+loadSpeedServers();
+setInterval(function() { loadSensors(); loadAllStats(); }, 10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+[Unit]
+Description=Monitor Public Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/monitor-public
+ExecStart=/opt/monitor-public/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8090
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
