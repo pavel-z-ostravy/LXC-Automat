@@ -31,8 +31,13 @@
   .dash-flag-btn:hover { border-color: #00d4ff33; }
   body.light .dash-lang-toggle { border-right-color: #bcd; }
   body.light .dash-flag-btn.active { border-color: #0066aa33; background: #0066aa11; }
-  #kofi-widget-overlay { opacity: 0.6 !important; transition: opacity 0.3s !important; }
-  #kofi-widget-overlay:hover { opacity: 1 !important; }
+  #kofi-widget-overlay {
+    left: 50% !important; right: auto !important; bottom: 20px !important;
+    transform: translateX(-50%) !important;
+    opacity: 0.18 !important; filter: saturate(0) brightness(0.6) !important;
+    transition: opacity 0.35s, filter 0.35s !important;
+  }
+  #kofi-widget-overlay:hover { opacity: 1 !important; filter: saturate(1) brightness(1) !important; }
   .last-update { font-size: 11px; }
   body.dark .last-update { color: #555; }
   body.light .last-update { color: #999; }
