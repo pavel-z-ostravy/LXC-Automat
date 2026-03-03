@@ -80,7 +80,19 @@ def _generate_keypair(name: str) -> dict:
 @app.get("/", response_class=HTMLResponse)
 def wizard():
     if os.path.exists(CONFIG_FILE):
-        return RedirectResponse("/")
+        return HTMLResponse("""<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Hotovo</title>
+<style>body{background:#0d1b2a;color:#eee;font-family:monospace;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.box{background:#16213e;border:1px solid #0f3460;border-radius:12px;padding:40px;text-align:center;max-width:400px}
+h2{color:#6bcb77;margin-bottom:16px}p{color:#888;font-size:13px;line-height:1.6}
+code{background:#0d1b2a;padding:6px 12px;border-radius:4px;color:#00d4ff;display:block;margin:12px 0;font-size:12px}
+</style></head><body><div class="box">
+<h2>✓ Konfigurace uložena!</h2>
+<p>Restartuj service a znovu otevři dashboard:</p>
+<code>sudo systemctl restart monitor-public</code>
+<p style="margin-top:16px">Pokud service není nainstalovaná:</p>
+<code>sudo cp /opt/monitor-public/monitor-public.service /etc/systemd/system/<br>sudo systemctl daemon-reload<br>sudo systemctl enable --now monitor-public</code>
+</div></body></html>""")
     return _read_html()
 
 

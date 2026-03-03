@@ -1,5 +1,6 @@
 fastapi
-uvicorn
+uvicorn[standard]
 httpx
 wakeonlan
 paramiko
+python-multipart
