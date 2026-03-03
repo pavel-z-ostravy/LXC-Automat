@@ -1,31 +1,77 @@
 # proxmox-lxc-hud
 
-> One-click LXC provisioning wizard for Proxmox VE
+> Self-hosted homelab dashboard with web-based installer
 
 [🇨🇿 Česky](README.cs.md) | 🇬🇧 English
 
-A lightweight web dashboard that automates the full lifecycle of creating and configuring LXC containers on Proxmox — from creation to a fully configured development server, with live progress tracking.
+A config-driven homelab dashboard for Proxmox + optional modules (Home Assistant, Router, Cloudflare, NextDNS). Installs via a single command — a web wizard guides you through the full setup, no config file editing required.
 
 ---
 
-## The Problem
+## Quick Install
 
-Setting up a new LXC container on Proxmox involves too many manual steps:
+```bash
+curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/proxmox-lxc-hud/main/install.sh | sudo bash
+```
 
-1. Create container in Proxmox web UI
-2. SSH into Proxmox host, edit `/etc/pve/lxc/{id}.conf` for Docker support
-3. Reboot container
-4. Copy setup script into container
-5. SSH in, run the script, wait
-6. Hope nothing broke silently
-
-**proxmox-lxc-hud turns this into a single button click.**
+Then open `http://<your-server-ip>:8091/setup` and complete the wizard.
 
 ---
 
-## What It Does
+## How It Works
 
-### LXC Provisioning Wizard
+### Two-phase startup
+
+```
+install.sh → [clone + deps + systemd] → /setup wizard (port 8091)
+                                               ↓  (after wizard completes)
+                                         config.json → dashboard (port 8091)
+```
+
+The app automatically detects whether `config.json` exists:
+- **Missing** → serves the installer wizard
+- **Present** → serves the full dashboard
+
+---
+
+## Web Installer Wizard
+
+A 7-step setup wizard — no SSH or config file editing needed:
+
+| Step | What you configure |
+|------|--------------------|
+| 1. System check | Python, sshpass, paramiko availability |
+| 2. Credentials | Dashboard username + password (stored as SHA-256 hash) |
+| 3. Proxmox | IP, node name, SSH auth (password **or** generated keypair) |
+| 4. Modules | Home Assistant, Router, Cloudflare, NextDNS (each optional) |
+| 5. Services | URLs to monitor for availability |
+| 6. WoL devices | Name + MAC + IP for Wake-on-LAN |
+| 7. Review + Install | Shows full config (passwords hidden), saves `config.json` |
+
+### SSH key generation (step 3 & 4)
+
+For Proxmox and Router modules you can choose between password auth or SSH key. If you choose key, the wizard generates an ed25519 keypair, shows the public key with a **Copy** button, and tells you exactly where to paste it (`~/.ssh/authorized_keys`).
+
+---
+
+## Dashboard Modules
+
+All modules are **optional** — inactive ones are completely hidden in the UI.
+
+| Module | What it shows |
+|--------|--------------|
+| **Proxmox** | CPU, RAM, disk, processes, sensors, backups, speedtest |
+| **Home Assistant** | Stats from HA VM via SSH |
+| **Router** | Per-device network speeds via conntrack |
+| **Cloudflare** | Tunnel status, DNS records, cloudflared metrics |
+| **NextDNS** | DNS query stats, blocked domains, per-device breakdown |
+| **Services** | HTTP availability check for configured URLs |
+| **Wake-on-LAN** | Ping status + WoL button for configured devices |
+| **LXC Wizard** | One-click LXC container provisioning (see below) |
+
+---
+
+## LXC Provisioning Wizard
 
 Fill in a form, click **"Create LXC and Install"** — the tool handles everything:
 
@@ -36,7 +82,7 @@ Fill in a form, click **"Create LXC and Install"** — the tool handles everythi
 [4/9] Patching .conf for Docker support...  ✓ lxc.apparmor.profile added
 [5/9] Starting container...                 ✓ Booting...
 [6/9] Waiting for boot (max 90s)...         ✓ Ready after 15s
-[7/9] Generating setup.sh...               ✓ Script ready (4.2 KB)
+[7/9] Generating setup.sh...                ✓ Script ready
 [8/9] Pushing script into container...      ✓ /root/setup.sh ready
 [9/9] Running setup.sh (live output)...
 
@@ -44,48 +90,14 @@ Fill in a form, click **"Create LXC and Install"** — the tool handles everythi
   ✓ Base packages installed
   >>> Installing Docker...
   ✓ Docker works
-  >>> Installing Node.js LTS...
-  ✓ Node.js v22.x installed
   ...
 
 ╔══════════════════════════════════════════╗
-  Ready! SSH: ssh user@192.168.1.93
-  Password: Xk9#mP2...
+  Ready! SSH: ssh root@192.168.1.93
 ╚══════════════════════════════════════════╝
 ```
 
-### Configurable Parameters
-
-| Field | Default | Description |
-|-------|---------|-------------|
-| CT ID | — | Proxmox container ID |
-| Hostname | — | Container hostname |
-| IP address | — | Static IP (auto-checked for availability) |
-| RAM | 2048 MB | Memory allocation |
-| CPU cores | 2 | vCPU count |
-| Disk | 8 GB | Root filesystem size |
-| Password | generated | Auto-generate or custom |
-
-### Software Packages (selectable)
-
-- **Docker** — with overlay2 storage driver, configured for LXC
-- **Node.js LTS** — via nvm
-- **pnpm** — fast package manager
-- **Vercel CLI** — deploy from container
-- **Claude Code** — AI coding assistant
-- **micro** — modern terminal editor
-- Git configuration (name, email, SSH key or auto-generate)
-
-### IP Availability Check
-
-Before provisioning, the dashboard pings the target IP and warns if it's already in use on the network.
-
-### Manual Mode (fallback)
-
-For users who prefer manual setup, a collapsible **Manual Mode** section provides:
-- Step-by-step instructions for `.conf` editing
-- `setup.sh` generator with copy/download/push-to-server options
-- `pct push` + `pct exec` commands ready to run
+**Selectable packages:** Docker, Node.js LTS, pnpm, Vercel CLI, Claude Code, micro editor, Git config
 
 ---
 
@@ -95,41 +107,48 @@ For users who prefer manual setup, a collapsible **Manual Mode** section provide
 Browser  ──→  Web UI (single-page HTML + JS)
                 │
                 ▼
-            FastAPI (Python)
+            FastAPI (Python)  ←── config.json
                 │
-                ├── SSH ──→  Proxmox Host (user@proxmox)
-                │              └── pvesh create/start/exec
-                │              └── pct push / pct exec
+                ├── SSH ──→  Proxmox host
+                │              └── pvesh, pct, vzdump, smartctl
                 │
-                └── Local setup.sh generation
+                ├── SSH ──→  Home Assistant VM  (if enabled)
+                ├── SSH ──→  Router              (if enabled)
+                ├── HTTPS ──→ Cloudflare API     (if enabled)
+                └── HTTPS ──→ NextDNS API        (if enabled)
 ```
 
-- **Backend**: Python (FastAPI), single file `app.py`
-- **Frontend**: Single-page HTML/JS, no framework, no build step
-- **Auth**: Cookie-based session (SHA-256 password hash)
-- **Proxmox connection**: SSH key auth to Proxmox host
+- **Backend**: Python 3.11+ / FastAPI / Uvicorn
+- **Frontend**: Single-page HTML+JS, no framework, no build step
+- **Auth**: Cookie session, SHA-256 password hash, never stored in plaintext
+- **Config**: `config.json` — gitignored, generated by wizard
+- **SSH keys**: `keys/` directory — gitignored, generated by wizard
 
 ---
 
-## Planned Features
+## Security
 
-- [ ] Auto-install: web-based installer with variable input (Proxmox IP, SSH key, credentials)
-- [ ] LXC template selector (not just Ubuntu 22.04)
-- [ ] Container management: start/stop/restart from dashboard
-- [ ] Resource monitoring per-container (CPU, RAM, disk)
-- [ ] GitHub SSH key auto-push to container
-- [ ] 1Password CLI integration for credential storage
-- [ ] Multi-node Proxmox support
-- [ ] Container templates (presets: webdev, database, media server...)
+- `config.json` and `keys/` are gitignored — credentials never reach the repo
+- Passwords stored as SHA-256 hash only
+- Cloudflare/NextDNS tokens never logged
+- SSH keys have `600` permissions
 
 ---
 
-## Current Status
+## File Structure
 
-> **Alpha / Personal use** — running in production on a homelab Proxmox setup.
-> Repo created: March 2026.
-
-The LXC wizard is functional. The project currently lives as a module inside a larger homelab dashboard. The plan is to extract it into a standalone installable tool.
+```
+/opt/monitor-public/
+├── install.sh           # curl | bash entry point
+├── installer.py         # web wizard backend (FastAPI)
+├── installer.html       # wizard UI (multi-step form)
+├── app.py               # dashboard backend (config-driven)
+├── index.html           # dashboard frontend
+├── requirements.txt
+├── monitor-public.service
+├── keys/                # SSH keys generated by wizard (gitignored)
+└── config.json          # generated by wizard (gitignored)
+```
 
 ---
 
@@ -146,15 +165,14 @@ The LXC wizard is functional. The project currently lives as a module inside a l
 
 ---
 
-## Related Projects
+## Planned Features
 
-| Project | Focus |
-|---------|-------|
-| [Pulse](https://github.com/rcourtman/Pulse) | Proxmox monitoring dashboard |
-| [proxmox-dashboard](https://github.com/anomixer/proxmox-dashboard) | Node/VM/LXC monitoring |
-| [awesome-proxmox-ve](https://github.com/Corsinvest/awesome-proxmox-ve) | Curated Proxmox tools list |
-
-**Gap this project fills:** None of the above automate LXC *provisioning* — they monitor what's already running.
+- [ ] LXC template selector (not just Ubuntu 22.04)
+- [ ] Container management: start/stop/restart from dashboard
+- [ ] Resource monitoring per-container (CPU, RAM, disk)
+- [ ] Multi-node Proxmox support
+- [ ] Container templates (presets: webdev, database, media server...)
+- [ ] Re-run wizard to update config (currently requires manual edit)
 
 ---
 
@@ -162,19 +180,22 @@ The LXC wizard is functional. The project currently lives as a module inside a l
 
 ### Session log — March 2026
 
-**What we built (first iteration, inside homelab-dashboard):**
-- LXC configurator page with script generator (`lxcGenerate()`)
-- Backend endpoint `POST /api/lxc/create` → 9-step background worker
-- `GET /api/lxc/poll/{job_id}` for live log polling
-- `POST /api/setup/save` → saves script locally + SCP to Proxmox
-- `GET /setup.sh` → serves script for `curl | bash` installs
-- IP availability check via existing `/api/ping` endpoint
+**First iteration (inside private homelab-dashboard):**
+- LXC configurator page with script generator
+- `POST /api/lxc/create` → 9-step background worker with live log polling
+- `POST /api/setup/save` + `GET /setup.sh`
+- IP availability check
 
-**Bugs fixed along the way:**
+**Second iteration — extracted to standalone public repo:**
+- Web installer wizard (7 steps, `installer.py` + `installer.html`)
+- Config-driven `app.py` — all credentials/IPs from `config.json`
+- Conditional endpoint registration per active module
+- `install.sh` one-command installer
+- Module-aware frontend — hides inactive sections
+- WoL devices loaded dynamically from config
+
+**Bugs fixed:**
 - `pct restart` → correct command is `pct reboot`
-- `PermitRootLogin` not set on fresh Ubuntu LXC → fixed with `sed -i '/PermitRootLogin/d' && echo "PermitRootLogin yes" >>`
-- `curl` not available in fresh container → switched to `pct push` + `pct exec`
-- `navigator.clipboard` fails on HTTP → added `execCommand` fallback
-- `apt upgrade` interactive dialog for openssh-server → fixed with `DEBIAN_FRONTEND=noninteractive` + `--force-confold`
-
-**Source repo (private, full homelab dashboard):** `github.com/pueblo78/homelab-dashboard`
+- `python-multipart` missing → FastAPI can't parse login form without it
+- Redirect loop after wizard completes → replaced with "restart instructions" page
+- Port conflict with existing monitor service → changed to 8091

@@ -1,31 +1,77 @@
 # proxmox-lxc-hud
 
-> LXC provisioning wizard pro Proxmox VE na jedno kliknutí
+> Self-hosted homelab dashboard s webovým instalátorem
 
 🇬🇧 [English](README.md) | 🇨🇿 Česky
 
-Lehký webový dashboard, který automatizuje celý životní cyklus vytváření a konfigurace LXC kontejnerů na Proxmoxu — od vytvoření až po plně nakonfigurovaný vývojový server, se sledováním průběhu v reálném čase.
+Config-driven homelab dashboard pro Proxmox + volitelné moduly (Home Assistant, Router, Cloudflare, NextDNS). Instalace jedním příkazem — webový wizard tě provede celým nastavením, žádné ruční editování konfiguračních souborů.
 
 ---
 
-## Problém
+## Rychlá instalace
 
-Nastavení nového LXC kontejneru na Proxmoxu obnáší příliš mnoho ručních kroků:
+```bash
+curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/proxmox-lxc-hud/main/install.sh | sudo bash
+```
 
-1. Vytvoř kontejner v Proxmox webovém rozhraní
-2. SSH na Proxmox host, uprav `/etc/pve/lxc/{id}.conf` pro podporu Dockeru
-3. Restartuj kontejner
-4. Zkopíruj setup skript do kontejneru
-5. SSH dovnitř, spusť skript, čekej
-6. Doufej, že se nic nepokazilo potichu
-
-**proxmox-lxc-hud tohle celé zredukuje na jedno kliknutí.**
+Pak otevři `http://<IP-serveru>:8091/setup` a projdi wizard.
 
 ---
 
-## Co umí
+## Jak to funguje
 
-### LXC Provisioning Wizard
+### Dvě fáze startu
+
+```
+install.sh → [clone + deps + systemd] → wizard /setup (port 8091)
+                                               ↓  (po dokončení wizardu)
+                                         config.json → dashboard (port 8091)
+```
+
+App automaticky detekuje zda existuje `config.json`:
+- **Chybí** → zobrazí instalační wizard
+- **Existuje** → spustí plný dashboard
+
+---
+
+## Webový instalační wizard
+
+7-krokový wizard — žádné SSH ani ruční editování souborů:
+
+| Krok | Co nastavuješ |
+|------|---------------|
+| 1. Kontrola systému | Python, sshpass, paramiko |
+| 2. Přihlašovací údaje | Uživatel + heslo (uloženo jako SHA-256 hash) |
+| 3. Proxmox | IP, node name, SSH auth (heslo **nebo** generovaný keypair) |
+| 4. Moduly | Home Assistant, Router, Cloudflare, NextDNS (každý volitelný) |
+| 5. Služby | URL adresy pro monitoring dostupnosti |
+| 6. WoL zařízení | Název + MAC + IP pro Wake-on-LAN |
+| 7. Review + Instalace | Zobrazí celý config (hesla skryta), uloží `config.json` |
+
+### Generování SSH klíče (kroky 3 a 4)
+
+Pro Proxmox a Router si můžeš vybrat mezi autentizací heslem nebo SSH klíčem. Při výběru klíče wizard vygeneruje ed25519 keypair, zobrazí veřejný klíč s tlačítkem **Kopírovat** a řekne ti přesně kam ho vložit (`~/.ssh/authorized_keys`).
+
+---
+
+## Moduly dashboardu
+
+Všechny moduly jsou **volitelné** — neaktivní se v UI úplně skryjí.
+
+| Modul | Co zobrazuje |
+|-------|-------------|
+| **Proxmox** | CPU, RAM, disk, procesy, sensory, zálohy, speedtest |
+| **Home Assistant** | Statistiky HA VM přes SSH |
+| **Router** | Rychlosti sítě per-zařízení přes conntrack |
+| **Cloudflare** | Stav tunnelu, DNS záznamy, cloudflared metriky |
+| **NextDNS** | DNS statistiky, blokované domény, přehled per-zařízení |
+| **Služby** | HTTP kontrola dostupnosti nakonfigurovaných URL |
+| **Wake-on-LAN** | Ping stav + WoL tlačítko pro nakonfigurovaná zařízení |
+| **LXC Wizard** | Provisioning LXC kontejneru na jedno kliknutí (viz níže) |
+
+---
+
+## LXC Provisioning Wizard
 
 Vyplň formulář, klikni **"Vytvořit LXC a nainstalovat"** — nástroj se postará o vše:
 
@@ -36,7 +82,7 @@ Vyplň formulář, klikni **"Vytvořit LXC a nainstalovat"** — nástroj se pos
 [4/9] Upravuji .conf pro Docker...          ✓ lxc.apparmor.profile přidán
 [5/9] Startuji kontejner...                 ✓ Bootuje...
 [6/9] Čekám na boot (max 90s)...            ✓ Připraven po 15s
-[7/9] Generuji setup.sh...                  ✓ Skript připraven (4.2 KB)
+[7/9] Generuji setup.sh...                  ✓ Skript připraven
 [8/9] Kopíruji skript do kontejneru...      ✓ /root/setup.sh připraven
 [9/9] Spouštím setup.sh (živý výstup)...
 
@@ -44,48 +90,14 @@ Vyplň formulář, klikni **"Vytvořit LXC a nainstalovat"** — nástroj se pos
   ✓ Základní balíčky nainstalovány
   >>> Instalace Dockeru...
   ✓ Docker funguje
-  >>> Instalace Node.js LTS...
-  ✓ Node.js v22.x nainstalován
   ...
 
 ╔══════════════════════════════════════════╗
-  Hotovo! SSH: ssh user@192.168.1.93
-  Heslo: Xk9#mP2...
+  Hotovo! SSH: ssh root@192.168.1.93
 ╚══════════════════════════════════════════╝
 ```
 
-### Konfigurovatelné parametry
-
-| Pole | Výchozí | Popis |
-|------|---------|-------|
-| CT ID | — | ID kontejneru v Proxmoxu |
-| Hostname | — | Název kontejneru |
-| IP adresa | — | Statická IP (automatická kontrola dostupnosti) |
-| RAM | 2048 MB | Přidělená paměť |
-| CPU jader | 2 | Počet vCPU |
-| Disk | 8 GB | Velikost root filesystému |
-| Heslo | generované | Automaticky nebo vlastní |
-
-### Softwarové balíčky (volitelné)
-
-- **Docker** — s overlay2 storage driverem, nakonfigurovaný pro LXC
-- **Node.js LTS** — přes nvm
-- **pnpm** — rychlejší správce balíčků
-- **Vercel CLI** — nasazení přímo z kontejneru
-- **Claude Code** — AI asistent pro programování
-- **micro** — moderní terminálový editor
-- Git konfigurace (jméno, email, SSH klíč nebo automatické vygenerování)
-
-### Kontrola dostupnosti IP
-
-Před spuštěním wizard pingne cílovou IP adresu a upozorní, pokud je již obsazená v síti.
-
-### Ruční režim (záloha)
-
-Pro uživatele, kteří preferují ruční nastavení, je k dispozici sbalená sekce **Ruční režim**:
-- Krok za krokem pro úpravu `.conf`
-- Generátor `setup.sh` s možnostmi kopírovat/stáhnout/uložit na server
-- Připravené příkazy `pct push` + `pct exec`
+**Volitelné balíčky:** Docker, Node.js LTS, pnpm, Vercel CLI, Claude Code, micro editor, Git konfigurace
 
 ---
 
@@ -95,41 +107,48 @@ Pro uživatele, kteří preferují ruční nastavení, je k dispozici sbalená s
 Prohlížeč  ──→  Web UI (single-page HTML + JS)
                   │
                   ▼
-              FastAPI (Python)
+              FastAPI (Python)  ←── config.json
                   │
-                  ├── SSH ──→  Proxmox Host (user@proxmox)
-                  │              └── pvesh create/start/exec
-                  │              └── pct push / pct exec
+                  ├── SSH ──→  Proxmox host
+                  │              └── pvesh, pct, vzdump, smartctl
                   │
-                  └── Lokální generování setup.sh
+                  ├── SSH ──→  Home Assistant VM  (pokud aktivní)
+                  ├── SSH ──→  Router              (pokud aktivní)
+                  ├── HTTPS ──→ Cloudflare API     (pokud aktivní)
+                  └── HTTPS ──→ NextDNS API        (pokud aktivní)
 ```
 
-- **Backend**: Python (FastAPI), jeden soubor `app.py`
-- **Frontend**: Single-page HTML/JS, bez frameworku, bez build kroku
-- **Auth**: Cookie session (SHA-256 hash hesla)
-- **Připojení k Proxmoxu**: SSH klíč
+- **Backend**: Python 3.11+ / FastAPI / Uvicorn
+- **Frontend**: Single-page HTML+JS, bez frameworku, bez build kroku
+- **Auth**: Cookie session, SHA-256 hash hesla, nikdy neuloženo v plaintextu
+- **Config**: `config.json` — gitignored, generovaný wizardem
+- **SSH klíče**: adresář `keys/` — gitignored, generovaný wizardem
 
 ---
 
-## Plánované funkce
+## Bezpečnost
 
-- [ ] Auto-install: webový instalátor se zadáním proměnných (IP Proxmoxu, SSH klíč, přihlašovací údaje)
-- [ ] Výběr LXC šablony (nejen Ubuntu 22.04)
-- [ ] Správa kontejnerů: start/stop/restart z dashboardu
-- [ ] Monitoring zdrojů per-kontejner (CPU, RAM, disk)
-- [ ] Automatické přidání SSH klíče na GitHub
-- [ ] Integrace s 1Password CLI pro ukládání přihlašovacích údajů
-- [ ] Podpora více Proxmox nodů
-- [ ] Šablony kontejnerů (přednastavení: webdev, databáze, media server...)
+- `config.json` a `keys/` jsou gitignored — credentials se nikdy nedostanou do repo
+- Hesla uložena pouze jako SHA-256 hash
+- Cloudflare/NextDNS tokeny se nikdy nelogují
+- SSH klíče mají práva `600`
 
 ---
 
-## Aktuální stav
+## Struktura souborů
 
-> **Alpha / Osobní použití** — provozováno na domácím Proxmox serveru.
-> Repo vytvořeno: březen 2026.
-
-LXC wizard je funkční. Projekt momentálně žije jako modul v rámci většího homelab dashboardu. Plán je extrahovat ho do samostatného instalovatelného nástroje.
+```
+/opt/monitor-public/
+├── install.sh           # curl | bash vstupní bod
+├── installer.py         # backend wizardu (FastAPI)
+├── installer.html       # UI wizardu (vícekrokový formulář)
+├── app.py               # backend dashboardu (config-driven)
+├── index.html           # frontend dashboardu
+├── requirements.txt
+├── monitor-public.service
+├── keys/                # SSH klíče generované wizardem (gitignored)
+└── config.json          # generovaný wizardem (gitignored)
+```
 
 ---
 
@@ -146,15 +165,14 @@ LXC wizard je funkční. Projekt momentálně žije jako modul v rámci větší
 
 ---
 
-## Související projekty
+## Plánované funkce
 
-| Projekt | Zaměření |
-|---------|----------|
-| [Pulse](https://github.com/rcourtman/Pulse) | Proxmox monitoring dashboard |
-| [proxmox-dashboard](https://github.com/anomixer/proxmox-dashboard) | Monitoring nodů/VM/LXC |
-| [awesome-proxmox-ve](https://github.com/Corsinvest/awesome-proxmox-ve) | Kurátorský seznam Proxmox nástrojů |
-
-**Mezera kterou tento projekt zaplňuje:** Žádný z výše uvedených projektů neautomatizuje *provisioning* LXC — pouze monitorují to, co už běží.
+- [ ] Výběr LXC šablony (nejen Ubuntu 22.04)
+- [ ] Správa kontejnerů: start/stop/restart z dashboardu
+- [ ] Monitoring zdrojů per-kontejner (CPU, RAM, disk)
+- [ ] Podpora více Proxmox nodů
+- [ ] Šablony kontejnerů (přednastavení: webdev, databáze, media server...)
+- [ ] Opětovné spuštění wizardu pro úpravu configu
 
 ---
 
@@ -162,19 +180,22 @@ LXC wizard je funkční. Projekt momentálně žije jako modul v rámci větší
 
 ### Session log — březen 2026
 
-**Co jsme postavili (první iterace, uvnitř homelab-dashboard):**
-- LXC konfigurační stránka s generátorem skriptů (`lxcGenerate()`)
-- Backend endpoint `POST /api/lxc/create` → 9-krokový background worker
-- `GET /api/lxc/poll/{job_id}` pro live polling logu
-- `POST /api/setup/save` → uloží skript lokálně + SCP na Proxmox
-- `GET /setup.sh` → servíruje skript pro `curl | bash` instalace
-- Kontrola dostupnosti IP přes existující `/api/ping` endpoint
+**První iterace (uvnitř privátního homelab-dashboard):**
+- LXC konfigurační stránka s generátorem skriptů
+- `POST /api/lxc/create` → 9-krokový background worker s live polling logu
+- `POST /api/setup/save` + `GET /setup.sh`
+- Kontrola dostupnosti IP
+
+**Druhá iterace — extrakce do samostatného veřejného repo:**
+- Webový instalační wizard (7 kroků, `installer.py` + `installer.html`)
+- Config-driven `app.py` — všechny credentials/IP adresy z `config.json`
+- Podmínečná registrace endpointů dle aktivních modulů
+- `install.sh` one-command instalátor
+- Frontend skrývá neaktivní sekce dle konfigurace
+- WoL zařízení načítána dynamicky z configu
 
 **Opravené chyby:**
 - `pct restart` → správný příkaz je `pct reboot`
-- `PermitRootLogin` nenastaveno na čistém Ubuntu LXC → opraveno přes `sed -i '/PermitRootLogin/d' && echo "PermitRootLogin yes" >>`
-- `curl` nedostupný v čistém kontejneru → přechod na `pct push` + `pct exec`
-- `navigator.clipboard` nefunguje na HTTP → přidán `execCommand` fallback
-- Interaktivní dialog `apt upgrade` pro openssh-server → opraveno přes `DEBIAN_FRONTEND=noninteractive` + `--force-confold`
-
-**Zdrojové repo (privátní, celý homelab dashboard):** `github.com/pueblo78/homelab-dashboard`
+- Chyběl `python-multipart` → FastAPI bez něj neumí zpracovat login formulář
+- Redirect smyčka po dokončení wizardu → nahrazeno stránkou s instrukcemi pro restart
+- Konflikt portů s existující monitor service → změněno na port 8091
