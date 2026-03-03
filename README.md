@@ -2,6 +2,8 @@
 
 > One-click LXC provisioning wizard for Proxmox VE
 
+[🇨🇿 Česky](README.cs.md) | 🇬🇧 English
+
 A lightweight web dashboard that automates the full lifecycle of creating and configuring LXC containers on Proxmox — from creation to a fully configured development server, with live progress tracking.
 
 ---
@@ -47,7 +49,7 @@ Fill in a form, click **"Create LXC and Install"** — the tool handles everythi
   ...
 
 ╔══════════════════════════════════════════╗
-  Ready! SSH: ssh root@10.0.1.93
+  Ready! SSH: ssh user@192.168.1.93
   Password: Xk9#mP2...
 ╚══════════════════════════════════════════╝
 ```
@@ -62,7 +64,7 @@ Fill in a form, click **"Create LXC and Install"** — the tool handles everythi
 | RAM | 2048 MB | Memory allocation |
 | CPU cores | 2 | vCPU count |
 | Disk | 8 GB | Root filesystem size |
-| Root password | generated | Auto-generate or custom |
+| Password | generated | Auto-generate or custom |
 
 ### Software Packages (selectable)
 
@@ -95,7 +97,7 @@ Browser  ──→  Web UI (single-page HTML + JS)
                 ▼
             FastAPI (Python)
                 │
-                ├── SSH ──→  Proxmox Host (root@proxmox)
+                ├── SSH ──→  Proxmox Host (user@proxmox)
                 │              └── pvesh create/start/exec
                 │              └── pct push / pct exec
                 │
@@ -133,10 +135,10 @@ The LXC wizard is functional. The project currently lives as a module inside a l
 
 ## Screenshots
 
-### LXC Wizard — konfigurace a spuštění
+### LXC Wizard — configuration and provisioning
 ![LXC Wizard](screenshots/lxc-wizard.png)
 
-### Zálohy — správa Proxmox záloh
+### Backups — Proxmox backup management
 ![Backups](screenshots/backups.png)
 
 ### Wake-on-LAN
