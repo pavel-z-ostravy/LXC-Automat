@@ -41,12 +41,20 @@ App automaticky detekuje zda existuje `config.json`:
 | Krok | Co nastavuješ |
 |------|---------------|
 | 1. Kontrola systému | Python, sshpass, paramiko |
-| 2. Přihlašovací údaje | Uživatel + heslo (uloženo jako SHA-256 hash) |
+| 2. Přihlašovací údaje | Název dashboardu, uživatel + heslo (SHA-256 hash, s generátorem) |
 | 3. Proxmox | IP, node name, SSH auth (heslo **nebo** generovaný keypair) |
 | 4. Moduly | Home Assistant, Router, Cloudflare, NextDNS (každý volitelný) |
 | 5. Služby | URL adresy pro monitoring dostupnosti |
 | 6. WoL zařízení | Název + MAC + IP pro Wake-on-LAN |
 | 7. Review + Instalace | Zobrazí celý config (hesla skryta), uloží `config.json` |
+
+### UX funkce wizardu
+
+- **Přepínač jazyků EN/CS** — tlačítko v hlavičce, okamžitě přeloží všechny popisky, nápovědy a placeholdery
+- **Název dashboardu** — dynamicky aktualizuje titulek prohlížeče i navbar dashboardu
+- **Generátor hesel** — generuje 32/64/128-znakové heslo přes `crypto.getRandomValues`, zobrazí strength bar
+- **Šedé výchozí hodnoty** — předvyplněná pole (`admin`, `proxmox`, `root`) jsou šedá dokud nezačneš psát
+- **Generické placeholdery** — IP pole zobrazují `např. 192.168.1.x` místo konkrétních adres
 
 ### Generování SSH klíče (kroky 3 a 4)
 
@@ -144,6 +152,9 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS)
 ├── installer.html       # UI wizardu (vícekrokový formulář)
 ├── app.py               # backend dashboardu (config-driven)
 ├── index.html           # frontend dashboardu
+├── locales/
+│   ├── en.json          # anglické překlady
+│   └── cs.json          # české překlady
 ├── requirements.txt
 ├── monitor-public.service
 ├── keys/                # SSH klíče generované wizardem (gitignored)
@@ -199,6 +210,14 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS)
 - Chyběl `python-multipart` → FastAPI bez něj neumí zpracovat login formulář
 - Redirect smyčka po dokončení wizardu → nahrazeno stránkou s instrukcemi pro restart
 - Konflikt portů s existující monitor service → změněno na port 8091
+
+**Třetí iterace — UX vylepšení wizardu:**
+- Přepínač jazyků EN/CS, překlady v `locales/` JSON souborech, funkce `t('key')`
+- Pole pro název dashboardu → live aktualizace titulku prohlížeče i navbaru
+- Generátor hesel (32/64/128 znaků, `crypto.getRandomValues`) + strength bar
+- Šedé předvyplněné hodnoty (`admin`, `proxmox`, `root`)
+- Generické IP placeholdery (žádné hardcoded privátní IP v UI)
+- `dashboard_name` uložen do `config.json`, dostupný přes `/api/config/modules`
 
 ---
 
