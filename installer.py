@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
+import re
 import hashlib
 import subprocess
 import socket
@@ -200,6 +201,10 @@ async def save_config(request: Request):
     if not password:
         return JSONResponse({"ok": False, "error": "Heslo nesmí být prázdné"}, status_code=400)
 
+    port = int(data.get("port", 8091))
+    if not (1024 <= port <= 65535):
+        return JSONResponse({"ok": False, "error": "Port musí být mezi 1024 a 65535"}, status_code=400)
+
     password_hash = hashlib.sha256(password.encode()).hexdigest()
 
     config = {
@@ -208,7 +213,7 @@ async def save_config(request: Request):
             "username": username,
             "password_hash": password_hash,
         },
-        "port": int(data.get("port", 8090)),
+        "port": port,
         "install_path": INSTALL_PATH,
         "proxmox": {
             "ip": data.get("proxmox_ip", ""),
@@ -256,6 +261,17 @@ async def save_config(request: Request):
     # Write config
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
+
+    # Update service file port if it differs from current
+    service_path = "/etc/systemd/system/monitor-public.service"
+    if os.path.exists(service_path):
+        with open(service_path) as f:
+            svc = f.read()
+        svc_updated = re.sub(r'--port \d+', f'--port {port}', svc)
+        if svc_updated != svc:
+            with open(service_path, "w") as f:
+                f.write(svc_updated)
+            subprocess.run(["systemctl", "daemon-reload"], capture_output=True)
 
     # Restart service to switch from installer to dashboard
     subprocess.Popen(

@@ -206,6 +206,12 @@
       </div>
 
       <div class="field">
+        <label data-t="auth_port">Dashboard port</label>
+        <input type="number" id="dashboard-port" value="8091" min="1024" max="65535" style="max-width:140px;">
+        <div class="hint" data-t="auth_port_hint">Port the dashboard will run on (default 8091, must be free)</div>
+      </div>
+
+      <div class="field">
         <label data-t="auth_username">Username</label>
         <input type="text" id="auth-username" data-default="admin" placeholder="admin">
       </div>
@@ -856,6 +862,7 @@ function buildReview() {
     <div class="review-section">
       <h3>${t('review_access')}</h3>
       ${dashName ? `<div class="review-row"><span class="review-key">${t('review_dash_name')}</span><span class="review-val">${dashName}</span></div>` : ''}
+      <div class="review-row"><span class="review-key">${t('review_port')}</span><span class="review-val">${document.getElementById('dashboard-port').value}</span></div>
       <div class="review-row"><span class="review-key">${t('review_user')}</span><span class="review-val">${document.getElementById('auth-username').value}</span></div>
       <div class="review-row"><span class="review-key">${t('review_pass')}</span><span class="review-val" style="display:flex;align-items:center;gap:6px;"><span id="review-pass-val">${t('review_hidden')}</span><button id="review-pass-eye" onclick="toggleReviewPass()" style="background:none;border:none;color:#555;cursor:pointer;padding:2px 4px;font-size:15px;line-height:1;" title="Show / Hide">👁</button></span></div>
     </div>
@@ -887,6 +894,7 @@ async function install() {
 
   const payload = {
     dashboard_name: document.getElementById('dashboard-name').value.trim() || 'Homelab',
+    port: parseInt(document.getElementById('dashboard-port').value) || 8091,
     username: document.getElementById('auth-username').value,
     password: document.getElementById('auth-password').value,
     proxmox_ip: document.getElementById('prox-ip').value,
