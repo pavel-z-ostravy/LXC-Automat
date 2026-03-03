@@ -199,3 +199,7 @@ Browser  ──→  Web UI (single-page HTML + JS)
 - `python-multipart` missing → FastAPI can't parse login form without it
 - Redirect loop after wizard completes → replaced with "restart instructions" page
 - Port conflict with existing monitor service → changed to 8091
+
+---
+
+> Ideas for features, improvements and interface design are from my head, but the heavy programming work was done by Claude AI, Sonnet 🙂

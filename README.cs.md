@@ -199,3 +199,7 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS)
 - Chyběl `python-multipart` → FastAPI bez něj neumí zpracovat login formulář
 - Redirect smyčka po dokončení wizardu → nahrazeno stránkou s instrukcemi pro restart
 - Konflikt portů s existující monitor service → změněno na port 8091
+
+---
+
+> Nápady na funkce, vylepšení a design rozhraní jsou z mé hlavy, ale těžkou programátorskou práci dělal Claude AI, Sonnet 🙂
