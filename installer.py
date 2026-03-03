@@ -76,6 +76,18 @@ def _generate_keypair(name: str) -> dict:
 
 # ── routes ─────────────────────────────────────────────────────────────────
 
+@app.get("/locales/{lang}.json")
+def get_locale(lang: str):
+    """Serve locale files for the wizard UI."""
+    if lang not in {"en", "cs"}:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    path = os.path.join(INSTALL_PATH, "locales", f"{lang}.json")
+    if not os.path.exists(path):
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    with open(path) as f:
+        return JSONResponse(json.load(f))
+
+
 @app.get("/setup", response_class=HTMLResponse)
 @app.get("/", response_class=HTMLResponse)
 def wizard():
@@ -191,6 +203,7 @@ async def save_config(request: Request):
     password_hash = hashlib.sha256(password.encode()).hexdigest()
 
     config = {
+        "dashboard_name": data.get("dashboard_name", "Homelab"),
         "auth": {
             "username": username,
             "password_hash": password_hash,

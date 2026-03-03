@@ -46,6 +46,7 @@ def _load_dashboard_app():
     MODULES = config["modules"]
     SERVICES_CFG = config.get("services", [])
     WOL_DEVICES = config.get("wol_devices", [])
+    DASHBOARD_NAME = config.get("dashboard_name", "Homelab")
 
     HISTORY_FILE = os.path.join(INSTALL_PATH, "temp_history.json")
     STATS_HISTORY_FILE = os.path.join(INSTALL_PATH, "stats_history.json")
@@ -234,6 +235,7 @@ def _load_dashboard_app():
     @dashboard.get("/api/config/modules")
     def get_modules():
         return {
+            "dashboard_name": DASHBOARD_NAME,
             "home_assistant": MODULES["home_assistant"]["enabled"],
             "router": MODULES["router"]["enabled"],
             "cloudflare": MODULES["cloudflare"]["enabled"],

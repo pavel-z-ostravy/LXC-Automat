@@ -2020,6 +2020,12 @@ function lxcWizardPoll(jobId, btn, status, logEl) {
 
 // ── Module config ──────────────────────────────────────────────────────────
 function applyModules(mods) {
+  // Apply dashboard name
+  if (mods.dashboard_name) {
+    var name = mods.dashboard_name;
+    document.getElementById('navBrand').textContent = '🖥️ ' + name;
+    document.title = name;
+  }
   // Hide/show nav items and pages based on active modules
   function setVisible(selector, visible) {
     document.querySelectorAll(selector).forEach(function(el) {

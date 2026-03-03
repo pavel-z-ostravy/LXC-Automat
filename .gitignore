@@ -1,6 +1,7 @@
 config.json
 keys/
 *.json
+!locales/*.json
 venv/
 __pycache__/
 *.pyc
