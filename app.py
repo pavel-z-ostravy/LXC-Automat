@@ -36,6 +36,7 @@ def _load_dashboard_app():
     import wakeonlan
     import threading as _threading
     import uuid as _uuid
+    import shlex
 
     # ── Config load ─────────────────────────────────────────────────────────
     with open(CONFIG_FILE) as f:
@@ -492,6 +493,8 @@ def _load_dashboard_app():
 
     @dashboard.delete("/api/backups/delete")
     def delete_backup(volid: str):
+        if not re.match(r'^[\w\-:.]+$', volid):
+            return JSONResponse({"error": "Invalid volid"}, status_code=400)
         try:
             ssh = proxmox_ssh()
             node = PROXMOX["node"]
@@ -503,6 +506,10 @@ def _load_dashboard_app():
 
     @dashboard.post("/api/backups/run")
     def run_backup(vmid: str, mode: str = "stop"):
+        if not re.match(r'^\d+$', vmid):
+            return JSONResponse({"error": "Invalid vmid"}, status_code=400)
+        if mode not in {"stop", "suspend", "snapshot"}:
+            return JSONResponse({"error": "Invalid mode"}, status_code=400)
         try:
             ssh = proxmox_ssh()
             proc = subprocess.Popen(ssh + [f"vzdump {vmid} --storage local --mode {mode} --compress zstd"],
@@ -527,6 +534,14 @@ def _load_dashboard_app():
 
     @dashboard.post("/api/backups/schedule")
     def save_backup_schedule(vmids: str, hour: int, minute: int, dow: str = "sun", maxfiles: int = 1):
+        if not re.match(r'^[\d,]+$', vmids):
+            return JSONResponse({"error": "Invalid vmids"}, status_code=400)
+        if dow not in {"mon", "tue", "wed", "thu", "fri", "sat", "sun"}:
+            return JSONResponse({"error": "Invalid dow"}, status_code=400)
+        if not (0 <= hour <= 23 and 0 <= minute <= 59):
+            return JSONResponse({"error": "Invalid time"}, status_code=400)
+        if not (1 <= maxfiles <= 999):
+            return JSONResponse({"error": "Invalid maxfiles"}, status_code=400)
         try:
             ssh = proxmox_ssh()
             starttime = f"{hour:02d}:{minute:02d}"
@@ -698,16 +713,16 @@ def _load_dashboard_app():
 
     @dashboard.get("/api/speedtest/start")
     def start_speedtest_job(server_id: str = None):
+        if server_id is not None and not re.match(r'^\d+$', server_id):
+            return JSONResponse({"error": "Invalid server_id"}, status_code=400)
         job_id = str(_uuid.uuid4())[:8]
         speed_jobs[job_id] = {"lines": [], "done": False, "result": None}
-        ssh_prefix = " ".join(proxmox_ssh())
 
         def run():
-            cmd = f'{ssh_prefix} "/root/go/bin/speedtest-go'
+            remote_cmd = "/root/go/bin/speedtest-go"
             if server_id:
-                cmd += f" --server {server_id}"
-            cmd += '"'
-            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                remote_cmd += f" --server {server_id}"
+            proc = subprocess.Popen(proxmox_ssh() + [remote_cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             output_lines = []
             for raw in proc.stdout:
                 line = raw.decode("utf-8", errors="replace").rstrip()
@@ -776,11 +791,11 @@ def _load_dashboard_app():
             L += ["curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash",
                   "export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"",
                   "nvm install --lts && nvm use --lts"]
-        if git_name: L.append(f"git config --global user.name \"{git_name}\"")
-        if git_email: L.append(f"git config --global user.email \"{git_email}\"")
+        if git_name: L.append(f"git config --global user.name {shlex.quote(git_name)}")
+        if git_email: L.append(f"git config --global user.email {shlex.quote(git_email)}")
         if ssh_key:
             L += ["mkdir -p ~/.ssh && chmod 700 ~/.ssh",
-                  f"echo '{ssh_key}' >> ~/.ssh/authorized_keys",
+                  f"printf '%s\\n' {shlex.quote(ssh_key)} >> ~/.ssh/authorized_keys",
                   "chmod 600 ~/.ssh/authorized_keys"]
         L.append(f"echo \"Setup done: ssh root@{ip}\"")
         return "\n".join(L)
