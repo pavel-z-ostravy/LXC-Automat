@@ -2094,26 +2094,11 @@ loadAllStats();
 loadSpeedServers();
 setInterval(function() { loadSensors(); loadAllStats(); }, 10000);
 </script>
-<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-<script type='text/javascript'>
-kofiwidget2.init('Is it useful? Tip me please ♥', '#72a4f2', 'J3J31VBHGB');
-kofiwidget2.draw();
-(function(){
-  function sp(el, p, v){ el.style.setProperty(p, v, 'important'); }
-  function applyKofi(){
-    var el = document.getElementById('kofi-widget-overlay');
-    if(!el) el = document.querySelector('[id*="kofi"]');
-    if(!el) return false;
-    sp(el,'left','50%'); sp(el,'right','auto'); sp(el,'bottom','16px');
-    sp(el,'transform','translateX(-50%)');
-    sp(el,'opacity','0.13'); sp(el,'filter','saturate(0) brightness(0.35)');
-    sp(el,'transition','opacity 0.4s, filter 0.4s');
-    el.addEventListener('mouseenter',function(){ sp(this,'opacity','1'); sp(this,'filter','saturate(1) brightness(1)'); });
-    el.addEventListener('mouseleave',function(){ sp(this,'opacity','0.13'); sp(this,'filter','saturate(0) brightness(0.35)'); });
-    return true;
-  }
-  var n=0, iv=setInterval(function(){ if(applyKofi()||++n>15) clearInterval(iv); },250);
-})();
-</script>
+<div id="kofi-wrap" style="position:fixed;left:0;right:0;bottom:16px;display:flex;justify-content:center;pointer-events:none;z-index:9999;">
+  <div id="kofi-inner" style="pointer-events:auto;opacity:0.13;filter:saturate(0) brightness(0.35);transition:opacity 0.4s,filter 0.4s;" onmouseenter="this.style.opacity='1';this.style.filter=''" onmouseleave="this.style.opacity='0.13';this.style.filter='saturate(0) brightness(0.35)'">
+    <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+    <script type='text/javascript'>kofiwidget2.init('Is it useful? Tip me please ♥', '#72a4f2', 'J3J31VBHGB');kofiwidget2.draw();</script>
+  </div>
+</div>
 </body>
 </html>
