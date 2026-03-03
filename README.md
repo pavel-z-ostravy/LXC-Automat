@@ -167,14 +167,40 @@ Browser  ──→  Web UI (single-page HTML + JS)
 
 ## Screenshots
 
-### LXC Wizard — configuration and provisioning
-![LXC Wizard](screenshots/lxc-wizard.png)
+### Step 1 — System Check
+Python, sshpass and paramiko verified, local IP detected.
 
-### Backups — Proxmox backup management
-![Backups](screenshots/backups.png)
+![Step 1 - System Check](screenshots/wizard-step1-system-check.png)
 
-### Wake-on-LAN
-![Wake-on-LAN](screenshots/wol.png)
+### Step 2 — Dashboard Credentials
+Set dashboard name (updates browser title live), username, and password with built-in generator and strength bar.
+
+![Step 2 - Credentials](screenshots/wizard-step2-credentials.png)
+
+### Step 3 — Proxmox Connection
+Enter Proxmox IP, node name and SSH credentials. Choose between password or generated ed25519 keypair.
+
+![Step 3 - Proxmox](screenshots/wizard-step3-proxmox.png)
+
+### Step 4 — Optional Modules
+Enable Home Assistant, Router, Cloudflare and/or NextDNS. Inactive modules are completely hidden in the dashboard.
+
+![Step 4 - Modules](screenshots/wizard-step4-modules.png)
+
+### Step 5 — Monitored Services
+Add URLs to check for HTTP availability. Each service gets a live status indicator on the dashboard.
+
+![Step 5 - Services](screenshots/wizard-step5-services.png)
+
+### Step 6 — Wake-on-LAN Devices
+Register devices by name, MAC and IP. Dashboard shows ping status and lets you send a WoL packet in one click.
+
+![Step 6 - WoL](screenshots/wizard-step6-wol.png)
+
+### Step 7 — Configuration Review & Install
+Full summary of all settings (passwords hidden, eye icon to reveal). Click Install & Start to write `config.json` and launch the dashboard.
+
+![Step 7 - Review](screenshots/wizard-step7-review.png)
 
 ---
 

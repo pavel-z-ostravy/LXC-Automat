@@ -167,14 +167,40 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS)
 
 ## Screenshoty
 
-### LXC Wizard — konfigurace a spuštění
-![LXC Wizard](screenshots/lxc-wizard.png)
+### Krok 1 — Kontrola systému
+Ověření Pythonu, sshpass a paramiko, detekce lokální IP.
 
-### Zálohy — správa Proxmox záloh
-![Backups](screenshots/backups.png)
+![Krok 1 - Kontrola systému](screenshots/wizard-step1-system-check.png)
 
-### Wake-on-LAN
-![Wake-on-LAN](screenshots/wol.png)
+### Krok 2 — Přihlašovací údaje
+Nastavení názvu dashboardu (live aktualizace titulku), uživatelského jména a hesla s generátorem a strength barem.
+
+![Krok 2 - Přihlašovací údaje](screenshots/wizard-step2-credentials.png)
+
+### Krok 3 — Připojení k Proxmoxu
+IP adresa, název nodu a SSH přihlášení — heslem nebo generovaným ed25519 klíčem.
+
+![Krok 3 - Proxmox](screenshots/wizard-step3-proxmox.png)
+
+### Krok 4 — Volitelné moduly
+Aktivace Home Assistant, Router, Cloudflare a/nebo NextDNS. Neaktivní moduly se v dashboardu úplně skryjí.
+
+![Krok 4 - Moduly](screenshots/wizard-step4-modules.png)
+
+### Krok 5 — Monitorované služby
+Přidání URL adres pro HTTP kontrolu dostupnosti. Každá služba dostane live stavový indikátor.
+
+![Krok 5 - Služby](screenshots/wizard-step5-services.png)
+
+### Krok 6 — Wake-on-LAN zařízení
+Registrace zařízení podle názvu, MAC a IP. Dashboard zobrazuje ping stav a umožňuje odeslat WoL paket jedním kliknutím.
+
+![Krok 6 - WoL](screenshots/wizard-step6-wol.png)
+
+### Krok 7 — Přehled konfigurace a instalace
+Souhrn všech nastavení (hesla skryta, ikonka oka pro zobrazení). Kliknutím na Install & Start se zapíše `config.json` a spustí dashboard.
+
+![Krok 7 - Přehled](screenshots/wizard-step7-review.png)
 
 ---
 
