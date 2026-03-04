@@ -8,6 +8,16 @@ Config-driven homelab dashboard pro Proxmox + volitelné moduly (Home Assistant,
 
 ---
 
+## Poslední aktualizace
+
+| Datum | Co se změnilo |
+|-------|--------------|
+| **4. 3. 2026** | **User menu + Settings panel** — dropdown `👤 admin ▾` v navbaru; modál Účet (název dashboardu, heslo, reset 2FA); modál Nastavení se záložkami Moduly, WoL zařízení a Monitorované služby — vše editovatelné živě bez nutnosti spouštět wizard znovu |
+| **1. 3. 2026** | **GitHub SSH klíč** + oprava vlastníka `monitor.service` |
+| **1. 2. 2026** | **První vydání** — webový instalační wizard, moduly Proxmox/HA/Router/Cloudflare/NextDNS, LXC generátor, speedtest, WoL, TOTP 2FA |
+
+---
+
 ## Rychlá instalace
 
 ```bash

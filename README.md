@@ -8,6 +8,16 @@ A config-driven homelab dashboard for Proxmox + optional modules (Home Assistant
 
 ---
 
+## Recent Updates
+
+| Date | What changed |
+|------|-------------|
+| **2026-03-04** | **User menu + Settings panel** — `👤 admin ▾` dropdown in navbar; Account modal (dashboard name, password, 2FA reset); Settings modal with tabs for Modules, WoL devices and monitored Services — all editable live without re-running the wizard |
+| **2026-03-01** | **GitHub SSH key** + ownership fix for `monitor.service` |
+| **2026-02-01** | **Initial release** — web installer wizard, Proxmox/HA/Router/Cloudflare/NextDNS modules, LXC generator, speedtest, WoL, TOTP 2FA |
+
+---
+
 ## Quick Install
 
 ```bash

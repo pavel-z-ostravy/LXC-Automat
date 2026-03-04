@@ -306,6 +306,85 @@ def _load_dashboard_app():
     def get_wol_devices():
         return {"devices": WOL_DEVICES}
 
+    # ── Settings API ─────────────────────────────────────────────────────────
+
+    def _save_config_file():
+        with open(CONFIG_FILE) as f:
+            cfg = json.load(f)
+        cfg["auth"] = AUTH
+        cfg["modules"] = MODULES
+        cfg["services"] = SERVICES_CFG
+        cfg["wol_devices"] = WOL_DEVICES
+        cfg["dashboard_name"] = DASHBOARD_NAME
+        with open(CONFIG_FILE, "w") as f:
+            json.dump(cfg, f, indent=2)
+
+    @dashboard.get("/api/settings")
+    def get_settings():
+        mods = {}
+        for name, mod in MODULES.items():
+            m = dict(mod)
+            for k in ("ssh_password", "password"):
+                if k in m:
+                    m[k] = ""
+            mods[name] = m
+        return {
+            "dashboard_name": DASHBOARD_NAME,
+            "username": AUTH["username"],
+            "totp_enabled": bool(TOTP_SECRET),
+            "modules": mods,
+            "wol_devices": WOL_DEVICES,
+            "services": SERVICES_CFG,
+        }
+
+    @dashboard.post("/api/settings/account")
+    async def save_account(request: Request):
+        nonlocal DASHBOARD_NAME
+        data = await request.json()
+        if data.get("dashboard_name", "").strip():
+            DASHBOARD_NAME = data["dashboard_name"].strip()
+        if data.get("password"):
+            AUTH["password_hash"] = hashlib.sha256(data["password"].encode()).hexdigest()
+        _save_config_file()
+        return {"ok": True, "dashboard_name": DASHBOARD_NAME}
+
+    @dashboard.post("/api/settings/2fa/reset")
+    def reset_2fa():
+        nonlocal TOTP_SECRET
+        TOTP_SECRET = None
+        AUTH["totp_secret"] = None
+        _save_config_file()
+        return {"ok": True}
+
+    @dashboard.post("/api/settings/modules")
+    async def save_modules_cfg(request: Request):
+        data = await request.json()
+        for name in ("home_assistant", "router", "cloudflare", "nextdns"):
+            if name in data and isinstance(data[name], dict):
+                incoming = {k: v for k, v in data[name].items() if v != ""}
+                MODULES[name].update(incoming)
+        _save_config_file()
+        subprocess.Popen(["systemctl", "restart", "lxc-automat"])
+        return {"ok": True, "restarting": True}
+
+    @dashboard.post("/api/settings/wol")
+    async def save_wol_cfg(request: Request):
+        data = await request.json()
+        devices = data.get("wol_devices", [])
+        WOL_DEVICES.clear()
+        WOL_DEVICES.extend(devices)
+        _save_config_file()
+        return {"ok": True}
+
+    @dashboard.post("/api/settings/services")
+    async def save_services_cfg(request: Request):
+        data = await request.json()
+        services = data.get("services", [])
+        SERVICES_CFG.clear()
+        SERVICES_CFG.extend(services)
+        _save_config_file()
+        return {"ok": True}
+
     # ── Stats ────────────────────────────────────────────────────────────────
 
     @dashboard.get("/api/stats")

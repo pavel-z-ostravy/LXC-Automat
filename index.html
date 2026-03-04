@@ -294,6 +294,94 @@
   body.dark .lxc-expand code { color: #00d4ff; }
   body.light .lxc-expand code { color: #0066aa; }
   .lxc-expand .note { font-size: 11px; opacity: 0.6; margin-top: 6px; }
+
+  /* ── User menu ── */
+  .user-menu { position: relative; }
+  .user-btn { display: flex; align-items: center; gap: 6px; border-radius: 20px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
+  body.dark .user-btn { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff; }
+  body.light .user-btn { background: #dde8f0; color: #0066aa; border: 1px solid #0066aa; }
+  .user-btn .arrow { font-size: 9px; opacity: 0.7; transition: transform 0.2s; }
+  .user-menu.open .user-btn .arrow { transform: rotate(180deg); }
+  .user-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 300; min-width: 210px; border-radius: 8px; padding: 4px; }
+  .user-menu.open .user-dropdown { display: flex; flex-direction: column; }
+  body.dark .user-dropdown { background: #16213e; border: 1px solid #0f3460; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+  body.light .user-dropdown { background: #fff; border: 1px solid #bcd; box-shadow: 0 4px 16px #ccc; }
+  .dropdown-section { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 8px 12px 4px; }
+  body.dark .dropdown-section { color: #555; }
+  body.light .dropdown-section { color: #999; }
+  .user-dropdown button { text-align: left; width: 100%; border: none; background: none; border-radius: 5px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
+  body.dark .user-dropdown button { color: #ccc; }
+  body.light .user-dropdown button { color: #444; }
+  body.dark .user-dropdown button:hover { background: #0f3460; color: #eee; }
+  body.light .user-dropdown button:hover { background: #eef4f8; color: #222; }
+  .dropdown-divider { height: 1px; margin: 4px 8px; }
+  body.dark .dropdown-divider { background: #0f3460; }
+  body.light .dropdown-divider { background: #dde; }
+
+  /* ── Modals ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.7); align-items: flex-start; justify-content: center; padding-top: 60px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { border-radius: 12px; padding: 24px; width: 440px; max-width: 95vw; max-height: 85vh; overflow-y: auto; }
+  .modal-box-wide { width: 600px; }
+  body.dark .modal-box { background: #16213e; border: 1px solid #0f3460; }
+  body.light .modal-box { background: #fff; border: 1px solid #bcd; box-shadow: 0 8px 32px #ccc; }
+  .modal-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-hdr span { font-size: 16px; font-weight: bold; }
+  body.dark .modal-hdr span { color: #00d4ff; }
+  body.light .modal-hdr span { color: #0066aa; }
+  .modal-close { border: none; background: none; font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+  body.dark .modal-close { color: #888; }
+  body.light .modal-close { color: #999; }
+  body.dark .modal-close:hover { background: #0f3460; color: #eee; }
+  body.light .modal-close:hover { background: #eef4f8; color: #222; }
+  .modal-label { font-size: 12px; margin-bottom: 4px; display: block; }
+  body.dark .modal-label { color: #00d4ff; }
+  body.light .modal-label { color: #0066aa; }
+  .modal-input { width: 100%; padding: 8px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; outline: none; font-family: inherit; }
+  body.dark .modal-input { background: #0d1b2a; border: 1px solid #0f3460; color: #eee; }
+  body.light .modal-input { background: #eef4f8; border: 1px solid #bcd; color: #222; }
+  body.dark .modal-input:focus { border-color: #00d4ff; }
+  body.light .modal-input:focus { border-color: #0066aa; }
+  .modal-msg { font-size: 12px; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; display: none; }
+  .modal-msg.ok { background: #6bcb7722; color: #6bcb77; }
+  .modal-msg.err { background: #ff6b6b22; color: #ff6b6b; }
+  .modal-sep { height: 1px; margin: 16px 0; }
+  body.dark .modal-sep { background: #0f3460; }
+  body.light .modal-sep { background: #dde; }
+  .modal-tabs { display: flex; gap: 4px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid; }
+  body.dark .modal-tabs { border-color: #0f3460; }
+  body.light .modal-tabs { border-color: #dde; }
+  .modal-tab { border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; background: none; font-family: inherit; }
+  body.dark .modal-tab { color: #888; }
+  body.light .modal-tab { color: #999; }
+  body.dark .modal-tab:hover { background: #0f3460; color: #eee; }
+  body.light .modal-tab:hover { background: #eef4f8; color: #222; }
+  body.dark .modal-tab.active { background: #0f3460; color: #00d4ff; }
+  body.light .modal-tab.active { background: #dde8f0; color: #0066aa; }
+  .mod-item { border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+  body.dark .mod-item { background: #0d1b2a; border: 1px solid #0f3460; }
+  body.light .mod-item { background: #eef4f8; border: 1px solid #bcd; }
+  .mod-header { display: flex; align-items: center; justify-content: space-between; cursor: default; }
+  .mod-title { font-size: 13px; font-weight: bold; }
+  .mod-toggle { appearance: none; -webkit-appearance: none; width: 36px; height: 20px; border-radius: 10px; cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; border: none; outline: none; }
+  .mod-toggle::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; top: 2px; left: 2px; background: white; transition: left 0.2s; }
+  .mod-toggle:checked::after { left: 18px; }
+  body.dark .mod-toggle { background: #0f3460; }
+  body.dark .mod-toggle:checked { background: #00d4ff; }
+  body.light .mod-toggle { background: #bcd; }
+  body.light .mod-toggle:checked { background: #0066aa; }
+  .mod-fields { margin-top: 12px; display: none; }
+  .mod-fields.open { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mod-field-full { grid-column: 1 / -1; }
+  .settings-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+  .settings-table th { text-align: left; padding: 6px 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  body.dark .settings-table th { color: #00d4ff; border-bottom: 1px solid #0f3460; }
+  body.light .settings-table th { color: #0066aa; border-bottom: 1px solid #bcd; }
+  .settings-table td { padding: 5px 8px; }
+  .del-btn { border: none; background: none; cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; color: #ff6b6b; }
+  .del-btn:hover { background: #ff6b6b22; }
+  .stab-content { display: none; }
+  .stab-content.active { display: block; }
 </style>
 </head>
 <body class="dark">
@@ -333,6 +421,20 @@
   </div>
   <div class="nav-right">
     <span class="last-update" id="lastUpdate">-</span>
+    <div class="user-menu" id="userMenu">
+      <button class="user-btn" onclick="toggleUserMenu(event)">👤 <span id="userDisplayName">admin</span> <span class="arrow">▾</span></button>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-section">👤 Účet</div>
+        <button onclick="openModal('accountModal');closeUserMenu()">Název dashboardu</button>
+        <button onclick="openModal('accountModal');closeUserMenu()">Změna hesla</button>
+        <button onclick="openModal('accountModal');closeUserMenu()">Reset 2FA</button>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">⚙️ Nastavení</div>
+        <button onclick="openModal('settingsModal','modules');closeUserMenu()">Moduly</button>
+        <button onclick="openModal('settingsModal','wol');closeUserMenu()">WoL zařízení</button>
+        <button onclick="openModal('settingsModal','services');closeUserMenu()">Monitorované služby</button>
+      </div>
+    </div>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
     <form method="post" action="/logout" style="display:inline"><button class="theme-btn" type="submit" title="Odhlásit">⏻</button></form>
   </div>
@@ -350,6 +452,83 @@
   <button class="nav-tab" onclick="showPage('cloudflare',this);closeMobileMenu()" data-dt="nav_cloudflare">☁️ Cloudflare</button>
   <button class="nav-tab" onclick="showPage('speed',this);closeMobileMenu()" data-dt="nav_speed">⚡ Speedtest</button>
   <button class="nav-tab" onclick="showPage('wol',this);closeMobileMenu()" data-dt="nav_wol">⚡ WoL</button>
+</div>
+
+<!-- ── Account modal ── -->
+<div class="modal-overlay" id="accountModal" onclick="closeModalOutside(event,'accountModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <span>👤 Účet</span>
+      <button class="modal-close" onclick="closeModal('accountModal')">✕</button>
+    </div>
+    <div class="modal-msg" id="accMsg"></div>
+    <label class="modal-label">Název dashboardu</label>
+    <input id="accDashName" type="text" class="modal-input" placeholder="Homelab">
+    <label class="modal-label">Nové heslo <span style="font-weight:normal;opacity:0.6">(prázdné = nezměnit)</span></label>
+    <input id="accPassword" type="password" class="modal-input" placeholder="Nechte prázdné pro zachování">
+    <label class="modal-label">Potvrzení hesla</label>
+    <input id="accPasswordConfirm" type="password" class="modal-input" placeholder="Opakujte heslo">
+    <button class="run-btn" onclick="saveAccount()">Uložit</button>
+    <div class="modal-sep"></div>
+    <div style="font-size:13px;margin-bottom:10px">🔐 Dvoufaktorové ověření: <span id="twoFAStatus" style="font-weight:bold"></span></div>
+    <button class="refresh-btn" onclick="reset2FA()">Reset 2FA</button>
+    <div class="modal-msg" id="twoFAMsg" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- ── Settings modal ── -->
+<div class="modal-overlay" id="settingsModal" onclick="closeModalOutside(event,'settingsModal')">
+  <div class="modal-box modal-box-wide" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <span>⚙️ Nastavení</span>
+      <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="stab-modules" onclick="switchSettingsTab('modules')">Moduly</button>
+      <button class="modal-tab" id="stab-wol" onclick="switchSettingsTab('wol')">WoL zařízení</button>
+      <button class="modal-tab" id="stab-services" onclick="switchSettingsTab('services')">Monitorované služby</button>
+    </div>
+    <!-- Moduly -->
+    <div id="stab-content-modules" class="stab-content active">
+      <div id="modulesForm"><span style="opacity:0.5;font-size:13px">Načítám...</span></div>
+      <button class="run-btn" onclick="saveModules()" style="margin-top:16px">Uložit moduly</button>
+      <div class="modal-msg" id="modulesMsg" style="margin-top:8px"></div>
+    </div>
+    <!-- WoL -->
+    <div id="stab-content-wol" class="stab-content">
+      <table class="settings-table" id="wolTable">
+        <tr><th>Název</th><th>MAC</th><th>IP</th><th></th></tr>
+      </table>
+      <div style="padding-top:12px;border-top:1px solid #0f346044">
+        <div style="font-size:12px;font-weight:bold;margin-bottom:10px;opacity:0.8">Přidat zařízení</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+          <div><label class="modal-label">Název</label><input id="newWolName" class="modal-input" placeholder="Mac mini" style="margin:0"></div>
+          <div><label class="modal-label">MAC</label><input id="newWolMac" class="modal-input" placeholder="AA:BB:CC:DD:EE:FF" style="margin:0"></div>
+          <div><label class="modal-label">IP</label><input id="newWolIp" class="modal-input" placeholder="10.0.1.X" style="margin:0"></div>
+        </div>
+        <button class="refresh-btn" onclick="addWolDevice()">+ Přidat</button>
+      </div>
+      <button class="run-btn" onclick="saveWol()" style="margin-top:16px">Uložit</button>
+      <div class="modal-msg" id="wolMsg" style="margin-top:8px"></div>
+    </div>
+    <!-- Služby -->
+    <div id="stab-content-services" class="stab-content">
+      <table class="settings-table" id="servicesTable">
+        <tr><th>Název</th><th>URL</th><th>Ikona</th><th></th></tr>
+      </table>
+      <div style="padding-top:12px;border-top:1px solid #0f346044">
+        <div style="font-size:12px;font-weight:bold;margin-bottom:10px;opacity:0.8">Přidat službu</div>
+        <div style="display:grid;grid-template-columns:2fr 3fr 1fr;gap:8px;margin-bottom:10px">
+          <div><label class="modal-label">Název</label><input id="newSvcName" class="modal-input" placeholder="Nextcloud" style="margin:0"></div>
+          <div><label class="modal-label">URL</label><input id="newSvcUrl" class="modal-input" placeholder="http://10.0.1.22:8080" style="margin:0"></div>
+          <div><label class="modal-label">Ikona</label><input id="newSvcIcon" class="modal-input" placeholder="🌐" style="margin:0"></div>
+        </div>
+        <button class="refresh-btn" onclick="addService()">+ Přidat</button>
+      </div>
+      <button class="run-btn" onclick="saveServices()" style="margin-top:16px">Uložit</button>
+      <div class="modal-msg" id="servicesMsg" style="margin-top:8px"></div>
+    </div>
+  </div>
 </div>
 
 <!-- MONITOR -->
@@ -2199,9 +2378,277 @@ function loadWolDevices() {
   }).catch(function() {});
 }
 
+// ── User menu ─────────────────────────────────────────────────────────────
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  document.getElementById('userMenu').classList.toggle('open');
+}
+function closeUserMenu() {
+  document.getElementById('userMenu').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('userMenu');
+  if (menu && !menu.contains(e.target)) closeUserMenu();
+});
+
+// ── Modals ────────────────────────────────────────────────────────────────
+var _settingsData = null;
+
+function openModal(id, tab) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'accountModal') _loadAccountModal();
+  if (id === 'settingsModal') { _loadSettingsModal(tab || 'modules'); }
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function closeModalOutside(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+}
+
+function showMsg(elId, text, type) {
+  var el = document.getElementById(elId);
+  el.textContent = text;
+  el.className = 'modal-msg ' + type;
+  el.style.display = 'block';
+  setTimeout(function() { el.style.display = 'none'; }, 4000);
+}
+
+function switchSettingsTab(tab) {
+  ['modules','wol','services'].forEach(function(t) {
+    document.getElementById('stab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('stab-content-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+// Account modal
+function _loadAccountModal() {
+  fetch('/api/settings').then(function(r) { return r.json(); }).then(function(d) {
+    _settingsData = d;
+    document.getElementById('accDashName').value = d.dashboard_name || '';
+    document.getElementById('accPassword').value = '';
+    document.getElementById('accPasswordConfirm').value = '';
+    var twoFA = document.getElementById('twoFAStatus');
+    twoFA.textContent = d.totp_enabled ? 'Aktivní' : 'Neaktivní';
+    twoFA.style.color = d.totp_enabled ? '#6bcb77' : '#ff6b6b';
+    document.getElementById('userDisplayName').textContent = d.username || 'admin';
+    document.getElementById('accMsg').style.display = 'none';
+    document.getElementById('twoFAMsg').style.display = 'none';
+  }).catch(function() {});
+}
+
+async function saveAccount() {
+  var name = document.getElementById('accDashName').value.trim();
+  var pw = document.getElementById('accPassword').value;
+  var pw2 = document.getElementById('accPasswordConfirm').value;
+  if (pw && pw !== pw2) { showMsg('accMsg', 'Hesla se neshodují.', 'err'); return; }
+  var body = {};
+  if (name) body.dashboard_name = name;
+  if (pw) body.password = pw;
+  try {
+    var r = await fetch('/api/settings/account', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    var d = await r.json();
+    if (d.ok) {
+      showMsg('accMsg', 'Uloženo.', 'ok');
+      if (d.dashboard_name) {
+        document.getElementById('navBrand').textContent = '🖥️ ' + d.dashboard_name;
+        document.title = d.dashboard_name;
+      }
+    } else { showMsg('accMsg', d.error || 'Chyba.', 'err'); }
+  } catch(e) { showMsg('accMsg', 'Chyba sítě.', 'err'); }
+}
+
+async function reset2FA() {
+  if (!confirm('Opravdu resetovat 2FA? Po restartu bude přihlášení bez TOTP kódu.')) return;
+  try {
+    var r = await fetch('/api/settings/2fa/reset', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    var d = await r.json();
+    if (d.ok) {
+      showMsg('twoFAMsg', '2FA resetováno. Při příštím přihlášení nebude vyžadován TOTP kód.', 'ok');
+      document.getElementById('twoFAStatus').textContent = 'Neaktivní';
+      document.getElementById('twoFAStatus').style.color = '#ff6b6b';
+    } else { showMsg('twoFAMsg', d.error || 'Chyba.', 'err'); }
+  } catch(e) { showMsg('twoFAMsg', 'Chyba sítě.', 'err'); }
+}
+
+// Settings modal
+function _loadSettingsModal(tab) {
+  switchSettingsTab(tab);
+  fetch('/api/settings').then(function(r) { return r.json(); }).then(function(d) {
+    _settingsData = d;
+    _renderModulesForm(d.modules || {});
+    _renderWolTable(d.wol_devices || []);
+    _renderServicesTable(d.services || []);
+    document.getElementById('modulesMsg').style.display = 'none';
+    document.getElementById('wolMsg').style.display = 'none';
+    document.getElementById('servicesMsg').style.display = 'none';
+  }).catch(function() {});
+}
+
+// Modules form
+var _MOD_DEFS = {
+  home_assistant: {
+    label: '🏠 Home Assistant',
+    fields: [
+      {key:'ip', label:'IP', ph:'10.0.1.22'},
+      {key:'ssh_user', label:'SSH user', ph:'pavel'},
+      {key:'ssh_password', label:'SSH heslo', ph:'(prázdné = zachovat)', type:'password'},
+      {key:'ssh_port', label:'SSH port', ph:'22'}
+    ]
+  },
+  router: {
+    label: '🌐 Router',
+    fields: [
+      {key:'ip', label:'IP', ph:'192.168.1.1'},
+      {key:'ssh_user', label:'SSH user', ph:'root'},
+      {key:'ssh_password', label:'SSH heslo', ph:'(prázdné = zachovat)', type:'password'},
+      {key:'subnet', label:'Subnet prefix', ph:'10.0.'},
+      {key:'ssh_port', label:'SSH port', ph:'22'}
+    ]
+  },
+  cloudflare: {
+    label: '☁️ Cloudflare',
+    fields: [
+      {key:'token', label:'API Token', ph:'••••••••', type:'password'},
+      {key:'account_id', label:'Account ID', ph:''},
+      {key:'zone_id', label:'Zone ID', ph:''},
+      {key:'tunnel_id', label:'Tunnel ID', ph:''}
+    ]
+  },
+  nextdns: {
+    label: '🛡️ NextDNS',
+    fields: [
+      {key:'api_key', label:'API Key', ph:'••••••••', type:'password'},
+      {key:'profile_id', label:'Profile ID', ph:''}
+    ]
+  }
+};
+
+function _renderModulesForm(mods) {
+  var html = '';
+  Object.keys(_MOD_DEFS).forEach(function(name) {
+    var def = _MOD_DEFS[name];
+    var mod = mods[name] || {};
+    var enabled = mod.enabled ? 'checked' : '';
+    var fieldsOpen = mod.enabled ? 'open' : '';
+    html += '<div class="mod-item">';
+    html += '<div class="mod-header">';
+    html += '<span class="mod-title">' + def.label + '</span>';
+    html += '<input type="checkbox" class="mod-toggle" id="mod-en-' + name + '" ' + enabled + ' onchange="toggleModFields(\'' + name + '\')">';
+    html += '</div>';
+    html += '<div class="mod-fields ' + fieldsOpen + '" id="mod-fields-' + name + '">';
+    def.fields.forEach(function(f) {
+      var val = (f.type === 'password') ? '' : esc(String(mod[f.key] || ''));
+      html += '<div class="' + (def.fields.length <= 2 ? 'mod-field-full' : '') + '">';
+      html += '<label class="modal-label">' + f.label + '</label>';
+      html += '<input id="mod-' + name + '-' + f.key + '" class="modal-input" type="' + (f.type || 'text') + '" value="' + val + '" placeholder="' + esc(f.ph) + '" style="margin-bottom:4px">';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+  document.getElementById('modulesForm').innerHTML = html;
+}
+
+function toggleModFields(name) {
+  var checked = document.getElementById('mod-en-' + name).checked;
+  var fields = document.getElementById('mod-fields-' + name);
+  fields.classList.toggle('open', checked);
+}
+
+async function saveModules() {
+  var payload = {};
+  Object.keys(_MOD_DEFS).forEach(function(name) {
+    var enabled = document.getElementById('mod-en-' + name).checked;
+    var mod = {enabled: enabled};
+    _MOD_DEFS[name].fields.forEach(function(f) {
+      var val = document.getElementById('mod-' + name + '-' + f.key).value;
+      if (val !== '') mod[f.key] = val;
+    });
+    payload[name] = mod;
+  });
+  showMsg('modulesMsg', 'Ukládám a restartuji službu...', 'ok');
+  try {
+    var r = await fetch('/api/settings/modules', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    var d = await r.json();
+    if (d.ok) {
+      document.getElementById('modulesMsg').textContent = 'Uloženo. Služba se restartuje, stránka se obnoví za 5 s...';
+      document.getElementById('modulesMsg').className = 'modal-msg ok';
+      document.getElementById('modulesMsg').style.display = 'block';
+      setTimeout(function() { location.reload(); }, 5000);
+    } else { showMsg('modulesMsg', d.error || 'Chyba.', 'err'); }
+  } catch(e) { showMsg('modulesMsg', 'Chyba sítě.', 'err'); }
+}
+
+// WoL table
+var _wolDevices = [];
+function _renderWolTable(devs) {
+  _wolDevices = devs.slice();
+  var html = '<tr><th>Název</th><th>MAC</th><th>IP</th><th></th></tr>';
+  _wolDevices.forEach(function(d, i) {
+    html += '<tr><td>' + esc(d.name) + '</td><td>' + esc(d.mac) + '</td><td>' + esc(d.ip||'') + '</td>';
+    html += '<td><button class="del-btn" onclick="delWolDevice(' + i + ')">✕</button></td></tr>';
+  });
+  document.getElementById('wolTable').innerHTML = html;
+}
+function addWolDevice() {
+  var name = document.getElementById('newWolName').value.trim();
+  var mac = document.getElementById('newWolMac').value.trim();
+  var ip = document.getElementById('newWolIp').value.trim();
+  if (!name || !mac) { showMsg('wolMsg', 'Vyplňte název a MAC.', 'err'); return; }
+  _wolDevices.push({name: name, mac: mac, ip: ip});
+  _renderWolTable(_wolDevices);
+  document.getElementById('newWolName').value = '';
+  document.getElementById('newWolMac').value = '';
+  document.getElementById('newWolIp').value = '';
+}
+function delWolDevice(i) { _wolDevices.splice(i, 1); _renderWolTable(_wolDevices); }
+async function saveWol() {
+  try {
+    var r = await fetch('/api/settings/wol', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({wol_devices: _wolDevices}) });
+    var d = await r.json();
+    if (d.ok) { showMsg('wolMsg', 'Uloženo.', 'ok'); WOL_DEVICES = _wolDevices.slice(); renderWol(); }
+    else showMsg('wolMsg', d.error || 'Chyba.', 'err');
+  } catch(e) { showMsg('wolMsg', 'Chyba sítě.', 'err'); }
+}
+
+// Services table
+var _svcList = [];
+function _renderServicesTable(svcs) {
+  _svcList = svcs.slice();
+  var html = '<tr><th>Název</th><th>URL</th><th>Ikona</th><th></th></tr>';
+  _svcList.forEach(function(s, i) {
+    html += '<tr><td>' + esc(s.name) + '</td><td style="font-size:11px;color:#888">' + esc(s.url||s.host||'') + '</td><td>' + esc(s.icon||'') + '</td>';
+    html += '<td><button class="del-btn" onclick="delService(' + i + ')">✕</button></td></tr>';
+  });
+  document.getElementById('servicesTable').innerHTML = html;
+}
+function addService() {
+  var name = document.getElementById('newSvcName').value.trim();
+  var url = document.getElementById('newSvcUrl').value.trim();
+  var icon = document.getElementById('newSvcIcon').value.trim();
+  if (!name || !url) { showMsg('servicesMsg', 'Vyplňte název a URL.', 'err'); return; }
+  _svcList.push({name: name, url: url, icon: icon});
+  _renderServicesTable(_svcList);
+  document.getElementById('newSvcName').value = '';
+  document.getElementById('newSvcUrl').value = '';
+  document.getElementById('newSvcIcon').value = '';
+}
+function delService(i) { _svcList.splice(i, 1); _renderServicesTable(_svcList); }
+async function saveServices() {
+  try {
+    var r = await fetch('/api/settings/services', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({services: _svcList}) });
+    var d = await r.json();
+    if (d.ok) showMsg('servicesMsg', 'Uloženo.', 'ok');
+    else showMsg('servicesMsg', d.error || 'Chyba.', 'err');
+  } catch(e) { showMsg('servicesMsg', 'Chyba sítě.', 'err'); }
+}
+
 // INIT
 initTheme();
 fetch('/api/config/modules').then(function(r) { return r.json(); }).then(applyModules).catch(function() {});
+fetch('/api/settings').then(function(r) { return r.json(); }).then(function(d) {
+  if (d.username) document.getElementById('userDisplayName').textContent = d.username;
+}).catch(function() {});
 // Load dashboard language
 setDashLang(DASH_LANG);
 loadWolDevices();
