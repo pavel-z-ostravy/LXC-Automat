@@ -81,7 +81,7 @@ def _generate_keypair(name: str) -> dict:
 @app.get("/locales/{lang}.json")
 def get_locale(lang: str):
     """Serve locale files for the wizard UI."""
-    if lang not in {"en", "cs"}:
+    if lang not in {"en", "cs", "dashboard-en", "dashboard-cs"}:
         return JSONResponse({"error": "Not found"}, status_code=404)
     path = os.path.join(INSTALL_PATH, "locales", f"{lang}.json")
     if not os.path.exists(path):

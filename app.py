@@ -101,6 +101,17 @@ def _load_dashboard_app():
     dashboard.add_middleware(AuthMiddleware)
     dashboard.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+    @dashboard.get("/locales/{filename}")
+    def serve_locale(filename: str):
+        import re as _re
+        if not _re.match(r'^dashboard-(en|cs)\.json$', filename):
+            return JSONResponse({"error": "Not found"}, status_code=404)
+        path = os.path.join(INSTALL_PATH, "locales", filename)
+        if not os.path.exists(path):
+            return JSONResponse({"error": "Not found"}, status_code=404)
+        with open(path) as f:
+            return JSONResponse(json.load(f))
+
     # ── Helpers ──────────────────────────────────────────────────────────────
 
     def parse_stats(ssh_prefix=[]):

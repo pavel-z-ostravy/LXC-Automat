@@ -625,10 +625,11 @@ async function loadLocale(lang) {
   applyLocale();
 }
 
-function switchLang(lang) { loadLocale(lang); }
+function switchLang(lang) { localStorage.setItem('dashLang', lang); loadLocale(lang); }
 
 async function selectLang(lang) {
   await loadLocale(lang);
+  localStorage.setItem('dashLang', lang);
   document.getElementById('lang-select').style.display = 'none';
   document.getElementById('wizard-wrap').style.display = 'block';
   initDefaultInputs();

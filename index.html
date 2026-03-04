@@ -301,29 +301,29 @@
   </button>
   <div class="nav-tabs">
     <div class="dash-lang-toggle">
-      <button class="dash-flag-btn active" onclick="setDashLang('cs')" title="Čeština">🇨🇿</button>
-      <button class="dash-flag-btn" onclick="setDashLang('en')" title="English">🇬🇧</button>
+      <button class="dash-flag-btn" onclick="setDashLang('cs')" data-lang="cs" title="Čeština">🇨🇿</button>
+      <button class="dash-flag-btn" onclick="setDashLang('en')" data-lang="en" title="English">🇬🇧</button>
     </div>
     <button class="nav-tab active" id="tab-monitor" onclick="showPage('monitor',this)">📊 Monitor</button>
 
     <div class="nav-dropdown">
-      <button class="nav-tab nav-dropdown-trigger" id="tab-zdroje">Zdroje <span class="arrow">▾</span></button>
+      <button class="nav-tab nav-dropdown-trigger" id="tab-zdroje"><span data-dt="nav_resources">Zdroje</span> <span class="arrow">▾</span></button>
       <div class="nav-dropdown-menu">
-        <button class="nav-tab" onclick="showPage('smart',this)">💾 Disky</button>
-        <button class="nav-tab" onclick="showPage('backups',this)">🗄️ Zálohy</button>
-        <button class="nav-tab" onclick="showPage('network',this)">🌐 Síť</button>
-        <button class="nav-tab" onclick="showPage('services',this)">🔌 Služby</button>
+        <button class="nav-tab" onclick="showPage('smart',this)" data-dt="nav_smart">💾 Disky</button>
+        <button class="nav-tab" onclick="showPage('backups',this)" data-dt="nav_backups">🗄️ Zálohy</button>
+        <button class="nav-tab" onclick="showPage('network',this)" data-dt="nav_network">🌐 Síť</button>
+        <button class="nav-tab" onclick="showPage('services',this)" data-dt="nav_services">🔌 Služby</button>
       </div>
     </div>
 
     <div class="nav-dropdown">
-      <button class="nav-tab nav-dropdown-trigger" id="tab-nastroje">Nástroje <span class="arrow">▾</span></button>
+      <button class="nav-tab nav-dropdown-trigger" id="tab-nastroje"><span data-dt="nav_tools">Nástroje</span> <span class="arrow">▾</span></button>
       <div class="nav-dropdown-menu">
-        <button class="nav-tab" onclick="showPage('lxc',this)">⚙️ LXC Generátor</button>
-        <button class="nav-tab" onclick="showPage('dns',this)">🛡️ NextDNS</button>
-        <button class="nav-tab" onclick="showPage('cloudflare',this)">☁️ Cloudflare</button>
-        <button class="nav-tab" onclick="showPage('speed',this)">⚡ Speedtest</button>
-        <button class="nav-tab" onclick="showPage('wol',this)">⚡ WoL</button>
+        <button class="nav-tab" onclick="showPage('lxc',this)" data-dt="nav_lxc">⚙️ LXC Generátor</button>
+        <button class="nav-tab" onclick="showPage('dns',this)" data-dt="nav_nextdns">🛡️ NextDNS</button>
+        <button class="nav-tab" onclick="showPage('cloudflare',this)" data-dt="nav_cloudflare">☁️ Cloudflare</button>
+        <button class="nav-tab" onclick="showPage('speed',this)" data-dt="nav_speed">⚡ Speedtest</button>
+        <button class="nav-tab" onclick="showPage('wol',this)" data-dt="nav_wol">⚡ WoL</button>
       </div>
     </div>
   </div>
@@ -335,17 +335,17 @@
 </nav>
 <div class="mobile-menu" id="mobileMenu">
   <button class="nav-tab" onclick="showPage('monitor',this);closeMobileMenu()">📊 Monitor</button>
-  <div style="font-size:10px;color:#555;padding:6px 16px 2px;text-transform:uppercase;letter-spacing:0.1em">Zdroje</div>
-  <button class="nav-tab" onclick="showPage('smart',this);closeMobileMenu()">💾 Disky</button>
-  <button class="nav-tab" onclick="showPage('backups',this);closeMobileMenu()">🗄️ Zálohy</button>
-  <button class="nav-tab" onclick="showPage('network',this);closeMobileMenu()">🌐 Síť</button>
-  <button class="nav-tab" onclick="showPage('services',this);closeMobileMenu()">🔌 Služby</button>
-  <div style="font-size:10px;color:#555;padding:6px 16px 2px;text-transform:uppercase;letter-spacing:0.1em">Nástroje</div>
-  <button class="nav-tab" onclick="showPage('lxc',this);closeMobileMenu()">⚙️ LXC Generátor</button>
-  <button class="nav-tab" onclick="showPage('dns',this);closeMobileMenu()">🛡️ NextDNS</button>
-  <button class="nav-tab" onclick="showPage('cloudflare',this);closeMobileMenu()">☁️ Cloudflare</button>
-  <button class="nav-tab" onclick="showPage('speed',this);closeMobileMenu()">⚡ Speedtest</button>
-  <button class="nav-tab" onclick="showPage('wol',this);closeMobileMenu()">⚡ WoL</button>
+  <div style="font-size:10px;color:#555;padding:6px 16px 2px;text-transform:uppercase;letter-spacing:0.1em" data-dt="nav_resources">Zdroje</div>
+  <button class="nav-tab" onclick="showPage('smart',this);closeMobileMenu()" data-dt="nav_smart">💾 Disky</button>
+  <button class="nav-tab" onclick="showPage('backups',this);closeMobileMenu()" data-dt="nav_backups">🗄️ Zálohy</button>
+  <button class="nav-tab" onclick="showPage('network',this);closeMobileMenu()" data-dt="nav_network">🌐 Síť</button>
+  <button class="nav-tab" onclick="showPage('services',this);closeMobileMenu()" data-dt="nav_services">🔌 Služby</button>
+  <div style="font-size:10px;color:#555;padding:6px 16px 2px;text-transform:uppercase;letter-spacing:0.1em" data-dt="nav_tools">Nástroje</div>
+  <button class="nav-tab" onclick="showPage('lxc',this);closeMobileMenu()" data-dt="nav_lxc">⚙️ LXC Generátor</button>
+  <button class="nav-tab" onclick="showPage('dns',this);closeMobileMenu()" data-dt="nav_nextdns">🛡️ NextDNS</button>
+  <button class="nav-tab" onclick="showPage('cloudflare',this);closeMobileMenu()" data-dt="nav_cloudflare">☁️ Cloudflare</button>
+  <button class="nav-tab" onclick="showPage('speed',this);closeMobileMenu()" data-dt="nav_speed">⚡ Speedtest</button>
+  <button class="nav-tab" onclick="showPage('wol',this);closeMobileMenu()" data-dt="nav_wol">⚡ WoL</button>
 </div>
 
 <!-- MONITOR -->
@@ -356,21 +356,21 @@
     <span class="uptime-item"><span class="status-dot dot-gray" id="dotHA"></span><svg width="14" height="14" viewBox="0 0 100 100"><rect width="100" height="100" rx="15" fill="#18BCF2"/><text y="72" x="50" font-size="55" text-anchor="middle" fill="white">H</text></svg> HA: <span id="uptimeHA">...</span></span>
   </div>
   <div class="card">
-    <h2>🌡️ Teploty</h2>
-    <button class="refresh-btn" onclick="loadSensors()">↻ Obnovit</button>
+    <h2 data-dt="mon_temp">🌡️ Teploty</h2>
+    <button class="refresh-btn" onclick="loadSensors()" data-dt="lbl_refresh">↻ Obnovit</button>
     <div class="sensors-grid" id="sensors"><span>Nacitam...</span></div>
   </div>
   <div class="card">
-    <h2>📈 Graf teplot</h2>
+    <h2 data-dt="mon_temp_graph">📈 Graf teplot</h2>
     <div class="chart-container"><canvas id="tempChart"></canvas></div>
   </div>
   <div class="card">
-    <h2>📈 Graf CPU & RAM</h2>
+    <h2 data-dt="mon_cpu_graph">📈 Graf CPU & RAM</h2>
     <div class="chart-container"><canvas id="statsChart"></canvas></div>
   </div>
   <div class="mobile-stats">
     <div class="card">
-      <h2>Proxmox host</h2>
+      <h2 data-dt="mon_proxmox_host">Proxmox host</h2>
       <div class="stat-row" id="statRows">Nacitam...</div>
       <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="procTable"></tbody></table></div>
     </div>
@@ -380,7 +380,7 @@
       <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="vmProcTable"></tbody></table></div>
     </div>
     <div class="card">
-      <h2>Home Assistant</h2>
+      <h2 data-dt="mon_ha">Home Assistant</h2>
       <div class="stat-row" id="haStatRows">Nacitam...</div>
       <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="haProcTable"></tbody></table></div>
     </div>
@@ -395,17 +395,17 @@
 <!-- SMART / DISKY -->
 <div id="page-smart" class="page">
   <div class="card">
-    <h2>💾 Úložiště serveru</h2>
-    <button class="refresh-btn" onclick="loadStorage()">↻ Obnovit</button>
+    <h2 data-dt="stor_server">💾 Úložiště serveru</h2>
+    <button class="refresh-btn" onclick="loadStorage()" data-dt="lbl_refresh">↻ Obnovit</button>
     <div id="storageServerContent"><span style="color:#888">Načítám...</span></div>
   </div>
   <div class="card">
-    <h2>🔌 Úložiště — externí disky</h2>
+    <h2 data-dt="stor_ext">🔌 Úložiště — externí disky</h2>
     <div id="storageExtContent"><span style="color:#888">Načítám...</span></div>
   </div>
   <div class="card">
-    <h2>🔬 S.M.A.R.T. diagnostika</h2>
-    <button class="refresh-btn" onclick="loadSmart()">↻ Obnovit</button>
+    <h2 data-dt="stor_smart">🔬 S.M.A.R.T. diagnostika</h2>
+    <button class="refresh-btn" onclick="loadSmart()" data-dt="lbl_refresh">↻ Obnovit</button>
     <div id="smartContent">Načítám...</div>
   </div>
 </div>
@@ -413,59 +413,59 @@
 <!-- ZÁLOHY -->
 <div id="page-backups" class="page">
   <div class="card">
-    <h2>🗄️ Zálohy</h2>
-    <button class="refresh-btn" onclick="loadBackups()">↻ Obnovit</button>
+    <h2 data-dt="bkp_title">🗄️ Zálohy</h2>
+    <button class="refresh-btn" onclick="loadBackups()" data-dt="lbl_refresh">↻ Obnovit</button>
     <div id="backupsList" style="margin-top:15px"></div>
   </div>
   <div class="card">
-    <h2>▶ Spustit zálohu</h2>
+    <h2 data-dt="bkp_run_title">▶ Spustit zálohu</h2>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <select id="backupVmid" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px">
-        <option value="">Vyber VM...</option>
+        <option value="" data-dt="bkp_select_vm">Vyber VM...</option>
       </select>
       <select id="backupMode" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px">
-        <option value="stop">Stop (bezpecne)</option>
-        <option value="suspend">Suspend</option>
-        
+        <option value="stop" data-dt="bkp_mode_stop">Stop (bezpecne)</option>
+        <option value="suspend" data-dt="bkp_mode_suspend">Suspend</option>
+
       </select>
       <button class="run-btn" onclick="startBackup()">▶ Zálohovat nyní</button>
     </div>
     <div id="backupRunStatus" style="font-size:13px;color:#ffd93d;margin-top:5px"></div>
   </div>
   <div class="card">
-    <h2>⏰ Automatické zálohy (Proxmox job)</h2>
+    <h2 data-dt="bkp_sched">⏰ Automatické zálohy (Proxmox job)</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:15px">
       <div>
-        <div style="font-size:11px;color:#888;margin-bottom:4px">VM (oddělené čárkou)</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_vm_label">VM (oddělené čárkou)</div>
         <input id="schedVmids" type="text" placeholder="100,101" value="100,101" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
       </div>
       <div>
-        <div style="font-size:11px;color:#888;margin-bottom:4px">Hodina</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_hour">Hodina</div>
         <input id="schedHour" type="number" min="0" max="23" value="2" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
       </div>
       <div>
-        <div style="font-size:11px;color:#888;margin-bottom:4px">Minuta</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_minute">Minuta</div>
         <input id="schedMinute" type="number" min="0" max="59" value="0" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
       </div>
       <div>
-        <div style="font-size:11px;color:#888;margin-bottom:4px">Den v týdnu</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_dow">Den v týdnu</div>
         <select id="schedDow" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
-          <option value="sun">Neděle</option>
-          <option value="mon">Pondělí</option>
-          <option value="tue">Úterý</option>
-          <option value="wed">Středa</option>
-          <option value="thu">Čtvrtek</option>
-          <option value="fri">Pátek</option>
-          <option value="sat">Sobota</option>
+          <option value="sun" data-dt="bkp_sun">Neděle</option>
+          <option value="mon" data-dt="bkp_mon">Pondělí</option>
+          <option value="tue" data-dt="bkp_tue">Úterý</option>
+          <option value="wed" data-dt="bkp_wed">Středa</option>
+          <option value="thu" data-dt="bkp_thu">Čtvrtek</option>
+          <option value="fri" data-dt="bkp_fri">Pátek</option>
+          <option value="sat" data-dt="bkp_sat">Sobota</option>
         </select>
       </div>
       <div>
-        <div style="font-size:11px;color:#888;margin-bottom:4px">Max zálohy</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_maxfiles">Max zálohy</div>
         <input id="schedMaxfiles" type="number" min="1" max="10" value="1" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
       </div>
     </div>
     <div id="schedCurrent" style="font-size:12px;color:#888;margin-bottom:12px;padding:10px;background:#0a1520;border-radius:6px;font-family:monospace"></div>
-    <button class="run-btn" onclick="saveSchedule()">💾 Uložit plán</button>
+    <button class="run-btn" onclick="saveSchedule()" data-dt="bkp_save">💾 Uložit plán</button>
     <div id="schedStatus" style="font-size:13px;color:#6bcb77;margin-top:10px"></div>
   </div>
 </div>
@@ -473,8 +473,8 @@
 <!-- SLUŽBY -->
 <div id="page-services" class="page">
   <div class="card">
-    <h2>🔌 Stav služeb</h2>
-    <button class="refresh-btn" onclick="loadServices()">↻ Obnovit</button>
+    <h2 data-dt="svc_title">🔌 Stav služeb</h2>
+    <button class="refresh-btn" onclick="loadServices()" data-dt="lbl_refresh">↻ Obnovit</button>
     <div class="services-grid" id="servicesGrid">Nacitam...</div>
   </div>
 </div>
@@ -482,17 +482,17 @@
 <!-- CLOUDFLARE -->
 <div id="page-cloudflare" class="page">
   <div class="card">
-    <h2>☁️ Cloudflare Tunnel</h2>
-    <button class="refresh-btn" onclick="loadCloudflare()">↻ Obnovit</button>
+    <h2 data-dt="cf_title">☁️ Cloudflare Tunnel</h2>
+    <button class="refresh-btn" onclick="loadCloudflare()" data-dt="lbl_refresh">↻ Obnovit</button>
     <div id="cfTunnelStatus">Nacitam...</div>
   </div>
   <div class="card">
-    <h2>📊 Tunnel live metriky</h2>
+    <h2 data-dt="cf_metrics">📊 Tunnel live metriky</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:15px" id="cfMetricsGrid">
-      <div class="speed-item"><div class="speed-val" id="cfConcurrent">-</div><div class="speed-label">Aktivní req</div></div>
-      <div class="speed-item"><div class="speed-val" id="cfHaConn">-</div><div class="speed-label">HA spojení</div></div>
-      <div class="speed-item"><div class="speed-val" id="cfTotal">-</div><div class="speed-label">Total req</div></div>
-      <div class="speed-item"><div class="speed-val" id="cfErrors">-</div><div class="speed-label">Chyby</div></div>
+      <div class="speed-item"><div class="speed-val" id="cfConcurrent">-</div><div class="speed-label" data-dt="cf_active_req">Aktivní req</div></div>
+      <div class="speed-item"><div class="speed-val" id="cfHaConn">-</div><div class="speed-label" data-dt="cf_ha_conn">HA spojení</div></div>
+      <div class="speed-item"><div class="speed-val" id="cfTotal">-</div><div class="speed-label" data-dt="cf_total_req">Total req</div></div>
+      <div class="speed-item"><div class="speed-val" id="cfErrors">-</div><div class="speed-label" data-dt="cf_errors">Chyby</div></div>
     </div>
     <div class="chart-container"><canvas id="cfChart"></canvas></div>
   </div>
@@ -501,9 +501,9 @@
 <!-- SÍŤ -->
 <div id="page-network" class="page">
   <div class="card">
-    <h2>🌐 Zařízení v síti</h2>
+    <h2 data-dt="net_title">🌐 Zařízení v síti</h2>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:15px">
-      <button class="refresh-btn" style="margin-bottom:0" onclick="loadNetwork()">↻ Obnovit</button>
+      <button class="refresh-btn" style="margin-bottom:0" onclick="loadNetwork()" data-dt="lbl_refresh">↻ Obnovit</button>
       <div class="net-legend">
         <div class="net-legend-item"><div class="state-dot state-dot-REACHABLE"></div><span style="color:#6bcb77">Online</span></div>
         <div class="net-legend-item"><div class="state-dot state-dot-STALE"></div><span style="color:#ffd93d">Stale</span></div>
@@ -511,7 +511,7 @@
       </div>
     </div>
     <table class="net-table">
-      <thead><tr><th>IP</th><th>Název</th><th class="net-mac">MAC</th><th class="net-stav">Stav</th><th><span class="desktop-only">⬇ rx / ⬆ tx</span><span class="mobile-only">⬇⬆</span></th></tr></thead>
+      <thead><tr><th>IP</th><th>Název</th><th class="net-mac">MAC</th><th class="net-stav" data-dt="net_status">Stav</th><th><span class="desktop-only">⬇ rx / ⬆ tx</span><span class="mobile-only">⬇⬆</span></th></tr></thead>
       <tbody id="networkTable"><tr><td colspan="5">Nacitam...</td></tr></tbody>
     </table>
   </div>
@@ -520,21 +520,21 @@
 <!-- SPEEDTEST -->
 <div id="page-speed" class="page">
   <div class="card">
-    <h2>⚡ Speedtest</h2>
+    <h2 data-dt="spd_title">⚡ Speedtest</h2>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-      <button class="run-btn" id="speedBtn" onclick="runSpeedtest()">▶ Spustit test</button>
+      <button class="run-btn" id="speedBtn" onclick="runSpeedtest()" data-dt="spd_run">▶ Spustit test</button>
       <select id="serverSelect" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px;font-family:monospace">
-        <option value="">Automatický výběr</option>
+        <option value="" data-dt="spd_auto">Automatický výběr</option>
       </select>
-      <button class="refresh-btn" style="margin-bottom:0" onclick="loadSpeedServers()">↻ Servery</button>
+      <button class="refresh-btn" style="margin-bottom:0" onclick="loadSpeedServers()" data-dt="spd_servers">↻ Servery</button>
     </div>
     <div id="speedStatus" style="font-size:12px;margin:10px 0;min-height:20px;color:#ffd93d;"></div>
     <div id="termOutput" style="font-family:monospace;font-size:13px;line-height:1.8;min-height:120px;padding:10px;border-radius:8px;background:#0d0d0d;border:1px solid #0f3460;">
-      <span style="color:#555">Čekám na spuštění testu...</span>
+      <span style="color:#555" data-dt="spd_waiting">Čekám na spuštění testu...</span>
     </div>
   </div>
   <div class="card" id="speedResultCard" style="display:none">
-    <h2>📊 Výsledek</h2>
+    <h2 data-dt="spd_results">📊 Výsledek</h2>
     <div class="speed-grid" id="speedGrid">
       <div class="speed-item"><div class="speed-val" id="speedDown">-</div><div class="speed-label">⬇ Download Mbps</div></div>
       <div class="speed-item"><div class="speed-val" id="speedUp">-</div><div class="speed-label">⬆ Upload Mbps</div></div>
@@ -543,7 +543,7 @@
     <div id="speedServer" style="font-size:12px;margin-top:10px;color:#888;"></div>
   </div>
   <div class="card" id="speedHistoryCard">
-    <h2>📈 Historie</h2>
+    <h2 data-dt="spd_history">📈 Historie</h2>
     <div class="chart-container"><canvas id="speedChart"></canvas></div>
     <div id="speedHistoryTable" style="margin-top:15px"></div>
   </div>
@@ -552,8 +552,8 @@
 <!-- NEXTDNS -->
 <div id="page-dns" class="page">
   <div class="card">
-    <h2>🛡️ NextDNS — statistiky dnes</h2>
-    <button class="refresh-btn" onclick="loadDNS()">↻ Obnovit</button>
+    <h2 data-dt="dns_title">🛡️ NextDNS — statistiky dnes</h2>
+    <button class="refresh-btn" onclick="loadDNS()" data-dt="lbl_refresh">↻ Obnovit</button>
     <div class="dns-grid" id="dnsGrid">Nacitam...</div>
     <div id="dnsTopDevices" style="margin-top:15px"></div>
   </div>
@@ -563,7 +563,7 @@
 <!-- WOL -->
 <div id="page-wol" class="page">
   <div class="card">
-    <h2>⚡ Wake-on-LAN</h2>
+    <h2 data-dt="wol_title">⚡ Wake-on-LAN</h2>
     <div class="wol-grid" id="wolGrid"></div>
   </div>
 </div>
@@ -571,8 +571,8 @@
 <!-- LXC GENERÁTOR -->
 <div id="page-lxc" class="page">
   <div class="card">
-    <h2>⚙️ LXC Setup Generátor</h2>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:-4px;opacity:0.5">01 — Identifikace kontejneru</div>
+    <h2 data-dt="lxc_title">⚙️ LXC Setup Generátor</h2>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:-4px;opacity:0.5" data-dt="lxc_sec01">01 — Identifikace kontejneru</div>
     <div class="lxc-grid3" style="margin-bottom:6px">
       <div class="lxc-field">
         <label class="stat-item" style="display:block"><label>CT ID</label></label>
@@ -585,108 +585,108 @@
     </div>
     <div class="lxc-grid3" style="margin-top:10px">
       <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>RAM (MB)</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_ram">RAM (MB)</label></label>
         <input type="number" id="lxc_ram" class="lxc-input" value="2048" min="512" step="512">
       </div>
       <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>CPU jader</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_cpu">CPU jader</label></label>
         <input type="number" id="lxc_cores" class="lxc-input" value="2" min="1" max="8">
       </div>
       <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>Disk (GB)</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_disk">Disk (GB)</label></label>
         <input type="number" id="lxc_disk" class="lxc-input" value="8" min="4" max="500">
       </div>
     </div>
 
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:18px 0 12px;opacity:0.5">02 — Síťová konfigurace</div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:18px 0 12px;opacity:0.5" data-dt="lxc_sec02">02 — Síťová konfigurace</div>
     <div class="lxc-grid3">
       <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>IP adresa</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_ip_label">IP adresa</label></label>
         <input type="text" id="lxc_ip" class="lxc-input" value="10.0.1." placeholder="10.0.1.93" oninput="lxcSyncInst();lxcCheckIpDebounce()">
         <span id="lxc_ip_status" style="font-size:11px;margin-top:4px;display:block;min-height:16px"></span>
       </div>
       <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>Gateway</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_gw_label">Gateway</label></label>
         <input type="text" id="lxc_gw" class="lxc-input" value="10.0.1.1" placeholder="10.0.1.1">
-        <span class="lxc-hint">výchozí brána sítě</span>
+        <span class="lxc-hint" data-dt="lxc_gw_hint">výchozí brána sítě</span>
       </div>
     </div>
     <div class="lxc-grid2" style="margin-top:10px">
       <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>Root heslo</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_password_label">Root heslo</label></label>
         <input type="text" id="lxc_password" class="lxc-input" placeholder="changeme123">
       </div>
       <div class="lxc-field" style="display:flex;align-items:flex-end">
-        <button class="refresh-btn" style="margin:0" onclick="lxcGenPassword()">generovat heslo</button>
+        <button class="refresh-btn" style="margin:0" onclick="lxcGenPassword()" data-dt="lxc_gen_pw">generovat heslo</button>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <h2>🔧 Git konfigurace</h2>
+    <h2 data-dt="lxc_git_title">🔧 Git konfigurace</h2>
     <div class="lxc-grid2">
       <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>Git jméno</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_git_name">Git jméno</label></label>
         <input type="text" id="lxc_git_name" class="lxc-input" placeholder="Pavel Novák">
       </div>
       <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>Git email</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_git_email">Git email</label></label>
         <input type="email" id="lxc_git_email" class="lxc-input" placeholder="pavel@email.com">
       </div>
       <div class="lxc-field full">
-        <label class="stat-item" style="display:block"><label>GitHub SSH veřejný klíč (volitelně)</label></label>
+        <label class="stat-item" style="display:block"><label data-dt="lxc_ssh_label">GitHub SSH veřejný klíč (volitelně)</label></label>
         <textarea id="lxc_ssh_key" class="lxc-textarea" placeholder="ssh-ed25519 AAAA... tvuj@email.com&#10;Nech prázdné pokud chceš klíč vygenerovat"></textarea>
-        <span class="lxc-hint">prázdné → skript vygeneruje nový klíč a zobrazí ho</span>
+        <span class="lxc-hint" data-dt="lxc_ssh_hint">prázdné → skript vygeneruje nový klíč a zobrazí ho</span>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <h2>📦 Co instalovat</h2>
+    <h2 data-dt="lxc_pkgs_title">📦 Co instalovat</h2>
     <div class="lxc-checks" id="lxc_packages">
       <label class="lxc-check">
         <input type="checkbox" value="docker" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">Docker</span><span class="lxc-cdesc">CE + daemon.json s overlay2 storage driverem</span></div>
+        <div><span class="lxc-clabel">Docker</span><span class="lxc-cdesc" data-dt="lxc_pkg_docker_desc">CE + daemon.json s overlay2 storage driverem</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="node" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">Node.js LTS</span><span class="lxc-cdesc">NVM v0.39.7 — základ pro pnpm, Vercel, Claude Code</span></div>
+        <div><span class="lxc-clabel">Node.js LTS</span><span class="lxc-cdesc" data-dt="lxc_pkg_node_desc">NVM v0.39.7 — základ pro pnpm, Vercel, Claude Code</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="pnpm" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">pnpm</span><span class="lxc-cdesc">5× rychlejší než npm, sdílená cache balíčků</span></div>
+        <div><span class="lxc-clabel">pnpm</span><span class="lxc-cdesc" data-dt="lxc_pkg_pnpm_desc">5× rychlejší než npm, sdílená cache balíčků</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="vercel" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">Vercel CLI</span><span class="lxc-cdesc">deploy na Vercel přímo z terminálu</span></div>
+        <div><span class="lxc-clabel">Vercel CLI</span><span class="lxc-cdesc" data-dt="lxc_pkg_vercel_desc">deploy na Vercel přímo z terminálu</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="claude" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">Claude Code</span><span class="lxc-cdesc">AI asistent pro kódování přímo v terminálu</span></div>
+        <div><span class="lxc-clabel">Claude Code</span><span class="lxc-cdesc" data-dt="lxc_pkg_claude_desc">AI asistent pro kódování přímo v terminálu</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="micro">
         <div class="lxc-box"></div>
-        <div><span class="lxc-clabel">micro editor</span><span class="lxc-cdesc">moderní CLI editor — Ctrl+S, Ctrl+Z, Ctrl+C fungují</span></div>
+        <div><span class="lxc-clabel">micro editor</span><span class="lxc-cdesc" data-dt="lxc_pkg_micro_desc">moderní CLI editor — Ctrl+S, Ctrl+Z, Ctrl+C fungují</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="supabase">
         <div class="lxc-box"></div>
-        <div><span class="lxc-clabel">Supabase CLI</span><span class="lxc-cdesc">globální CLI + per-projekt instrukce v setup.sh (vyžaduje Docker)</span></div>
+        <div><span class="lxc-clabel">Supabase CLI</span><span class="lxc-cdesc" data-dt="lxc_pkg_supabase_desc">globální CLI + per-projekt instrukce v setup.sh (vyžaduje Docker)</span></div>
       </label>
     </div>
   </div>
 
-  <button class="run-btn" onclick="lxcWizardStart()" id="lxc_wizard_btn" style="width:100%;margin-bottom:12px">&#9881; Vytvořit LXC a nainstalovat</button>
+  <button class="run-btn" onclick="lxcWizardStart()" id="lxc_wizard_btn" style="width:100%;margin-bottom:12px" data-dt="lxc_wizard_btn">&#9881; Vytvořit LXC a nainstalovat</button>
 
   <div id="lxc_wizard_panel" style="display:none;margin-bottom:16px">
     <div class="lxc-out-hdr">
-      <span class="lxc-out-title">// Wizard log</span>
+      <span class="lxc-out-title" data-dt="lxc_wizard_log">// Wizard log</span>
       <span id="lxc_wizard_status" style="font-size:12px;color:#ffd93d">Spouštím...</span>
     </div>
     <pre id="lxc_wizard_log" class="lxc-pre" style="max-height:420px;overflow-y:auto;background:#050d14"></pre>
@@ -694,13 +694,13 @@
 
   <div style="margin-bottom:8px">
     <span class="lxc-step-toggle" onclick="lxcToggle('generator')" id="lxc-toggle-generator">
-      Ruční režim — Generovat setup.sh
+      <span data-dt="lxc_manual_mode">Ruční režim — Generovat setup.sh</span>
       <span class="lxc-step-arrow" id="lxc-arrow-generator">&#9658;</span>
     </span>
   </div>
   <div class="lxc-expand" id="lxc-expand-generator">
     <div class="card" style="font-size:13px;line-height:1.9;margin-bottom:16px">
-      <h2 style="margin-bottom:14px">📋 Jak postupovat</h2>
+      <h2 style="margin-bottom:14px" data-dt="lxc_how_title">📋 Jak postupovat</h2>
       <ol style="margin:0 0 0 18px;padding:0;display:flex;flex-direction:column;gap:12px">
         <li>Vytvoř nový LXC v Proxmox webUI — <em>Ubuntu 22.04, privileged, 2 CPU, 2 GB RAM</em></li>
         <li>
@@ -747,16 +747,16 @@ bash setup.sh</pre>
         </li>
       </ol>
     </div>
-    <button class="run-btn" onclick="lxcGenerate()" style="width:100%;margin-bottom:20px">⚡ Generovat setup.sh</button>
+    <button class="run-btn" onclick="lxcGenerate()" style="width:100%;margin-bottom:20px" data-dt="lxc_generate_btn">⚡ Generovat setup.sh</button>
     <div class="lxc-output" id="lxc_output">
       <div class="lxc-out-hdr">
-        <span class="lxc-out-title">// setup.sh — vygenerováno</span>
+        <span class="lxc-out-title" data-dt="lxc_output_title">// setup.sh — vygenerováno</span>
         <div style="display:flex;align-items:center;gap:8px">
-          <span class="lxc-copied" id="lxc_copied">✓ zkopírováno</span>
-          <span class="lxc-copied" id="lxc_saved">✓ uloženo na server</span>
-          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcCopy()">kopírovat</button>
-          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcDownload()">⬇ stáhnout</button>
-          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcSaveToServer()">☁ uložit na server</button>
+          <span class="lxc-copied" id="lxc_copied" data-dt="lxc_copied">✓ zkopírováno</span>
+          <span class="lxc-copied" id="lxc_saved" data-dt="lxc_saved">✓ uloženo na server</span>
+          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcCopy()" data-dt="lxc_copy">kopírovat</button>
+          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcDownload()" data-dt="lxc_download">⬇ stáhnout</button>
+          <button class="refresh-btn" style="margin-bottom:0" onclick="lxcSaveToServer()" data-dt="lxc_save_server">☁ uložit na server</button>
         </div>
       </div>
       <pre class="lxc-pre" id="lxc_script_out"></pre>
@@ -945,7 +945,7 @@ async function loadStatsHistory() {
 }
 
 function updateTempChart(blocks) {
-  var now = new Date().toLocaleTimeString("cs-CZ");
+  var now = new Date().toLocaleTimeString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
   chartLabels.push(now);
   if (chartLabels.length > 1440) chartLabels.shift();
   tempChart.data.labels = chartLabels;
@@ -968,7 +968,7 @@ function updateTempChart(blocks) {
 }
 
 function updateStatsChart(proxmox, vm) {
-  var now = new Date().toLocaleTimeString("cs-CZ");
+  var now = new Date().toLocaleTimeString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
   var labels = statsChart.data.labels;
   labels.push(now);
   if (labels.length > 1440) labels.shift();
@@ -1016,12 +1016,12 @@ async function loadSensors() {
       container.appendChild(div);
     }
     updateTempChart(blocks);
-  } catch(e) { document.getElementById("sensors").innerHTML = "Chyba: " + e.message; }
+  } catch(e) { document.getElementById("sensors").innerHTML = t('lbl_error') + e.message; }
 }
 
 function renderStats(d, rowsId, procId) {
   if (!d || !d.online) {
-    document.getElementById(rowsId).innerHTML = '<div class="offline-msg">Server offline</div>';
+    document.getElementById(rowsId).innerHTML = '<div class="offline-msg">' + t('lbl_offline') + '</div>';
     if (procId) document.getElementById(procId).innerHTML = "";
     return;
   }
@@ -1069,11 +1069,11 @@ async function loadAllStats() {
     if (window.innerWidth <= 1200) renderStats(ha, "haStatRows", "haProcTable");
   } catch(e) { document.getElementById("dotHA").className = "status-dot dot-red"; }
   updateStatsChart(lastProxmox, lastVM);
-  document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString("cs-CZ");
+  document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
 }
 
 async function loadServices() {
-  document.getElementById("servicesGrid").innerHTML = "Nacitam...";
+  document.getElementById("servicesGrid").innerHTML = t('lbl_loading');
   try {
     var res = await fetch("/api/services");
     var data = await res.json();
@@ -1082,11 +1082,11 @@ async function loadServices() {
       html += '<div class="service-item">';
       html += '<span class="status-dot ' + (svc.online ? "dot-green" : "dot-red") + '"></span>';
       html += '<div><div class="service-name">' + svc.name + '</div>';
-      html += '<div class="service-status" style="color:' + (svc.online ? "#6bcb77" : "#ff6b6b") + '">' + (svc.online ? "Online" : "Offline") + '</div></div>';
+      html += '<div class="service-status" style="color:' + (svc.online ? "#6bcb77" : "#ff6b6b") + '">' + (svc.online ? t('lbl_online') : "Offline") + '</div></div>';
       html += '</div>';
     });
     document.getElementById("servicesGrid").innerHTML = html;
-  } catch(e) { document.getElementById("servicesGrid").innerHTML = "Chyba: " + e.message; }
+  } catch(e) { document.getElementById("servicesGrid").innerHTML = t('lbl_error') + e.message; }
 }
 
 async function loadNetwork() {
@@ -1151,13 +1151,13 @@ function formatSpeedLine(line) {
 async function runSpeedtest() {
   var btn = document.getElementById("speedBtn");
   var serverId = document.getElementById("serverSelect") ? document.getElementById("serverSelect").value : "";
-  btn.disabled = true; btn.textContent = "⏳ Probíhá...";
+  btn.disabled = true; btn.textContent = t('spd_running');
   document.getElementById("speedStatus").textContent = "";
   document.getElementById("speedResultCard").style.display = "none";
   var term = document.getElementById("termOutput");
   term.innerHTML = "";
   var selEl = document.getElementById("serverSelect");
-  var selText = selEl && selEl.selectedIndex > 0 ? selEl.options[selEl.selectedIndex].text : "Automatický výběr";
+  var selText = selEl && selEl.selectedIndex > 0 ? selEl.options[selEl.selectedIndex].text : t('spd_auto');
   function addLine(html) {
     var div = document.createElement("div"); div.innerHTML = html; term.appendChild(div); term.scrollTop = term.scrollHeight;
     return div;
@@ -1165,7 +1165,7 @@ async function runSpeedtest() {
   addLine('<span style="color:#6bcb77">speedtest-go @showwin</span>');
   addLine('<span style="color:#555">──────────────────────────────────────</span>');
   addLine('<span style="color:#888">✦ Server: </span><span style="color:#00d4ff">' + selText + '</span>');
-  addLine('<span style="color:#888">✦ Připojuji se...</span>');
+  addLine('<span style="color:#888">' + t('spd_connecting') + '</span>');
   var phases = [
     { label: "Ping test", duration: 8000, color: "#ffd93d" },
     { label: "Download test", duration: 25000, color: "#00d4ff" },
@@ -1185,7 +1185,7 @@ async function runSpeedtest() {
     spinIdx = (spinIdx + 1) % spinFrames.length;
     progressLine.innerHTML = '<span style="color:' + phase.color + '">' + spinFrames[spinIdx] + ' ' + phase.label + '</span> <span style="color:#555">[' + bar + ']</span> <span style="color:#888">' + pct.toFixed(0) + '%</span>';
     if (elapsed > phase.duration && phaseIdx < phases.length - 1) {
-      addLine('<span style="color:#6bcb77">✓ ' + phase.label + ' dokončen</span>');
+      addLine('<span style="color:#6bcb77">✓ ' + phase.label + ' ' + t('spd_done') + '</span>');
       phaseIdx++;
       phaseStart = Date.now();
       progressLine = addLine("");
@@ -1225,9 +1225,9 @@ async function runSpeedtest() {
     });
   } catch(e) {
     clearInterval(animInterval);
-    addLine('<span style="color:#ff6b6b">✗ Chyba: ' + e.message + '</span>');
+    addLine('<span style="color:#ff6b6b">✗ ' + t('lbl_error') + e.message + '</span>');
   }
-  btn.disabled = false; btn.textContent = "▶ Spustit test";
+  btn.disabled = false; btn.textContent = t('spd_run');
 }
 
 async function loadSpeedServers() {
@@ -1235,7 +1235,7 @@ async function loadSpeedServers() {
     var r = await fetch("/api/speedtest/servers");
     var d = await r.json();
     var sel = document.getElementById("serverSelect");
-    sel.innerHTML = '<option value="">Automatický výběr</option>';
+    sel.innerHTML = '<option value="">' + t('spd_auto') + '</option>';
     if (d.servers) d.servers.forEach(function(s) {
       sel.innerHTML += '<option value="' + s.id + '">' + s.name + ' — ' + s.location + ' (' + s.distance + ' / ' + s.ping + ')</option>';
     });
@@ -1270,7 +1270,7 @@ async function loadSpeedHistory() {
     speedChartObj.data.datasets[0].data = rev.map(function(h) { return h.download; });
     speedChartObj.data.datasets[1].data = rev.map(function(h) { return h.upload; });
     speedChartObj.update();
-    var tableHtml = '<table><thead><tr><th>Čas</th><th>Download</th><th>Upload</th><th>Ping</th><th>Server</th></tr></thead><tbody>';
+    var tableHtml = '<table><thead><tr><th>' + t('spd_time') + '</th><th>Download</th><th>Upload</th><th>Ping</th><th>Server</th></tr></thead><tbody>';
     history.slice().reverse().forEach(function(h) {
       tableHtml += '<tr><td>' + h.time + '</td><td style="color:#00d4ff">' + h.download + ' Mbps</td><td style="color:#6bcb77">' + h.upload + ' Mbps</td><td style="color:#ffd93d">' + h.ping + ' ms</td><td style="color:#888;font-size:11px">' + h.server + '</td></tr>';
     });
@@ -1281,11 +1281,11 @@ async function loadSpeedHistory() {
 
 // NEXTDNS
 async function loadDNS() {
-  document.getElementById("dnsGrid").innerHTML = "Nacitam...";
+  document.getElementById("dnsGrid").innerHTML = t('lbl_loading');
   try {
     var res = await fetch("/api/nextdns");
     var data = await res.json();
-    if (data.error) { document.getElementById("dnsGrid").innerHTML = "Chyba: " + data.error; return; }
+    if (data.error) { document.getElementById("dnsGrid").innerHTML = t('lbl_error') + data.error; return; }
     var html = "";
     // Status karticka
     var statusColors = {default:"#00d4ff", blocked:"#ff6b6b", allowed:"#6bcb77"};
@@ -1295,17 +1295,17 @@ async function loadDNS() {
         html += '<div class="dns-item"><div class="dns-val" style="color:' + col + '">' + (item.queries || 0).toLocaleString() + '</div><div class="dns-label">' + (item.status || "Dotazy") + '</div></div>';
       });
     }
-    document.getElementById("dnsGrid").innerHTML = html || "Žádná data";
+    document.getElementById("dnsGrid").innerHTML = html || t('lbl_no_data');
     // Top devices z dat co uz mame
     if (data.devices && data.devices.length > 0) {
-      var t = '<h3 style="color:#00d4ff;margin-bottom:10px">Top zařízení</h3><table><thead><tr><th>Zařízení</th><th>IP</th><th>Dotazy</th></tr></thead><tbody>';
+      var topHtml = '<h3 style="color:#00d4ff;margin-bottom:10px">' + t('dns_top_devices') + '</h3><table><thead><tr><th>Zařízení</th><th>IP</th><th>' + t('dns_queries') + '</th></tr></thead><tbody>';
       data.devices.slice(0,10).forEach(function(dev) {
-        t += '<tr><td>' + (dev.name || dev.model || dev.id || "?") + '</td><td style="color:#888;font-size:11px">' + (dev.localIp || '-') + '</td><td>' + (dev.queries || 0) + '</td></tr>';
+        topHtml += '<tr><td>' + (dev.name || dev.model || dev.id || "?") + '</td><td style="color:#888;font-size:11px">' + (dev.localIp || '-') + '</td><td>' + (dev.queries || 0) + '</td></tr>';
       });
-      t += '</tbody></table>';
-      document.getElementById("dnsTopDevices").innerHTML = t;
+      topHtml += '</tbody></table>';
+      document.getElementById("dnsTopDevices").innerHTML = topHtml;
     }
-  } catch(e) { document.getElementById("dnsGrid").innerHTML = "Chyba: " + e.message; }
+  } catch(e) { document.getElementById("dnsGrid").innerHTML = t('lbl_error') + e.message; }
 }
 
 // CLOUDFLARE
@@ -1317,11 +1317,11 @@ async function loadCloudflare() {
     var statusColor = d.status === "healthy" ? "#6bcb77" : "#ff6b6b";
     var html = '<div style="padding:10px;background:#0d1b2a;border-radius:6px;margin-bottom:12px;border:1px solid #0f3460">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px;color:#00d4ff">' + (d.tunnel_name || "tunnel") + '</b><span style="color:' + statusColor + ';font-weight:bold">' + (d.status || "unknown") + '</span></div>';
-    html += '<div style="font-size:11px;color:#888;margin-top:4px">Připojení: ' + (d.connections || 0) + ' | Colos: ' + (d.colos || []).join(", ") + '</div>';
+    html += '<div style="font-size:11px;color:#888;margin-top:4px">' + t('cf_connection') + (d.connections || 0) + ' | Colos: ' + (d.colos || []).join(", ") + '</div>';
     html += '</div>';
     // Public hostnames
     if (d.domains && d.domains.length > 0) {
-      html += '<div style="font-size:12px;color:#00d4ff;margin-bottom:6px;font-weight:bold">🌐 Public Hostnames (' + d.domains.length + ')</div>';
+      html += '<div style="font-size:12px;color:#00d4ff;margin-bottom:6px;font-weight:bold">' + t('cf_hostnames') + ' (' + d.domains.length + ')</div>';
       d.domains.forEach(function(dom) {
         var proxied = dom.proxied ? '<span style="color:#f6821f">proxied</span>' : '<span style="color:#888">dns only</span>';
         html += '<div style="display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px solid #0f3460;font-size:12px">';
@@ -1329,7 +1329,7 @@ async function loadCloudflare() {
       });
     }
     document.getElementById("cfTunnelStatus").innerHTML = html;
-  } catch(e) { document.getElementById("cfTunnelStatus").innerHTML = '<span style="color:#ff6b6b">Chyba: ' + e.message + '</span>'; }
+  } catch(e) { document.getElementById("cfTunnelStatus").innerHTML = '<span style="color:#ff6b6b">' + t('lbl_error') + e.message + '</span>'; }
 }
 
 var cfMetricsInterval = null;
@@ -1360,7 +1360,7 @@ function startCfMetrics() {
     try {
       var r = await fetch("/api/cloudflare/metrics");
       var d = await r.json();
-      var now = new Date().toLocaleTimeString("cs-CZ");
+      var now = new Date().toLocaleTimeString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
       document.getElementById("cfConcurrent").textContent = d.concurrent || 0;
       document.getElementById("cfHaConn").textContent = d.ha_connections || 0;
       
@@ -1410,7 +1410,7 @@ function buildUsageCell(pct, totalBytes) {
     var usedB = Math.round(totalBytes * pct / 100);
     var freeB = totalBytes - usedB;
     subMobile = fmtBlkBytes(usedB) + " / " + fmtBlkBytes(totalBytes);
-    sub = subMobile + " (" + fmtBlkBytes(freeB) + " volno)";
+    sub = subMobile + " (" + fmtBlkBytes(freeB) + " " + t('stor_free') + ")";
   }
   return '<div class="lsblk-usage-cell">' +
     '<div class="lsblk-bar-bg"><div class="lsblk-bar-fill" style="width:'+pct+'%;background:'+bc+'"></div></div>' +
@@ -1510,8 +1510,8 @@ function renderVmRows(vms) {
 
 function renderBlkSection(elId, devs, vms) {
   var el = document.getElementById(elId);
-  if ((!devs || !devs.length) && (!vms || !vms.length)) { el.innerHTML = '<span style="color:#888">Žádná data</span>'; return; }
-  var hdr = '<div class="lsblk-header"><span>Zařízení</span><span>Využití</span><span>Info</span></div>';
+  if ((!devs || !devs.length) && (!vms || !vms.length)) { el.innerHTML = '<span style="color:#888">' + t('lbl_no_data') + '</span>'; return; }
+  var hdr = '<div class="lsblk-header"><span>' + t('stor_device') + '</span><span>' + t('stor_usage') + '</span><span>' + t('stor_info') + '</span></div>';
   var content = "";
   if (vms && vms.length) content += renderVmRows(vms);
   if (vms && vms.length && devs && devs.length) content += '<div style="height:6px"></div>';
@@ -1522,15 +1522,15 @@ function renderBlkSection(elId, devs, vms) {
 var storageExtInterval = null;
 
 async function loadStorage() {
-  document.getElementById("storageServerContent").innerHTML = '<span style="color:#888">Načítám...</span>';
-  document.getElementById("storageExtContent").innerHTML = '<span style="color:#888">Načítám...</span>';
+  document.getElementById("storageServerContent").innerHTML = '<span style="color:#888">' + t('lbl_loading') + '</span>';
+  document.getElementById("storageExtContent").innerHTML = '<span style="color:#888">' + t('lbl_loading') + '</span>';
   try {
     var r = await fetch("/api/storage");
     var d = await r.json();
     renderBlkSection("storageServerContent", d.server || [], (d.vms || []).concat(d.pools || []));
     renderBlkSection("storageExtContent", d.external || []);
   } catch(e) {
-    document.getElementById("storageServerContent").innerHTML = '<span style="color:#ff6b6b">Chyba: '+e.message+'</span>';
+    document.getElementById("storageServerContent").innerHTML = '<span style="color:#ff6b6b">' + t('lbl_error') + e.message + '</span>';
   }
 }
 
@@ -1549,7 +1549,7 @@ function startStorageExtRefresh() {
 
 // SMART
 async function loadSmart() {
-  document.getElementById("smartContent").innerHTML = "Nacitam...";
+  document.getElementById("smartContent").innerHTML = t('lbl_loading');
   try {
     var r = await fetch("/api/smart");
     var d = await r.json();
@@ -1560,7 +1560,7 @@ async function loadSmart() {
         var warn = disk.reallocated > 0 || disk.pending > 0;
         var healthColor = disk.health === "PASSED" ? "#6bcb77" : "#ff6b6b";
         var tempColor = disk.temp >= 55 ? "#ff6b6b" : disk.temp >= 45 ? "#ffd93d" : "#ff9f43";
-        var yearsStr = (disk.hours / 8760).toFixed(1) + " let";
+        var yearsStr = (disk.hours / 8760).toFixed(1) + " " + t('smart_years');
         html += '<div class="disk-card' + (warn ? ' warn' : '') + '">';
         html += '<div class="disk-header">';
         html += '<div><div class="disk-model">' + (warn ? '⚠️' : '✅') + ' ' + (disk.model || disk.dev) + '</div>';
@@ -1568,8 +1568,8 @@ async function loadSmart() {
         html += '<div style="font-size:18px;font-weight:bold;color:' + healthColor + '">' + (disk.health || '?') + '</div>';
         html += '</div>';
         html += '<div class="disk-metrics">';
-        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + tempColor + '">' + (disk.temp || '?') + '°C</div><div class="disk-metric-label">Teplota</div></div>';
-        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:#00d4ff">' + yearsStr + '</div><div class="disk-metric-label">Provoz (' + (disk.hours || 0).toLocaleString() + ' h)</div></div>';
+        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + tempColor + '">' + (disk.temp || '?') + '°C</div><div class="disk-metric-label">' + t('smart_temp') + '</div></div>';
+        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:#00d4ff">' + yearsStr + '</div><div class="disk-metric-label">' + t('smart_runtime') + ' (' + (disk.hours || 0).toLocaleString() + ' h)</div></div>';
         html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + (disk.reallocated > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.reallocated || 0) + '</div><div class="disk-metric-label">Reallocated</div></div>';
         html += '</div>';
         html += '<div class="disk-detail"><span>Reallocated sectors</span><span style="color:' + (disk.reallocated > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.reallocated || 0) + '</span></div>';
@@ -1578,8 +1578,8 @@ async function loadSmart() {
         html += '</div>';
       });
     }
-    document.getElementById("smartContent").innerHTML = html || '<span style="color:#888">Žádná data</span>';
-  } catch(e) { document.getElementById("smartContent").innerHTML = "Chyba: " + e.message; }
+    document.getElementById("smartContent").innerHTML = html || '<span style="color:#888">' + t('lbl_no_data') + '</span>';
+  } catch(e) { document.getElementById("smartContent").innerHTML = t('lbl_error') + e.message; }
 }
 
 // ZÁLOHY
@@ -1609,7 +1609,7 @@ async function loadBackups() {
     } else {
       var tableHtml = '<table><thead><tr><th>Datum</th><th>VM</th><th>Velikost</th><th>Storage</th><th>Soubor</th><th>Poznámka</th></tr></thead><tbody>';
       d.backups.slice().reverse().forEach(function(b) {
-        var dt = new Date(b.ctime * 1000).toLocaleString("cs");
+        var dt = new Date(b.ctime * 1000).toLocaleString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
         var size = b.size > 1073741824 ? (b.size/1073741824).toFixed(2) + " GB" : (b.size/1048576).toFixed(0) + " MB";
         var storageId = b.storage || "local";
         var storePath = storagePaths[storageId] || storagePaths["local"];
@@ -1630,15 +1630,15 @@ async function loadBackups() {
 async function startBackup() {
   var vmid = document.getElementById("backupVmid").value;
   var mode = document.getElementById("backupMode").value;
-  if (!vmid) { alert("Vyber VM!"); return; }
+  if (!vmid) { alert(t('bkp_select_vm_alert')); return; }
   var status = document.getElementById("backupRunStatus");
-  status.textContent = "⏳ Spouštím zálohu VM " + vmid + "...";
+  status.textContent = t('bkp_starting') + vmid + "...";
   try {
     var r = await fetch("/api/backups/run?vmid=" + vmid + "&mode=" + mode, {method:"POST"});
     var d = await r.json();
-    if (d.error) { status.style.color="#ff6b6b"; status.textContent = "✗ Chyba: " + d.error; }
-    else { status.style.color="#6bcb77"; status.textContent = "✓ Záloha spuštěna (PID: " + d.pid + ") — může trvat několik minut"; }
-  } catch(e) { status.style.color="#ff6b6b"; status.textContent = "✗ Chyba: " + e.message; }
+    if (d.error) { status.style.color="#ff6b6b"; status.textContent = "✗ " + t('lbl_error') + d.error; }
+    else { status.style.color="#6bcb77"; status.textContent = t('bkp_started') + d.pid + ") — může trvat několik minut"; }
+  } catch(e) { status.style.color="#ff6b6b"; status.textContent = "✗ " + t('lbl_error') + e.message; }
 }
 
 async function saveSchedule() {
@@ -1652,9 +1652,9 @@ async function saveSchedule() {
     var url = "/api/backups/schedule?vmids=" + encodeURIComponent(vmids) + "&hour=" + hour + "&minute=" + minute + "&dow=" + dow + "&maxfiles=" + maxfiles;
     var r = await fetch(url, {method:"POST"});
     var d = await r.json();
-    if (d.error) { status.style.color="#ff6b6b"; status.textContent = "✗ Chyba: " + d.error; }
-    else { status.style.color="#6bcb77"; status.textContent = "✓ Plán uložen!"; loadBackupSchedule(); }
-  } catch(e) { status.style.color="#ff6b6b"; status.textContent = "✗ Chyba: " + e.message; }
+    if (d.error) { status.style.color="#ff6b6b"; status.textContent = "✗ " + t('lbl_error') + d.error; }
+    else { status.style.color="#6bcb77"; status.textContent = t('bkp_saved_ok'); loadBackupSchedule(); }
+  } catch(e) { status.style.color="#ff6b6b"; status.textContent = "✗ " + t('lbl_error') + e.message; }
 }
 
 async function loadBackupSchedule() {
@@ -1674,7 +1674,7 @@ async function loadBackupSchedule() {
       }
       document.getElementById("schedMaxfiles").value = ds.maxfiles || 1;
     } else {
-      sc.textContent = "Žádný plán není nastaven";
+      sc.textContent = t('bkp_no_schedule');
     }
   } catch(e) {}
 }
@@ -1694,8 +1694,8 @@ function renderWol() {
     html += '<div class="wol-item">';
     html += '<div class="wol-name">' + d.name + '</div>';
     html += '<div class="wol-mac">' + d.mac + '</div>';
-    html += '<div id="wol-ping-' + d.mac.replace(/:/g,"-") + '" style="font-size:11px;color:#888;margin-bottom:8px">Zjišťuji stav...</div>';
-    html += '<button class="wol-btn" id="wol-btn-' + d.mac.replace(/:/g,"-") + '" onclick="sendWol(\'' + d.mac + '\', \'' + d.name + '\')">⚡ Zapnout</button>';
+    html += '<div id="wol-ping-' + d.mac.replace(/:/g,"-") + '" style="font-size:11px;color:#888;margin-bottom:8px">' + t('wol_checking') + '</div>';
+    html += '<button class="wol-btn" id="wol-btn-' + d.mac.replace(/:/g,"-") + '" onclick="sendWol(\'' + d.mac + '\', \'' + d.name + '\')">' + t('wol_wake') + '</button>';
     html += '<div class="wol-msg" id="wol-' + d.mac.replace(/:/g,'-') + '"></div>';
     html += '</div>';
   });
@@ -1713,13 +1713,13 @@ async function checkWolPing() {
       var status = d[dev.ip];
       var btn = document.getElementById("wol-btn-" + dev.mac.replace(/:/g,"-"));
       if (status === true) {
-        el.textContent = "🟢 Online"; el.style.color = "#6bcb77";
+        el.textContent = t('wol_online'); el.style.color = "#6bcb77";
         if (btn) { btn.disabled = true; btn.style.opacity = "0.35"; btn.style.cursor = "not-allowed"; }
       } else if (status === false) {
-        el.textContent = "🔴 Offline"; el.style.color = "#ff6b6b";
+        el.textContent = t('wol_offline'); el.style.color = "#ff6b6b";
         if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.style.cursor = ""; }
       } else {
-        el.textContent = "⚪ Neznámý"; el.style.color = "#888";
+        el.textContent = t('wol_unknown'); el.style.color = "#888";
         if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.style.cursor = ""; }
       }
     });
@@ -1728,11 +1728,11 @@ async function checkWolPing() {
 
 async function sendWol(mac, name) {
   var msgId = "wol-" + mac.replace(/:/g,"-");
-  document.getElementById(msgId).textContent = "Odesílám...";
+  document.getElementById(msgId).textContent = t('wol_sending');
   try {
     var res = await fetch("/api/wol", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({mac: mac}) });
     var data = await res.json();
-    document.getElementById(msgId).textContent = data.ok ? "✓ Odesláno!" : "✗ " + data.error;
+    document.getElementById(msgId).textContent = data.ok ? t('wol_sent') : "✗ " + data.error;
     document.getElementById(msgId).style.color = data.ok ? "#6bcb77" : "#ff6b6b";
   } catch(e) {
     document.getElementById(msgId).textContent = "✗ Chyba";
@@ -1784,7 +1784,7 @@ function lxcGenerate() {
   L.push("#!/bin/bash");
   L.push("# ============================================");
   L.push("# LXC Webdev Setup Script");
-  L.push("# Generováno: " + new Date().toLocaleString("cs-CZ"));
+  L.push("# Generováno: " + new Date().toLocaleString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US'));
   L.push("# CT ID: " + ct_id + " | Hostname: " + hostname + " | IP: " + ip + " | GW: " + gw);
   L.push("# ============================================");
   L.push("set -e");
@@ -1930,7 +1930,7 @@ function lxcSaveToServer() {
   }).then(function(r) { return r.json(); }).then(function(d) {
     var msg = document.getElementById("lxc_saved");
     if (d.ok) {
-      msg.textContent = d.proxmox ? "✓ uloženo (server + Proxmox)" : "✓ uloženo na server (Proxmox selhal)";
+      msg.textContent = d.proxmox ? t('lxc_saved') + " (+ Proxmox)" : t('lxc_saved') + " (Proxmox selhal)";
       msg.classList.add("show");
       setTimeout(function() { msg.classList.remove("show"); }, 3000);
     }
@@ -2010,7 +2010,7 @@ function lxcWizardStart() {
   btn.textContent = "Probíhá...";
   logEl.textContent = "";
   panel.style.display = "block";
-  status.textContent = "Spouštím...";
+  status.textContent = t('lxc_wizard_starting');
   status.style.color = "#ffd93d";
   panel.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -2022,10 +2022,10 @@ function lxcWizardStart() {
   .then(function(r) { return r.json(); })
   .then(function(d) {
     if (d.error) {
-      logEl.textContent = "Chyba: " + d.error;
-      status.textContent = "Chyba";
+      logEl.textContent = t('lbl_error') + d.error;
+      status.textContent = t('lbl_error').replace(': ','');
       status.style.color = "#ff6b6b";
-      btn.disabled = false; btn.textContent = "⚙ Vytvořit LXC a nainstalovat";
+      btn.disabled = false; btn.textContent = t('lxc_wizard_btn');
       return;
     }
     _lxcWizardInterval = setInterval(function() {
@@ -2033,8 +2033,8 @@ function lxcWizardStart() {
     }, 700);
   })
   .catch(function(err) {
-    logEl.textContent = "Chyba: " + err;
-    btn.disabled = false; btn.textContent = "⚙ Vytvořit LXC a nainstalovat";
+    logEl.textContent = t('lbl_error') + err;
+    btn.disabled = false; btn.textContent = t('lxc_wizard_btn');
   });
 }
 
@@ -2048,18 +2048,18 @@ function lxcWizardPoll(jobId, btn, status, logEl) {
     }
     if (d.done) {
       clearInterval(_lxcWizardInterval);
-      btn.disabled = false; btn.textContent = "⚙ Vytvořit LXC a nainstalovat";
+      btn.disabled = false; btn.textContent = t('lxc_wizard_btn');
       if (d.error) {
-        status.textContent = "✗ Chyba: " + d.error;
+        status.textContent = "✗ " + t('lbl_error') + d.error;
         status.style.color = "#ff6b6b";
       } else {
-        status.textContent = "✓ Hotovo!";
+        status.textContent = t('lbl_done');
         status.style.color = "#6bcb77";
         var pwd = document.getElementById("lxc_password").value;
         var ip  = document.getElementById("lxc_ip").value;
         logEl.textContent += "\n";
         logEl.textContent += "╔══════════════════════════════════════════════╗\n";
-        logEl.textContent += "  Přihlaš se:\n";
+        logEl.textContent += "  " + t('lxc_login') + "\n";
         logEl.textContent += "  ssh root@" + ip + "\n";
         logEl.textContent += "  Heslo: " + pwd + "\n";
         logEl.textContent += "╚══════════════════════════════════════════════╝\n";
@@ -2069,9 +2069,9 @@ function lxcWizardPoll(jobId, btn, status, logEl) {
   })
   .catch(function() {
     clearInterval(_lxcWizardInterval);
-    status.textContent = "Chyba polling";
+    status.textContent = t('lbl_poll_err');
     status.style.color = "#ff6b6b";
-    btn.disabled = false; btn.textContent = "⚙ Vytvořit LXC a nainstalovat";
+    btn.disabled = false; btn.textContent = t('lxc_wizard_btn');
   });
 }
 
@@ -2112,13 +2112,40 @@ function applyModules(mods) {
   }
 }
 
-var DASH_LANG = 'cs';
-function setDashLang(lang) {
-  DASH_LANG = lang;
-  document.querySelectorAll('.dash-flag-btn').forEach(function(b) {
-    b.classList.toggle('active', b.getAttribute('title') === (lang === 'cs' ? 'Čeština' : 'English'));
+// ── i18n ─────────────────────────────────────────────────────────────────
+var DASH_STRINGS = {};
+var DASH_LANG = localStorage.getItem('dashLang') || 'en';
+
+function t(key) {
+  return DASH_STRINGS[key] !== undefined ? DASH_STRINGS[key] : key;
+}
+
+async function loadDashStrings(lang) {
+  try {
+    var r = await fetch('/locales/dashboard-' + lang + '.json');
+    if (r.ok) { DASH_STRINGS = await r.json(); }
+  } catch(e) {}
+}
+
+function applyLang() {
+  document.querySelectorAll('[data-dt]').forEach(function(el) {
+    var key = el.getAttribute('data-dt');
+    var val = DASH_STRINGS[key];
+    if (val === undefined) return;
+    if (el.tagName === 'OPTION') { el.textContent = val; }
+    else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') { el.placeholder = val; }
+    else { el.textContent = val; }
   });
-  // Full dashboard EN translation is a planned feature.
+  document.querySelectorAll('.dash-flag-btn').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-lang') === DASH_LANG);
+  });
+}
+
+async function setDashLang(lang) {
+  DASH_LANG = lang;
+  localStorage.setItem('dashLang', lang);
+  await loadDashStrings(lang);
+  applyLang();
 }
 
 function loadWolDevices() {
@@ -2131,6 +2158,8 @@ function loadWolDevices() {
 // INIT
 initTheme();
 fetch('/api/config/modules').then(function(r) { return r.json(); }).then(applyModules).catch(function() {});
+// Load dashboard language
+setDashLang(DASH_LANG);
 loadWolDevices();
 initTempChart();
 initStatsChart();
