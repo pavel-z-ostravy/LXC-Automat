@@ -126,6 +126,21 @@
   .pw-strength-fill.medium { width: 66%;  background: #ffd93d; }
   .pw-strength-fill.strong { width: 100%; background: #6bcb77; }
 
+  /* Dev step — package card grid */
+  .dev-group-hdr { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin: 18px 0 8px; }
+  .dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .dev-indent { padding-left: 18px; border-left: 2px solid #0f3460; margin-left: 6px; }
+  .dev-pkg { display: flex; align-items: flex-start; gap: 10px; border: 1px solid #0f3460; border-radius: 8px; padding: 11px 13px; cursor: pointer; user-select: none; transition: border-color 0.2s, background 0.2s; }
+  .dev-pkg:hover:not(.dev-disabled) { border-color: #00d4ff33; }
+  .dev-pkg.checked { border-color: #00d4ff; background: #00d4ff0a; }
+  .dev-pkg.dev-disabled { cursor: not-allowed; opacity: .4; }
+  .dev-pkg input { display: none; }
+  .dev-cb { width: 15px; height: 15px; border: 2px solid #444; border-radius: 3px; flex-shrink: 0; margin-top: 2px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000; }
+  .dev-pkg.checked .dev-cb { border-color: #00d4ff; background: #00d4ff; }
+  .dev-pkg.checked .dev-cb::before { content: '✓'; }
+  .dev-name { font-size: 13px; font-weight: bold; display: block; }
+  .dev-desc { font-size: 11px; color: #555; margin-top: 2px; line-height: 1.4; display: block; }
+
   /* Language selection screen */
   #lang-select { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0d1b2a; }
   .lang-select-btn { background: #16213e; border: 2px solid #0f3460; border-radius: 14px; color: #eee; cursor: pointer; font-family: monospace; padding: 28px 52px; transition: all 0.2s; }
@@ -491,19 +506,67 @@
       <h2><span class="icon">🛠️</span> <span data-t="dev_title">Dev Environment</span></h2>
       <p class="subtitle" data-t="dev_subtitle">Optionally install developer tools on this server.</p>
 
-      <div class="mod-list" style="margin-top:16px;">
-        <label class="mod-item"><input type="checkbox" id="dev-node" onchange="devNodeChanged()"> <span><strong data-t="dev_node">Node.js LTS</strong><br><small data-t="dev_node_desc">via NVM</small></span></label>
-        <label class="mod-item" id="dev-pnpm-row"  style="opacity:.45"><input type="checkbox" id="dev-pnpm"    disabled> <span><strong data-t="dev_pnpm">pnpm</strong><br><small data-t="dev_pnpm_desc">fast package manager</small></span></label>
-        <label class="mod-item" id="dev-vercel-row" style="opacity:.45"><input type="checkbox" id="dev-vercel"  disabled> <span><strong data-t="dev_vercel">Vercel CLI</strong><br><small data-t="dev_vercel_desc">deploy to Vercel from CLI</small></span></label>
-        <label class="mod-item" id="dev-supabase-row" style="opacity:.45"><input type="checkbox" id="dev-supabase" disabled> <span><strong data-t="dev_supabase">Supabase CLI</strong><br><small data-t="dev_supabase_desc">manage Supabase projects locally</small></span></label>
-        <label class="mod-item" id="dev-claude-row" style="opacity:.45"><input type="checkbox" id="dev-claude"  disabled> <span><strong data-t="dev_claude">Claude Code</strong><br><small data-t="dev_claude_desc">AI coding assistant in terminal</small></span></label>
-        <label class="mod-item"><input type="checkbox" id="dev-bun">    <span><strong data-t="dev_bun">Bun</strong><br><small data-t="dev_bun_desc">fast JS runtime & package manager</small></span></label>
-        <label class="mod-item"><input type="checkbox" id="dev-docker"> <span><strong data-t="dev_docker">Docker</strong><br><small data-t="dev_docker_desc">container runtime with overlay2</small></span></label>
-        <label class="mod-item"><input type="checkbox" id="dev-redis">  <span><strong data-t="dev_redis">Redis</strong><br><small data-t="dev_redis_desc">in-memory data store</small></span></label>
-        <label class="mod-item"><input type="checkbox" id="dev-python"> <span><strong data-t="dev_python">Python 3 + pip + venv</strong><br><small data-t="dev_python_desc">pip and venv on top of system Python</small></span></label>
-        <label class="mod-item"><input type="checkbox" id="dev-micro">  <span><strong data-t="dev_micro">micro editor</strong><br><small data-t="dev_micro_desc">modern terminal editor</small></span></label>
+      <!-- Node.js group -->
+      <p class="dev-group-hdr" data-t="dev_group_node">Node.js ecosystem</p>
+      <label class="dev-pkg" id="dev-node-row">
+        <input type="checkbox" id="dev-node" onchange="devNodeChanged()">
+        <span class="dev-cb"></span>
+        <span><span class="dev-name" data-t="dev_node">Node.js LTS</span><span class="dev-desc" data-t="dev_node_desc">via NVM</span></span>
+      </label>
+      <div class="dev-grid dev-indent" style="margin-top:8px;">
+        <label class="dev-pkg dev-disabled" id="dev-pnpm-row">
+          <input type="checkbox" id="dev-pnpm" disabled onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_pnpm">pnpm</span><span class="dev-desc" data-t="dev_pnpm_desc">fast package manager</span></span>
+        </label>
+        <label class="dev-pkg dev-disabled" id="dev-vercel-row">
+          <input type="checkbox" id="dev-vercel" disabled onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_vercel">Vercel CLI</span><span class="dev-desc" data-t="dev_vercel_desc">deploy to Vercel from CLI</span></span>
+        </label>
+        <label class="dev-pkg dev-disabled" id="dev-supabase-row">
+          <input type="checkbox" id="dev-supabase" disabled onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_supabase">Supabase CLI</span><span class="dev-desc" data-t="dev_supabase_desc">manage Supabase projects locally</span></span>
+        </label>
+        <label class="dev-pkg dev-disabled" id="dev-claude-row">
+          <input type="checkbox" id="dev-claude" disabled onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_claude">Claude Code</span><span class="dev-desc" data-t="dev_claude_desc">AI coding assistant in terminal</span></span>
+        </label>
       </div>
-      <p class="hint" style="margin-top:16px;" data-t="dev_note">Selected tools install in background after dashboard starts. Check dev_install.log for progress.</p>
+
+      <!-- Independent tools -->
+      <p class="dev-group-hdr" data-t="dev_group_other">Independent tools</p>
+      <div class="dev-grid">
+        <label class="dev-pkg">
+          <input type="checkbox" id="dev-bun" onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_bun">Bun</span><span class="dev-desc" data-t="dev_bun_desc">fast JS runtime &amp; package manager</span></span>
+        </label>
+        <label class="dev-pkg">
+          <input type="checkbox" id="dev-docker" onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_docker">Docker</span><span class="dev-desc" data-t="dev_docker_desc">container runtime with overlay2</span></span>
+        </label>
+        <label class="dev-pkg">
+          <input type="checkbox" id="dev-redis" onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_redis">Redis</span><span class="dev-desc" data-t="dev_redis_desc">in-memory data store</span></span>
+        </label>
+        <label class="dev-pkg">
+          <input type="checkbox" id="dev-python" onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_python">Python 3 + pip + venv</span><span class="dev-desc" data-t="dev_python_desc">pip and venv on top of system Python</span></span>
+        </label>
+        <label class="dev-pkg">
+          <input type="checkbox" id="dev-micro" onchange="devPkgSync(this)">
+          <span class="dev-cb"></span>
+          <span><span class="dev-name" data-t="dev_micro">micro editor</span><span class="dev-desc" data-t="dev_micro_desc">modern terminal editor</span></span>
+        </label>
+      </div>
+
+      <p class="hint" style="margin-top:20px;" data-t="dev_note">Selected tools install in background after dashboard starts. Check dev_install.log for progress.</p>
     </div>
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(5)" data-t="btn_back">← Back</button>
@@ -687,14 +750,19 @@ function goStep(n) {
   if (n === 7) buildReview();
 }
 
+function devPkgSync(cb) {
+  cb.closest('.dev-pkg').classList.toggle('checked', cb.checked);
+}
+
 function devNodeChanged() {
   const nodeOn = document.getElementById('dev-node').checked;
+  devPkgSync(document.getElementById('dev-node'));
   ['pnpm','vercel','supabase','claude'].forEach(id => {
     const cb  = document.getElementById(`dev-${id}`);
     const row = document.getElementById(`dev-${id}-row`);
     cb.disabled = !nodeOn;
-    row.style.opacity = nodeOn ? '1' : '.45';
-    if (!nodeOn) cb.checked = false;
+    row.classList.toggle('dev-disabled', !nodeOn);
+    if (!nodeOn) { cb.checked = false; row.classList.remove('checked'); }
   });
 }
 

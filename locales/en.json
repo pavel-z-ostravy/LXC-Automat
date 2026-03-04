@@ -104,6 +104,8 @@
 
   "dev_title": "Dev Environment",
   "dev_subtitle": "Optionally install developer tools on this server. Leave all unchecked to skip.",
+  "dev_group_node": "Node.js ecosystem",
+  "dev_group_other": "Independent tools",
   "dev_node": "Node.js LTS",
   "dev_node_desc": "via NVM — required for pnpm, Vercel, Supabase, Claude Code",
   "dev_pnpm": "pnpm",

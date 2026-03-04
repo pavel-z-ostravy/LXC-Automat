@@ -104,6 +104,8 @@
 
   "dev_title": "Vývojové prostředí",
   "dev_subtitle": "Volitelně nainstaluj vývojářské nástroje na tento server. Nechej vše nezaškrtnuté pro přeskočení.",
+  "dev_group_node": "Node.js ekosystém",
+  "dev_group_other": "Nezávislé nástroje",
   "dev_node": "Node.js LTS",
   "dev_node_desc": "přes NVM — nutný pro pnpm, Vercel, Supabase, Claude Code",
   "dev_pnpm": "pnpm",
