@@ -9,9 +9,26 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><style>
-  * { box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: border-box; }
   body { font-family: 'Roboto Flex', sans-serif; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
-  button, input, select, textarea { font-family: inherit; }
+  /* Cross-browser form reset — removes Safari/Firefox default OS styling */
+  button, input, select, textarea {
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { cursor: pointer; line-height: 1; border: none; background: none; padding: 0; }
+  /* Custom select arrow (replaces removed native arrow) */
+  select { cursor: pointer; padding: 8px 30px 8px 12px; }
+  body.dark select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpolyline points='1,1 6,7 11,1' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; background-size: 12px 8px;
+  }
+  body.light select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpolyline points='1,1 6,7 11,1' fill='none' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; background-size: 12px 8px;
+  }
   body.dark { background: #1a1a2e; color: #eee; }
   body.light { background: #f0f4f8; color: #222; }
   .navbar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 52px; flex-wrap: wrap; }
@@ -21,7 +38,7 @@
   body.dark .nav-brand { color: #00d4ff; }
   body.light .nav-brand { color: #0066aa; }
   .nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-  .nav-tab { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; border: none; background: none; transition: background 0.2s; }
+  .nav-tab { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; line-height: 1; border: none; background: none; transition: background 0.2s; }
   body.dark .nav-tab { color: #aaa; }
   body.light .nav-tab { color: #666; }
   body.dark .nav-tab:hover { background: #0f3460; color: #eee; }
@@ -186,7 +203,7 @@
   .lsblk-usage-sub { font-size: 10px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lsblk-sub-mobile { display: none; }
   .lsblk-note-col { font-size: 11px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lsblk-toggle { font-size: 11px; color: #00d4ff; margin-right: 6px; user-select: none; flex-shrink: 0; }
+  .lsblk-toggle { font-size: 11px; color: #00d4ff; margin-right: 6px; -webkit-user-select: none; user-select: none; flex-shrink: 0; }
   .lsblk-disk-hdr { cursor: pointer; }
   .lsblk-collapsed-summary { font-size: 10px; color: #666; margin-top: 2px; }
   @media (max-width: 600px) {
@@ -218,7 +235,7 @@
   .nav-dropdown { position: relative; }
   .nav-dropdown-trigger { display: flex; align-items: center; gap: 4px; }
   .nav-dropdown-trigger .arrow { font-size: 9px; opacity: 0.6; transition: transform 0.2s; }
-  .nav-dropdown:hover .nav-dropdown-trigger .arrow { transform: rotate(180deg); }
+  .nav-dropdown:hover .nav-dropdown-trigger .arrow { -webkit-transform: rotate(180deg); transform: rotate(180deg); }
   .nav-dropdown-menu {
     display: none; position: absolute; top: 100%; left: 0;
     z-index: 200; min-width: 150px; border-radius: 8px; padding: 4px; padding-top: 8px;
@@ -245,13 +262,13 @@
   body.dark .lxc-hint { color: #555; }
   body.light .lxc-hint { color: #999; }
   .lxc-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 8px; }
-  .lxc-check { display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 11px 13px; cursor: pointer; transition: all 0.2s; user-select: none; }
+  .lxc-check { display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 11px 13px; cursor: pointer; transition: all 0.2s; -webkit-user-select: none; user-select: none; }
   body.dark .lxc-check { background: #0d0d0d; border: 1px solid #0f3460; }
   body.light .lxc-check { background: #eef4f8; border: 1px solid #bcd; }
   body.dark .lxc-check:hover { border-color: #00d4ff; }
   body.light .lxc-check:hover { border-color: #0066aa; }
   .lxc-check input[type="checkbox"] { display: none; }
-  .lxc-box { width: 16px; height: 16px; border: 1.5px solid #555; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 10px; }
+  .lxc-box { width: 16px; height: 16px; border: 1px solid #555; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 10px; }
   .lxc-clabel { font-size: 13px; font-weight: bold; display: block; }
   body.dark .lxc-clabel { color: #eee; }
   body.light .lxc-clabel { color: #222; }
@@ -301,7 +318,7 @@
   body.dark .user-btn { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff; }
   body.light .user-btn { background: #dde8f0; color: #0066aa; border: 1px solid #0066aa; }
   .user-btn .arrow { font-size: 9px; opacity: 0.7; transition: transform 0.2s; }
-  .user-menu.open .user-btn .arrow { transform: rotate(180deg); }
+  .user-menu.open .user-btn .arrow { -webkit-transform: rotate(180deg); transform: rotate(180deg); }
   .user-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 300; min-width: 210px; border-radius: 8px; padding: 4px; }
   .user-menu.open .user-dropdown { display: flex; flex-direction: column; }
   body.dark .user-dropdown { background: #16213e; border: 1px solid #0f3460; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
@@ -648,10 +665,10 @@
   <div class="card">
     <h2 data-dt="bkp_run_title">▶ Spustit zálohu</h2>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-      <select id="backupVmid" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px">
+      <select id="backupVmid" style="background-color:#0d1b2a;color:#eee;border:1px solid #0f3460;border-radius:6px">
         <option value="" data-dt="bkp_select_vm">Vyber VM...</option>
       </select>
-      <select id="backupMode" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px">
+      <select id="backupMode" style="background-color:#0d1b2a;color:#eee;border:1px solid #0f3460;border-radius:6px">
         <option value="stop" data-dt="bkp_mode_stop">Stop (bezpecne)</option>
         <option value="suspend" data-dt="bkp_mode_suspend">Suspend</option>
 
@@ -665,19 +682,19 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:15px">
       <div>
         <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_vm_label">VM (oddělené čárkou)</div>
-        <input id="schedVmids" type="text" placeholder="100,101" value="100,101" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+        <input id="schedVmids" type="text" placeholder="100,101" value="100,101" style="background-color:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%">
       </div>
       <div>
         <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_hour">Hodina</div>
-        <input id="schedHour" type="number" min="0" max="23" value="2" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+        <input id="schedHour" type="number" min="0" max="23" value="2" style="background-color:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%">
       </div>
       <div>
         <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_minute">Minuta</div>
-        <input id="schedMinute" type="number" min="0" max="59" value="0" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+        <input id="schedMinute" type="number" min="0" max="59" value="0" style="background-color:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%">
       </div>
       <div>
         <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_dow">Den v týdnu</div>
-        <select id="schedDow" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+        <select id="schedDow" style="background-color:#0d1b2a;color:#eee;border:1px solid #0f3460;border-radius:6px;width:100%">
           <option value="sun" data-dt="bkp_sun">Neděle</option>
           <option value="mon" data-dt="bkp_mon">Pondělí</option>
           <option value="tue" data-dt="bkp_tue">Úterý</option>
@@ -689,7 +706,7 @@
       </div>
       <div>
         <div style="font-size:11px;color:#888;margin-bottom:4px" data-dt="bkp_maxfiles">Max zálohy</div>
-        <input id="schedMaxfiles" type="number" min="1" max="10" value="1" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
+        <input id="schedMaxfiles" type="number" min="1" max="10" value="1" style="background-color:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%">
       </div>
     </div>
     <div id="schedCurrent" style="font-size:12px;color:#888;margin-bottom:12px;padding:10px;background:#0a1520;border-radius:6px"></div>
@@ -751,7 +768,7 @@
     <h2 data-dt="spd_title">⚡ Speedtest</h2>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <button class="run-btn" id="speedBtn" onclick="runSpeedtest()" data-dt="spd_run">▶ Spustit test</button>
-      <select id="serverSelect" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px">
+      <select id="serverSelect" style="background-color:#0d1b2a;color:#eee;border:1px solid #0f3460;border-radius:6px">
         <option value="" data-dt="spd_auto">Automatický výběr</option>
       </select>
       <button class="refresh-btn" style="margin-bottom:0" onclick="loadSpeedServers()" data-dt="spd_servers">↻ Servery</button>
