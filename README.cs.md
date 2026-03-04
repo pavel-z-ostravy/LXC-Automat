@@ -36,17 +36,18 @@ App automaticky detekuje zda existuje `config.json`:
 
 ## Webový instalační wizard
 
-7-krokový wizard — žádné SSH ani ruční editování souborů:
+8-krokový wizard — žádné SSH ani ruční editování souborů:
 
 | Krok | Co nastavuješ |
 |------|---------------|
 | 1. Kontrola systému | Python, sshpass, paramiko |
-| 2. Přihlašovací údaje | Název dashboardu, uživatel + heslo (SHA-256 hash, s generátorem) |
+| 2. Přihlašovací údaje | Název dashboardu, port, uživatel + heslo (SHA-256 hash, s generátorem) |
 | 3. Proxmox | IP, node name, SSH auth (heslo **nebo** generovaný keypair) |
 | 4. Moduly | Home Assistant, Router, Cloudflare, NextDNS (každý volitelný) |
 | 5. Služby | URL adresy pro monitoring dostupnosti |
 | 6. WoL zařízení | Název + MAC + IP pro Wake-on-LAN |
-| 7. Review + Instalace | Zobrazí celý config (hesla skryta), uloží `config.json` |
+| 7. Vývojové prostředí | Volitelné vývojářské nástroje pro instalaci na server |
+| 8. Review + Instalace | Zobrazí celý config (hesla skryta), uloží `config.json` |
 
 ### UX funkce wizardu
 
@@ -107,14 +108,14 @@ Vyplň formulář, klikni **"Vytvořit LXC a nainstalovat"** — nástroj se pos
 ╚══════════════════════════════════════════╝
 ```
 
-**Volitelné balíčky:** Docker, Node.js LTS, pnpm, Vercel CLI, Claude Code, micro editor, Git konfigurace
+**Volitelné balíčky:** Docker, Node.js LTS, pnpm, Vercel CLI, Claude Code, Supabase CLI, micro editor, Git konfigurace
 
 ---
 
 ## Architektura
 
 ```
-Prohlížeč  ──→  Web UI (single-page HTML + JS)
+Prohlížeč  ──→  Web UI (single-page HTML + JS, EN/CS)
                   │
                   ▼
               FastAPI (Python)  ←── config.json
@@ -161,10 +162,13 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS)
 ├── app.py               # backend dashboardu (config-driven)
 ├── index.html           # frontend dashboardu
 ├── locales/
-│   ├── en.json          # anglické překlady
-│   └── cs.json          # české překlady
+│   ├── en.json          # překlady wizardu (EN)
+│   ├── cs.json          # překlady wizardu (CS)
+│   ├── dashboard-en.json  # překlady dashboardu (EN)
+│   └── dashboard-cs.json  # překlady dashboardu (CS)
 ├── requirements.txt
 ├── monitor-public.service
+├── screenshots/         # screenshoty pro README
 ├── keys/                # SSH klíče generované wizardem (gitignored)
 └── config.json          # generovaný wizardem (gitignored)
 ```
@@ -173,46 +177,61 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS)
 
 ## Screenshoty
 
-### Krok 1 — Kontrola systému
-Ověření Pythonu, sshpass a paramiko, detekce lokální IP.
+### Instalační wizard
+
+#### Krok 1 — Kontrola systému
+Ověření dostupnosti Pythonu 3, sshpass a paramiko; detekce lokální IP adresy serveru.
 
 ![Krok 1 - Kontrola systému](screenshots/wizard-step1-system-check.png)
 
-### Krok 2 — Přihlašovací údaje
-Nastavení názvu dashboardu (live aktualizace titulku), uživatelského jména a hesla s generátorem a strength barem.
+#### Krok 2 — Přihlašovací údaje
+Nastavení názvu dashboardu (live aktualizace titulku prohlížeče), portu, uživatelského jména a hesla. Zabudovaný generátor vytváří 32/64/128-znaková hesla se strength barem; živý indikátor ✓/✗ potvrzuje shodu obou polí.
 
 ![Krok 2 - Přihlašovací údaje](screenshots/wizard-step2-credentials.png)
 
-### Krok 3 — Připojení k Proxmoxu
-IP adresa, název nodu a SSH přihlášení — heslem nebo generovaným ed25519 klíčem.
+#### Krok 3 — Připojení k Proxmoxu
+IP adresa, název nodu a SSH přihlášení — heslem nebo wizardem generovaným ed25519 klíčem (veřejný klíč se zobrazí s tlačítkem Kopírovat pro vložení do `authorized_keys`). Tlačítko **Test SSH connection** ověří přihlašovací údaje před pokračováním.
 
 ![Krok 3 - Proxmox](screenshots/wizard-step3-proxmox.png)
 
-### Krok 4 — Volitelné moduly
-Aktivace Home Assistant, Router, Cloudflare a/nebo NextDNS. Neaktivní moduly se v dashboardu úplně skryjí.
+#### Krok 4 — Volitelné moduly
+Aktivace Home Assistant, Router, Cloudflare a/nebo NextDNS. Každý modul po zaškrtnutí rozbalí vlastní formulář s přihlašovacími údaji. Neaktivní moduly se v dashboardu úplně skryjí — žádné prázdné karty.
 
 ![Krok 4 - Moduly](screenshots/wizard-step4-modules.png)
 
-### Krok 5 — Monitorované služby
-Přidání URL adres pro HTTP kontrolu dostupnosti. Každá služba dostane live stavový indikátor.
+#### Krok 5 — Monitorované služby
+Přidání libovolného počtu URL (název + adresa) pro HTTP kontrolu dostupnosti. Každá služba dostane live stavový indikátor na dashboardu.
 
 ![Krok 5 - Služby](screenshots/wizard-step5-services.png)
 
-### Krok 6 — Wake-on-LAN zařízení
-Registrace zařízení podle názvu, MAC a IP. Dashboard zobrazuje ping stav a umožňuje odeslat WoL paket jedním kliknutím.
+#### Krok 6 — Wake-on-LAN zařízení
+Registrace zařízení podle názvu, MAC adresy a IP. Dashboard zobrazuje živý ping stav a tlačítko pro odeslání WoL paketu jedním kliknutím.
 
 ![Krok 6 - WoL](screenshots/wizard-step6-wol.png)
 
-### Krok 7 — Přehled konfigurace a instalace
-Souhrn všech nastavení (hesla skryta, ikonka oka pro zobrazení). Kliknutím na Install & Start se zapíše `config.json` a spustí dashboard.
+#### Krok 7 — Vývojové prostředí
+Volitelná instalace vývojářských nástrojů na server na pozadí po spuštění dashboardu. Nástroje jsou rozděleny do dvou skupin: **Node.js ekosystém** (Node.js LTS + jako závislé pnpm, Vercel CLI, Supabase CLI, Claude Code) a **Nezávislé nástroje** (Bun, Docker, Redis, Python 3, micro editor). Průběh se loguje do `dev_install.log`.
 
-![Krok 7 - Přehled](screenshots/wizard-step7-review.png)
+![Krok 7 - Vývojové prostředí](screenshots/wizard-step7-devenv.png)
+
+---
+
+### Dashboard
+
+#### Zdroje — Teploty a grafy CPU/RAM
+Záložka Resources zobrazuje živé hodnoty ze senzorů (PCH, ACPITZ, teploty per-core) a rolující historické grafy teplot a využití CPU/RAM (Proxmox host + aktivní VM). Stavový řádek nahoře zobrazuje uptime každého monitorovaného systému.
+
+![Dashboard - Zdroje](screenshots/dashboard-resources-temperatures.png)
+
+#### Nástroje — LXC Setup Generator
+Záložka Tools obsahuje wizard pro provisioning LXC kontejnerů. Vyplň identitu kontejneru (CT ID, hostname, RAM, CPU, disk), síťovou konfiguraci (IP adresa s živou kontrolou dostupnosti, brána), volitelnou Git konfiguraci a vyber balíčky k instalaci. Kliknutím na **Vytvořit LXC a nainstalovat** se kontejner provisionuje na Proxmoxu s live logem.
+
+![Dashboard - Nástroje LXC](screenshots/dashboard-tools-lxc.png)
 
 ---
 
 ## Plánované funkce
 
-- [ ] Plný anglický překlad UI dashboardu (přepínač vlajek v navbaru už je připravený)
 - [ ] Výběr LXC šablony (nejen Ubuntu 22.04)
 - [ ] Správa kontejnerů: start/stop/restart z dashboardu
 - [ ] Monitoring zdrojů per-kontejner (CPU, RAM, disk)
@@ -233,7 +252,7 @@ Souhrn všech nastavení (hesla skryta, ikonka oka pro zobrazení). Kliknutím n
 - Kontrola dostupnosti IP
 
 **Druhá iterace — extrakce do samostatného veřejného repo:**
-- Webový instalační wizard (7 kroků, `installer.py` + `installer.html`)
+- Webový instalační wizard (8 kroků, `installer.py` + `installer.html`)
 - Config-driven `app.py` — všechny credentials/IP adresy z `config.json`
 - Podmínečná registrace endpointů dle aktivních modulů
 - `install.sh` one-command instalátor
@@ -260,6 +279,16 @@ Souhrn všech nastavení (hesla skryta, ikonka oka pro zobrazení). Kliknutím n
 - Zálohy — smazání: `volid` validován regexem bezpečných znaků
 - Zálohy — plánování: `vmids`, `dow`, `hour`, `minute`, `maxfiles` validovány/whitelistovány
 - LXC generátor skriptů: `git_name`, `git_email`, `ssh_key` obaleny `shlex.quote()` + SSH klíč zapisován přes `printf '%s'` místo `echo '...'`
+- `generate_key` — name validován regexem; `test_ssh` — key_path ověřen vůči `KEYS_DIR`
+- LXC parametry: `ct_id`, `hostname`, `ip`, `gw` validovány přísnými regexy; `shlex.quote()` na heslo a šablonu
+
+**Čtvrtá iterace — i18n dashboardu + krok Vývojové prostředí:**
+- Plný anglický překlad frontendu dashboardu (`locales/dashboard-en.json`, 114 klíčů)
+- Dashboard výchozí jazyk EN; kopíruje volbu jazyka z wizardu přes `localStorage`
+- Přepínač vlajek v navbaru přepíná jazyk dashboardu živě bez načtení stránky
+- Přidán krok 7 Vývojové prostředí do wizardu: Node.js ekosystém + nezávislé nástroje v 2-sloupcovém gridu karet
+- Instalace na pozadí přes `subprocess.Popen` po dokončení wizardu; průběh v `dev_install.log`
+- LXC formulář: přidáno pole CT ID + sekce "02 — Síťová konfigurace" (IP + brána)
 
 ---
 
