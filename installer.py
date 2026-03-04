@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
 import re
+import sys
 import hashlib
 import subprocess
 import socket
@@ -115,7 +116,6 @@ def check_system():
     issues = []
 
     # Python version
-    import sys
     py = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     if sys.version_info < (3, 11):
         issues.append(f"Python {py} — doporučena 3.11+")
@@ -131,15 +131,6 @@ def check_system():
         paramiko_ok = False
         issues.append("paramiko není nainstalován (pip install paramiko)")
 
-    # Port check
-    port_free = True
-    try:
-        s = socket.socket()
-        s.bind(("0.0.0.0", 8090))
-        s.close()
-    except OSError:
-        port_free = False  # already in use (likely installer itself)
-
     # Local IP
     try:
         local_ip = subprocess.run(
@@ -152,7 +143,6 @@ def check_system():
         "python": py,
         "sshpass": sshpass_ok,
         "paramiko": paramiko_ok,
-        "port_free": port_free,
         "local_ip": local_ip,
         "issues": issues,
         "ok": len(issues) == 0,
@@ -164,6 +154,8 @@ async def generate_key(request: Request):
     """Generate SSH keypair for a given role (e.g. 'proxmox', 'router')."""
     data = await request.json()
     name = data.get("name", "id_monitor")
+    if not re.match(r'^[a-zA-Z0-9_\-]{1,64}$', name):
+        return JSONResponse({"ok": False, "error": "Invalid key name"}, status_code=400)
     result = _generate_keypair(name)
     return {"ok": True, "public_key": result["public"], "key_path": result["private"]}
 
@@ -187,6 +179,10 @@ async def test_ssh(request: Request):
         key_path = data.get("key_path", "")
         if not key_path:
             return JSONResponse({"ok": False, "error": "Cesta ke klíči není zadána"}, status_code=400)
+        real_key = os.path.realpath(key_path)
+        real_keys_dir = os.path.realpath(KEYS_DIR)
+        if not real_key.startswith(real_keys_dir + os.sep):
+            return JSONResponse({"ok": False, "error": "Neplatná cesta ke klíči"}, status_code=400)
         return _ssh_test_key(ip, user, key_path, port)
 
 
@@ -368,9 +364,10 @@ async def save_config(request: Request):
         "wol_devices": data.get("wol_devices", []),
     }
 
-    # Write config
+    # Write config (restrict permissions so only root can read credentials)
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
+    os.chmod(CONFIG_FILE, 0o600)
 
     # Update service file port if it differs from current
     service_path = "/etc/systemd/system/monitor-public.service"

@@ -812,13 +812,21 @@ def _load_dashboard_app():
 
         try:
             ct_id = str(params["ct_id"])
+            if not re.match(r'^\d+$', ct_id):
+                raise Exception("Neplatné CT ID")
             hostname = params.get("hostname", "new-lxc")
+            if not re.match(r'^[a-zA-Z0-9\-]{1,63}$', hostname):
+                raise Exception("Neplatný hostname")
             ip = params.get("ip", "10.0.1.X")
+            if not re.match(r'^\d{1,3}(\.\d{1,3}){3}$', ip):
+                raise Exception("Neplatná IP adresa")
             ram = int(params.get("ram", 2048))
             cores = int(params.get("cores", 2))
             disk = int(params.get("disk", 8))
             password = params.get("password", "changeme123")
             gw = params.get("gateway", "10.0.1.1")
+            if not re.match(r'^\d{1,3}(\.\d{1,3}){3}$', gw):
+                raise Exception("Neplatná gateway")
 
             log(f"[1/9] Checking CT ID {ct_id}...")
             rc, out = run_ssh(f"pvesh get /nodes/{node}/lxc --output-format json")
@@ -836,10 +844,10 @@ def _load_dashboard_app():
             log(f"  Template: {tmpl}")
 
             log(f"[3/9] Creating LXC {ct_id}...")
-            create_cmd = (f"pvesh create /nodes/{node}/lxc --vmid {ct_id} --hostname {hostname} --ostemplate {tmpl} "
+            create_cmd = (f"pvesh create /nodes/{node}/lxc --vmid {ct_id} --hostname {hostname} --ostemplate {shlex.quote(tmpl)} "
                           f"--rootfs local-lvm:{disk} --memory {ram} --cores {cores} "
                           f"--net0 name=eth0,bridge=vmbr0,ip={ip}/24,gw={gw} "
-                          f"--unprivileged 0 --features nesting=1 --password {password} --start 0")
+                          f"--unprivileged 0 --features nesting=1 --password {shlex.quote(password)} --start 0")
             rc, out = run_ssh(create_cmd, timeout=120)
             if rc != 0:
                 raise Exception(f"pvesh create failed: {out}")
@@ -902,8 +910,8 @@ def _load_dashboard_app():
     @dashboard.post("/api/lxc/create")
     def lxc_create(data: dict):
         ct_id = data.get("ct_id")
-        if not ct_id:
-            return JSONResponse({"error": "ct_id required"}, status_code=400)
+        if not ct_id or not re.match(r'^\d+$', str(ct_id)):
+            return JSONResponse({"error": "ct_id must be a number"}, status_code=400)
         job_id = str(_uuid.uuid4())[:8]
         lxc_jobs[job_id] = {"lines": [], "done": False, "error": None, "ct_id": str(ct_id)}
         _threading.Thread(target=lxc_worker, args=(job_id, data), daemon=True).start()

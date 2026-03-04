@@ -78,14 +78,19 @@ else
     log "Klonuji repozitář do $INSTALL_DIR..."
     if [ -d "$INSTALL_DIR" ]; then
         warn "Adresář $INSTALL_DIR již existuje, zachovávám config.json a keys/"
-        # Dočasně zálohy
-        [ -f "$INSTALL_DIR/config.json" ] && cp "$INSTALL_DIR/config.json" /tmp/monitor-config-backup.json
-        [ -d "$INSTALL_DIR/keys" ] && cp -r "$INSTALL_DIR/keys" /tmp/monitor-keys-backup
+        # Dočasně zálohy do privátního tmp adresáře
+        BACKUP_DIR=$(mktemp -d)
+        chmod 700 "$BACKUP_DIR"
+        [ -f "$INSTALL_DIR/config.json" ] && cp "$INSTALL_DIR/config.json" "$BACKUP_DIR/config.json"
+        [ -d "$INSTALL_DIR/keys" ] && cp -r "$INSTALL_DIR/keys" "$BACKUP_DIR/keys"
     fi
     git clone "$REPO_URL" "$INSTALL_DIR"
     # Obnovit zálohy
-    [ -f /tmp/monitor-config-backup.json ] && cp /tmp/monitor-config-backup.json "$INSTALL_DIR/config.json"
-    [ -d /tmp/monitor-keys-backup ] && cp -r /tmp/monitor-keys-backup "$INSTALL_DIR/keys"
+    if [ -n "${BACKUP_DIR:-}" ]; then
+        [ -f "$BACKUP_DIR/config.json" ] && cp "$BACKUP_DIR/config.json" "$INSTALL_DIR/config.json"
+        [ -d "$BACKUP_DIR/keys" ] && cp -r "$BACKUP_DIR/keys" "$INSTALL_DIR/keys"
+        rm -rf "$BACKUP_DIR"
+    fi
 fi
 ok "Repozitář připraven v $INSTALL_DIR"
 
