@@ -358,7 +358,7 @@
   <div class="card">
     <h2 data-dt="mon_temp">🌡️ Teploty</h2>
     <button class="refresh-btn" onclick="loadSensors()" data-dt="lbl_refresh">↻ Obnovit</button>
-    <div class="sensors-grid" id="sensors"><span>Nacitam...</span></div>
+    <div class="sensors-grid" id="sensors"><span data-dt="lbl_loading">Loading...</span></div>
   </div>
   <div class="card">
     <h2 data-dt="mon_temp_graph">📈 Graf teplot</h2>
@@ -371,18 +371,18 @@
   <div class="mobile-stats">
     <div class="card">
       <h2 data-dt="mon_proxmox_host">Proxmox host</h2>
-      <div class="stat-row" id="statRows">Nacitam...</div>
-      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="procTable"></tbody></table></div>
+      <div class="stat-row" id="statRows" data-dt="lbl_loading">Loading...</div>
+      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th data-dt="net_name">Name</th></tr></thead><tbody id="procTable"></tbody></table></div>
     </div>
     <div class="card">
       <h2 id="vmTitle">homelab-server VM</h2>
-      <div class="stat-row" id="vmStatRows">Nacitam...</div>
-      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="vmProcTable"></tbody></table></div>
+      <div class="stat-row" id="vmStatRows" data-dt="lbl_loading">Loading...</div>
+      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th data-dt="net_name">Name</th></tr></thead><tbody id="vmProcTable"></tbody></table></div>
     </div>
     <div class="card">
       <h2 data-dt="mon_ha">Home Assistant</h2>
-      <div class="stat-row" id="haStatRows">Nacitam...</div>
-      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Nazev</th></tr></thead><tbody id="haProcTable"></tbody></table></div>
+      <div class="stat-row" id="haStatRows" data-dt="lbl_loading">Loading...</div>
+      <div class="proc-table"><table><thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th data-dt="net_name">Name</th></tr></thead><tbody id="haProcTable"></tbody></table></div>
     </div>
   </div>
   <div class="desktop-btop">
@@ -397,16 +397,16 @@
   <div class="card">
     <h2 data-dt="stor_server">💾 Úložiště serveru</h2>
     <button class="refresh-btn" onclick="loadStorage()" data-dt="lbl_refresh">↻ Obnovit</button>
-    <div id="storageServerContent"><span style="color:#888">Načítám...</span></div>
+    <div id="storageServerContent"><span style="color:#888" data-dt="lbl_loading">Loading...</span></div>
   </div>
   <div class="card">
     <h2 data-dt="stor_ext">🔌 Úložiště — externí disky</h2>
-    <div id="storageExtContent"><span style="color:#888">Načítám...</span></div>
+    <div id="storageExtContent"><span style="color:#888" data-dt="lbl_loading">Loading...</span></div>
   </div>
   <div class="card">
     <h2 data-dt="stor_smart">🔬 S.M.A.R.T. diagnostika</h2>
     <button class="refresh-btn" onclick="loadSmart()" data-dt="lbl_refresh">↻ Obnovit</button>
-    <div id="smartContent">Načítám...</div>
+    <div id="smartContent" data-dt="lbl_loading">Loading...</div>
   </div>
 </div>
 
@@ -1755,7 +1755,7 @@ async function sendWol(mac, name) {
     document.getElementById(msgId).textContent = data.ok ? t('wol_sent') : "✗ " + data.error;
     document.getElementById(msgId).style.color = data.ok ? "#6bcb77" : "#ff6b6b";
   } catch(e) {
-    document.getElementById(msgId).textContent = "✗ Chyba";
+    document.getElementById(msgId).textContent = "✗ " + t('lbl_error').replace(': ','');
     document.getElementById(msgId).style.color = "#ff6b6b";
   }
 }
@@ -1813,98 +1813,98 @@ function lxcGenerate() {
   L.push("log() { echo -e \"\\${YELLOW}>>> $1\\${NC}\"; }");
   L.push("ok()  { echo -e \"\\${GREEN}\\u2713 $1\\${NC}\"; }");
   L.push("");
-  L.push("log \"Aktualizace systému...\"");
+  L.push("log \"Updating system...\"");
   L.push("apt-get update && apt-get upgrade -y -o Dpkg::Options::='--force-confold'");
   L.push("apt-get install -y -o Dpkg::Options::='--force-confold' curl wget git nano unzip build-essential");
-  L.push("ok \"Základní balíčky nainstalovány\""); L.push("");
-  L.push("log \"Povolení SSH přihlášení pro roota...\"");
+  L.push("ok \"Base packages installed\""); L.push("");
+  L.push("log \"Enabling SSH root login...\"");
   L.push("sed -i '/PermitRootLogin/d' /etc/ssh/sshd_config");
   L.push("echo \"PermitRootLogin yes\" >> /etc/ssh/sshd_config");
   L.push("systemctl restart ssh");
-  L.push("ok \"SSH root přihlášení povoleno\""); L.push("");
+  L.push("ok \"SSH root login enabled\""); L.push("");
   if (pkgs.includes("docker")) {
-    L.push("log \"Instalace Dockeru...\"");
+    L.push("log \"Installing Docker...\"");
     L.push("curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg");
     L.push("echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | tee /etc/apt/sources.list.d/docker.list > /dev/null");
     L.push("apt-get update && apt-get install -y -o Dpkg::Options::='--force-confold' docker-ce docker-ce-cli containerd.io docker-compose-plugin");
     L.push("systemctl stop docker && rm -rf /var/lib/docker && mkdir -p /etc/docker");
     L.push("cat > /etc/docker/daemon.json << 'EOF'"); L.push("{"); L.push("  \"storage-driver\": \"overlay2\","); L.push("  \"no-new-privileges\": false"); L.push("}"); L.push("EOF");
     L.push("systemctl start docker");
-    L.push("docker run --rm hello-world > /dev/null 2>&1 && ok \"Docker funguje\" || echo \"VAROVÁNÍ: Docker test selhal. Zkontroluj /etc/pve/lxc/" + ct_id + ".conf\"");
+    L.push("docker run --rm hello-world > /dev/null 2>&1 && ok \"Docker works\" || echo \"WARNING: Docker test failed. Check /etc/pve/lxc/" + ct_id + ".conf\"");
     L.push("");
   }
   if (pkgs.includes("node")) {
-    L.push("log \"Instalace nvm a Node.js LTS...\"");
+    L.push("log \"Installing nvm and Node.js LTS...\"");
     L.push("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash");
     L.push("export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\"");
     L.push("echo 'export NVM_DIR=\"$HOME/.nvm\"' >> ~/.bashrc");
     L.push("echo '[ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\"' >> ~/.bashrc");
     L.push("nvm install --lts && nvm use --lts && nvm alias default node");
-    L.push("ok \"Node.js $(node --version) nainstalován\""); L.push("");
+    L.push("ok \"Node.js $(node --version) installed\""); L.push("");
   }
   if (pkgs.includes("pnpm")) {
-    L.push("log \"Instalace pnpm...\"");
+    L.push("log \"Installing pnpm...\"");
     L.push("npm install -g pnpm");
-    L.push("ok \"pnpm $(pnpm --version) nainstalován\""); L.push("");
+    L.push("ok \"pnpm $(pnpm --version) installed\""); L.push("");
   }
   if (pkgs.includes("vercel")) {
-    L.push("log \"Instalace Vercel CLI...\"");
+    L.push("log \"Installing Vercel CLI...\"");
     L.push("npm install -g vercel");
-    L.push("ok \"Vercel CLI nainstalován\""); L.push("");
+    L.push("ok \"Vercel CLI installed\""); L.push("");
   }
   if (pkgs.includes("claude")) {
-    L.push("log \"Instalace Claude Code...\"");
+    L.push("log \"Installing Claude Code...\"");
     L.push("npm install -g @anthropic-ai/claude-code");
-    L.push("ok \"Claude Code nainstalován\""); L.push("");
+    L.push("ok \"Claude Code installed\""); L.push("");
   }
   if (pkgs.includes("micro")) {
-    L.push("log \"Instalace micro editoru...\"");
+    L.push("log \"Installing micro editor...\"");
     L.push("apt-get install -y micro");
-    L.push("ok \"micro nainstalován\""); L.push("");
+    L.push("ok \"micro installed\""); L.push("");
   }
   if (pkgs.includes("supabase")) {
-    L.push("log \"Instalace Supabase CLI...\"");
+    L.push("log \"Installing Supabase CLI...\"");
     L.push("npm install -g supabase");
-    L.push("ok \"Supabase CLI $(supabase --version) nainstalován\""); L.push("");
+    L.push("ok \"Supabase CLI $(supabase --version) installed\""); L.push("");
   }
   if (git_name || git_email) {
-    L.push("log \"Nastavení Gitu...\"");
+    L.push("log \"Configuring Git...\"");
     if (git_name) L.push("git config --global user.name \"" + git_name + "\"");
     if (git_email) L.push("git config --global user.email \"" + git_email + "\"");
-    L.push("git config --global init.defaultBranch main"); L.push("ok \"Git nakonfigurován\""); L.push("");
+    L.push("git config --global init.defaultBranch main"); L.push("ok \"Git configured\""); L.push("");
   }
   if (ssh_key) {
     L.push("mkdir -p ~/.ssh && chmod 700 ~/.ssh");
     L.push("cat > ~/.ssh/id_ed25519.pub << 'SSHEOF'"); L.push(ssh_key); L.push("SSHEOF");
-    L.push("chmod 600 ~/.ssh/id_ed25519.pub"); L.push("ok \"SSH klíč uložen\"");
+    L.push("chmod 600 ~/.ssh/id_ed25519.pub"); L.push("ok \"SSH key saved\"");
   } else {
     var eml = git_email || "webdev@lxc";
     L.push("ssh-keygen -t ed25519 -C \"" + eml + "\" -f ~/.ssh/id_ed25519 -N \"\"");
-    L.push("echo \"\" && echo \"══ Přidej tento klíč na GitHub → Settings → SSH Keys ══\"");
-    L.push("cat ~/.ssh/id_ed25519.pub && echo \"══ Po přidání: ssh -T git@github.com ══\"");
+    L.push("echo \"\" && echo \"══ Add this key to GitHub → Settings → SSH Keys ══\"");
+    L.push("cat ~/.ssh/id_ed25519.pub && echo \"══ After adding: ssh -T git@github.com ══\"");
   }
   L.push("");
   if (pkgs.includes("supabase")) {
     L.push("");
-    L.push("# ── Supabase — per-projekt instrukce ────────────────────────────────");
-    L.push("# Předpoklad: Docker musí běžet (supabase start ho interně využívá)");
+    L.push("# ── Supabase — per-project instructions ─────────────────────────────");
+    L.push("# Prerequisite: Docker must be running (supabase start uses it internally)");
     L.push("#");
-    L.push("# Nový projekt:");
-    L.push("#   mkdir muj-projekt && cd muj-projekt");
-    L.push("#   supabase init          # vytvoří adresář supabase/ s konfigurací");
-    L.push("#   supabase start         # spustí lokální PG, Auth, Storage, Studio...");
-    L.push("#   supabase status        # zobrazí API URL, anon klíč, service_role klíč");
+    L.push("# New project:");
+    L.push("#   mkdir my-project && cd my-project");
+    L.push("#   supabase init          # creates supabase/ directory with config");
+    L.push("#   supabase start         # starts local PG, Auth, Storage, Studio...");
+    L.push("#   supabase status        # shows API URL, anon key, service_role key");
     L.push("#");
-    L.push("# Propojení se Supabase Cloud:");
-    L.push("#   supabase login                        # přihlášení do Supabase Cloud");
-    L.push("#   supabase link --project-ref <ref>     # propojení projektu (ref z URL dashboardu)");
-    L.push("#   supabase db push                      # sync lokálního schématu do cloudu");
-    L.push("#   supabase db pull                      # stáhni schéma z cloudu");
+    L.push("# Link to Supabase Cloud:");
+    L.push("#   supabase login                        # log in to Supabase Cloud");
+    L.push("#   supabase link --project-ref <ref>     # link project (ref from dashboard URL)");
+    L.push("#   supabase db push                      # sync local schema to cloud");
+    L.push("#   supabase db pull                      # pull schema from cloud");
     L.push("#");
-    L.push("#   supabase stop                         # zastavení lokálního stacku");
+    L.push("#   supabase stop                         # stop local stack");
     L.push("");
   }
-  L.push("echo \"\" && echo -e \"\\${GREEN}══ Setup dokončen! " + hostname + " je připraven. ══\\${NC}\" && echo \"\"");
+  L.push("echo \"\" && echo -e \"\\${GREEN}══ Setup complete! " + hostname + " is ready. ══\\${NC}\" && echo \"\"");
   if (pkgs.includes("docker")) L.push("echo \"  Docker:  $(docker --version)\"");
   if (pkgs.includes("node")) L.push("echo \"  Node.js: $(node --version)\"");
   L.push("echo \"  SSH: ssh root@" + ip + "\"");
