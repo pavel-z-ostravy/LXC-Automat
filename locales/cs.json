@@ -134,7 +134,7 @@
   "dev_python_desc": "pip a venv nad systémovým Python 3",
   "dev_micro": "micro editor",
   "dev_micro_desc": "moderní terminálový textový editor, lepší než nano",
-  "dev_note": "Vybrané nástroje se nainstalují na pozadí po spuštění dashboardu. Průběh sleduj v /opt/monitor-public/dev_install.log.",
+  "dev_note": "Vybrané nástroje se nainstalují na pozadí po spuštění dashboardu. Průběh sleduj v /opt/lxc-automat/dev_install.log.",
 
   "review_title": "✅ Review konfigurace",
   "review_access": "Přístup",
@@ -162,7 +162,7 @@
 
   "done_title": "✓ Konfigurace uložena!",
   "done_body": "Restartuj service a otevři dashboard:",
-  "done_cmd1": "sudo systemctl restart monitor-public",
+  "done_cmd1": "sudo systemctl restart lxc-automat",
   "done_or": "Pokud service není nainstalovaná:",
 
   "err_username": "Zadej uživatelské jméno",

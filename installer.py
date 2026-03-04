@@ -1,5 +1,5 @@
 """
-monitor-public installer wizard
+lxc-automat installer wizard
 Runs only until config.json is created, then redirects to main app.
 """
 from fastapi import FastAPI, Request
@@ -16,7 +16,7 @@ import paramiko
 import io
 import pyotp
 
-INSTALL_PATH = os.environ.get("INSTALL_PATH", "/opt/monitor-public")
+INSTALL_PATH = os.environ.get("INSTALL_PATH", "/opt/lxc-automat")
 CONFIG_FILE = os.path.join(INSTALL_PATH, "config.json")
 KEYS_DIR = os.path.join(INSTALL_PATH, "keys")
 
@@ -68,7 +68,7 @@ def _generate_keypair(name: str) -> dict:
     if os.path.exists(pub):
         os.remove(pub)
     subprocess.run(
-        ["ssh-keygen", "-t", "ed25519", "-f", priv, "-N", "", "-C", f"monitor-public-{name}"],
+        ["ssh-keygen", "-t", "ed25519", "-f", priv, "-N", "", "-C", f"lxc-automat-{name}"],
         capture_output=True, check=True
     )
     os.chmod(priv, 0o600)
@@ -104,9 +104,9 @@ code{background:#0d1b2a;padding:6px 12px;border-radius:4px;color:#00d4ff;display
 </style></head><body><div class="box">
 <h2>✓ Konfigurace uložena!</h2>
 <p>Restartuj service a znovu otevři dashboard:</p>
-<code>sudo systemctl restart monitor-public</code>
+<code>sudo systemctl restart lxc-automat</code>
 <p style="margin-top:16px">Pokud service není nainstalovaná:</p>
-<code>sudo cp /opt/monitor-public/monitor-public.service /etc/systemd/system/<br>sudo systemctl daemon-reload<br>sudo systemctl enable --now monitor-public</code>
+<code>sudo cp /opt/lxc-automat/lxc-automat.service /etc/systemd/system/<br>sudo systemctl daemon-reload<br>sudo systemctl enable --now lxc-automat</code>
 </div></body></html>""")
     return _read_html()
 
@@ -403,7 +403,7 @@ async def save_config(request: Request):
     os.chmod(CONFIG_FILE, 0o600)
 
     # Update service file port if it differs from current
-    service_path = "/etc/systemd/system/monitor-public.service"
+    service_path = "/etc/systemd/system/lxc-automat.service"
     if os.path.exists(service_path):
         with open(service_path) as f:
             svc = f.read()
@@ -432,7 +432,7 @@ async def save_config(request: Request):
 
     # Restart service to switch from installer to dashboard
     subprocess.Popen(
-        ["systemctl", "restart", "monitor-public"],
+        ["systemctl", "restart", "lxc-automat"],
         start_new_session=True
     )
 

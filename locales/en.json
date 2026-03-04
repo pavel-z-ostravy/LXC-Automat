@@ -134,7 +134,7 @@
   "dev_python_desc": "pip and venv on top of system Python 3",
   "dev_micro": "micro editor",
   "dev_micro_desc": "modern terminal text editor, better than nano",
-  "dev_note": "Selected tools will be installed in the background after the dashboard starts. Check /opt/monitor-public/dev_install.log for progress.",
+  "dev_note": "Selected tools will be installed in the background after the dashboard starts. Check /opt/lxc-automat/dev_install.log for progress.",
 
   "review_title": "✅ Configuration Review",
   "review_access": "Access",
@@ -162,7 +162,7 @@
 
   "done_title": "✓ Configuration saved!",
   "done_body": "Restart the service and open the dashboard:",
-  "done_cmd1": "sudo systemctl restart monitor-public",
+  "done_cmd1": "sudo systemctl restart lxc-automat",
   "done_or": "If the service is not installed yet:",
 
   "err_username": "Enter a username",

@@ -1,12 +1,12 @@
 """
-monitor-public — config-driven homelab dashboard
+lxc-automat — config-driven homelab dashboard
 If config.json doesn't exist yet, serves the installer wizard.
 Otherwise serves the full dashboard.
 """
 import os
 import importlib.util
 
-INSTALL_PATH = os.environ.get("INSTALL_PATH", "/opt/monitor-public")
+INSTALL_PATH = os.environ.get("INSTALL_PATH", "/opt/lxc-automat")
 CONFIG_FILE = os.path.join(INSTALL_PATH, "config.json")
 
 
