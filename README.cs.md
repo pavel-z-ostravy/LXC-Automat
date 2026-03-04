@@ -337,6 +337,7 @@ Pak znovu spusť instalační skript.
 
 ## Plánované funkce
 
+- [ ] **Systém témat** — více vizuálních designů (Midnight / Obsidian / Forest / Amber) přepínatelných přímo v dashboardu i volitelných jako výchozích ve wizardu (s live CSS náhledem). Každé téma definuje vlastní barevnou paletu, typografii a akcent přes CSS custom properties — bez znovunačtení stránky.
 - [ ] Výběr LXC šablony (nejen Ubuntu 22.04)
 - [ ] Správa kontejnerů: start/stop/restart z dashboardu
 - [ ] Monitoring zdrojů per-kontejner (CPU, RAM, disk)

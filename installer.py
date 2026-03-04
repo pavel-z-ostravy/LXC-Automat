@@ -299,6 +299,7 @@ def _generate_dev_script(packages: list, install_path: str) -> str:
 
 @app.get("/api/installer/generate_totp")
 async def generate_totp(name: str = "Homelab"):
+    name = name[:64]
     secret = pyotp.random_base32()
     uri = pyotp.totp.TOTP(secret).provisioning_uri(name=name, issuer_name="LXC-Automat")
     return {"secret": secret, "uri": uri}
@@ -307,8 +308,12 @@ async def generate_totp(name: str = "Homelab"):
 @app.post("/api/installer/verify_totp")
 async def verify_totp_code(request: Request):
     data = await request.json()
-    secret = data.get("secret", "")
+    secret = data.get("secret", "").strip().upper()
     code = data.get("code", "").strip()
+    if not re.match(r'^[A-Z2-7]{16,64}$', secret):
+        return {"ok": False, "error": "Invalid secret format"}
+    if not re.match(r'^\d{6}$', code):
+        return {"ok": False, "error": "Code must be 6 digits"}
     if pyotp.TOTP(secret).verify(code):
         return {"ok": True}
     return {"ok": False, "error": "Invalid code"}
@@ -331,12 +336,21 @@ async def save_config(request: Request):
 
     password_hash = hashlib.sha256(password.encode()).hexdigest()
 
+    _totp_raw = data.get("totp_secret") if data.get("totp_enabled") else None
+    if _totp_raw is not None:
+        _totp_norm = str(_totp_raw).strip().upper()
+        if not re.match(r'^[A-Z2-7]{16,64}$', _totp_norm):
+            return JSONResponse({"ok": False, "error": "Invalid TOTP secret format"}, status_code=400)
+        _validated_totp_secret = _totp_norm
+    else:
+        _validated_totp_secret = None
+
     config = {
         "dashboard_name": data.get("dashboard_name", "Homelab"),
         "auth": {
             "username": username,
             "password_hash": password_hash,
-            "totp_secret": data.get("totp_secret") if data.get("totp_enabled") else None,
+            "totp_secret": _validated_totp_secret,
         },
         "port": port,
         "install_path": INSTALL_PATH,

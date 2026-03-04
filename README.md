@@ -337,6 +337,7 @@ Then re-run the install script to start fresh.
 
 ## Planned Features
 
+- [ ] **Theme system** — multiple visual designs (Midnight / Obsidian / Forest / Amber) switchable live in the dashboard navbar and selectable as default in the wizard (with live CSS preview). Each theme defines its own color palette, typography and accent via CSS custom properties — no page reload required.
 - [ ] LXC template selector (not just Ubuntu 22.04)
 - [ ] Container management: start/stop/restart from dashboard
 - [ ] Resource monitoring per-container (CPU, RAM, disk)

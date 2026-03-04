@@ -1002,13 +1002,13 @@ async function loadSensors() {
       if (sensors.length === 0) continue;
       var div = document.createElement("div");
       div.className = "sensor-block";
-      var html = "<h3>" + blockName + "</h3>";
+      var html = "<h3>" + esc(blockName) + "</h3>";
       for (var i = 0; i < sensors.length; i++) {
         var key = blockName + " / " + sensors[i].name;
         var color = getColorForSensor(key);
         var tempClass = sensors[i].temp >= 80 ? "sensor-warn" : sensors[i].temp >= 65 ? "sensor-hot" : "";
-        var tempColor = tempClass ? "" : 'style="color:' + color + '"';
-        html += '<div class="sensor-line ' + tempClass + '" ' + tempColor + '>' + sensors[i].name + ": " + sensors[i].temp + "°C";
+        var tempColor = tempClass ? "" : 'style="color:' + esc(color) + '"';
+        html += '<div class="sensor-line ' + tempClass + '" ' + tempColor + '>' + esc(sensors[i].name) + ": " + esc(String(sensors[i].temp)) + "°C";
         if (sensors[i].temp >= 80) html += " &#9888;";
         html += "</div>";
       }
@@ -1029,7 +1029,7 @@ function renderStats(d, rowsId, procId) {
   html += '<div class="stat-item"><label>CPU</label><div class="val">' + d.cpu.toFixed(1) + '%</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.cpu) + '" style="width:' + Math.min(d.cpu,100) + '%"></div></div></div>';
   html += '<div class="stat-item"><label>RAM</label><div class="val">' + fmt(d.mem.used) + ' / ' + fmt(d.mem.total) + ' (' + d.mem.pct + '%)</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.mem.pct) + '" style="width:' + d.mem.pct + '%"></div></div></div>';
   html += '<div class="stat-item"><label>Disk /</label><div class="val">' + fmt(d.disk.used) + ' / ' + fmt(d.disk.total) + ' (' + d.disk.pct + '%)</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.disk.pct) + '" style="width:' + d.disk.pct + '%"></div></div></div>';
-  if (d.uptime) html += '<div class="stat-item"><label>Uptime</label><div class="val">' + d.uptime + '</div></div>';
+  if (d.uptime) html += '<div class="stat-item"><label>Uptime</label><div class="val">' + esc(d.uptime) + '</div></div>';
   document.getElementById(rowsId).innerHTML = html;
   if (procId) {
     var tbody = document.getElementById(procId);
@@ -1037,7 +1037,7 @@ function renderStats(d, rowsId, procId) {
     for (var i = 0; i < d.processes.length; i++) {
       var p = d.processes[i];
       var tr = document.createElement("tr");
-      tr.innerHTML = '<td>' + p.pid + '</td><td>' + p.cpu + '</td><td>' + p.mem + '</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + p.name + '</td>';
+      tr.innerHTML = '<td>' + esc(p.pid) + '</td><td>' + esc(p.cpu) + '</td><td>' + esc(p.mem) + '</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.name) + '</td>';
       tbody.appendChild(tr);
     }
   }
@@ -1109,9 +1109,9 @@ function renderNetworkTable(speeds, devices) {
     var spd = speeds[d.ip] || {rx_kbps: 0, tx_kbps: 0};
     html += '<tr>';
     var stateColor = {REACHABLE:'#6bcb77',STALE:'#ffd93d',DELAY:'#ff9f43',UNKNOWN:'#888'}[d.state] || '#888';
-    html += '<td><b>' + d.ip + '</b></td>';
-    html += '<td style="color:' + stateColor + '">' + (d.name || '<span style="color:#666">-</span>') + '</td>';
-    html += '<td class="net-mac" style="font-size:11px;color:#888">' + d.mac + '</td>'; html += '<td class="net-stav"><span class="state-badge state-' + d.state + '">' + d.state + '</span></td>';
+    html += '<td><b>' + esc(d.ip) + '</b></td>';
+    html += '<td style="color:' + stateColor + '">' + (d.name ? esc(d.name) : '<span style="color:#666">-</span>') + '</td>';
+    html += '<td class="net-mac" style="font-size:11px;color:#888">' + esc(d.mac) + '</td>'; html += '<td class="net-stav"><span class="state-badge state-' + esc(d.state) + '">' + esc(d.state) + '</span></td>';
 
     html += '<td><span class="desktop-only">' + fmtSpeed(spd.rx_kbps) + ' / ' + fmtSpeed(spd.tx_kbps) + '</span><span class="mobile-only" style="font-size:11px">' + fmtSpeed(spd.rx_kbps) + '<br>' + fmtSpeed(spd.tx_kbps) + '</span></td>';
     html += '</tr>';
@@ -1237,7 +1237,7 @@ async function loadSpeedServers() {
     var sel = document.getElementById("serverSelect");
     sel.innerHTML = '<option value="">' + t('spd_auto') + '</option>';
     if (d.servers) d.servers.forEach(function(s) {
-      sel.innerHTML += '<option value="' + s.id + '">' + s.name + ' — ' + s.location + ' (' + s.distance + ' / ' + s.ping + ')</option>';
+      sel.innerHTML += '<option value="' + esc(s.id) + '">' + esc(s.name) + ' — ' + esc(s.location) + ' (' + esc(s.distance) + ' / ' + esc(s.ping) + ')</option>';
     });
   } catch(e) {}
 }
@@ -1608,7 +1608,7 @@ async function loadBackups() {
     var r = await fetch("/api/backups"); var d = await r.json();
     var sel = document.getElementById("backupVmid");
     sel.innerHTML = '<option value="">' + t('bkp_select_vm') + '</option>' +
-      (d.vms || []).map(function(v) { return '<option value="' + v.vmid + '">' + v.vmid + ' — ' + v.name + '</option>'; }).join("");
+      (d.vms || []).map(function(v) { return '<option value="' + esc(String(v.vmid)) + '">' + esc(String(v.vmid)) + ' — ' + esc(v.name) + '</option>'; }).join("");
     var bl = document.getElementById("backupsList");
     var storagePaths = {
       "local": "/var/lib/vz/dump/",
@@ -1635,9 +1635,9 @@ async function loadBackups() {
         var storePath = storagePaths[storageId] || storagePaths["local"];
         var filename = b.volid.split("/").pop();
         var fullpath = storePath + filename;
-        tableHtml += '<tr><td>' + dt + '</td><td>VM ' + b.vmid + '</td><td>' + size + '</td><td style="color:#00d4ff;font-size:11px">' + storageId + '</td>' +
-          '<td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer" onclick="navigator.clipboard.writeText(\'' + fullpath + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#888\',1000)" title="' + t('bkp_click_copy') + '">' + filename + '</td>' +
-          '<td style="color:#888">' + (b.notes||"—") + '</td></tr>';
+        tableHtml += '<tr><td>' + esc(dt) + '</td><td>VM ' + esc(String(b.vmid)) + '</td><td>' + esc(size) + '</td><td style="color:#00d4ff;font-size:11px">' + esc(storageId) + '</td>' +
+          '<td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer" onclick="navigator.clipboard.writeText(\'' + esc(fullpath) + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#888\',1000)" title="' + t('bkp_click_copy') + '">' + esc(filename) + '</td>' +
+          '<td style="color:#888">' + esc(b.notes||"—") + '</td></tr>';
       });
       tableHtml += '</tbody></table>';
       bl.innerHTML = pathsHtml + tableHtml;
@@ -1683,7 +1683,7 @@ async function loadBackupSchedule() {
     var ds = await rs.json();
     var sc = document.getElementById("schedCurrent");
     if (ds.schedule) {
-      sc.innerHTML = "📅 <b>" + ds.schedule + "</b> &nbsp;|&nbsp; VM: <b>" + ds.vmids + "</b> &nbsp;|&nbsp; " + t('bkp_maxfiles') + ": <b>" + ds.maxfiles + "</b> &nbsp;|&nbsp; Storage: local &nbsp;|&nbsp; Mode: stop";
+      sc.innerHTML = "📅 <b>" + esc(ds.schedule) + "</b> &nbsp;|&nbsp; VM: <b>" + esc(String(ds.vmids)) + "</b> &nbsp;|&nbsp; " + t('bkp_maxfiles') + ": <b>" + esc(String(ds.maxfiles)) + "</b> &nbsp;|&nbsp; Storage: local &nbsp;|&nbsp; Mode: stop";
       document.getElementById("schedVmids").value = ds.vmids || "";
       var parts = ds.schedule.split(" ");
       if (parts.length >= 2) {
@@ -2138,6 +2138,10 @@ var DASH_LANG = localStorage.getItem('dashLang') || 'en';
 
 function t(key) {
   return DASH_STRINGS[key] !== undefined ? DASH_STRINGS[key] : key;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 async function loadDashStrings(lang) {

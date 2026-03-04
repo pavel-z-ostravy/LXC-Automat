@@ -106,8 +106,7 @@ def _load_dashboard_app():
 
     @dashboard.get("/locales/{filename}")
     def serve_locale(filename: str):
-        import re as _re
-        if not _re.match(r'^dashboard-(en|cs)\.json$', filename):
+        if not re.match(r'^dashboard-(en|cs)\.json$', filename):
             return JSONResponse({"error": "Not found"}, status_code=404)
         path = os.path.join(INSTALL_PATH, "locales", filename)
         if not os.path.exists(path):
@@ -208,16 +207,16 @@ def _load_dashboard_app():
 
     # ── Auth endpoints ───────────────────────────────────────────────────────
 
-    LOGIN_HTML = """<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Přihlášení</title>
+    LOGIN_HTML = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Login</title>
 <style>*{{box-sizing:border-box;margin:0;padding:0}}body{{background:#0d1b2a;color:#eee;font-family:monospace;display:flex;align-items:center;justify-content:center;min-height:100vh}}.box{{background:#16213e;border:1px solid #0f3460;border-radius:12px;padding:36px 40px;width:320px}}h2{{color:#00d4ff;margin-bottom:24px;font-size:18px;text-align:center}}label{{font-size:12px;color:#888;display:block;margin-bottom:4px}}input{{width:100%;padding:10px 12px;background:#0d1b2a;border:1px solid #0f3460;border-radius:6px;color:#eee;font-family:monospace;font-size:14px;margin-bottom:16px}}button{{width:100%;padding:11px;background:#0f3460;color:#00d4ff;border:1px solid #00d4ff;border-radius:6px;font-family:monospace;font-size:14px;cursor:pointer}}.err{{color:#ff6b6b;font-size:12px;margin-top:12px;text-align:center}}</style>
 </head><body><div class="box"><h2>🖥️ Dashboard</h2>
 <form method="post" action="/login">
-<label>Uživatelské jméno</label><input type="text" name="username" autofocus autocomplete="username">
-<label>Heslo</label><input type="password" name="password" autocomplete="current-password">
-<button type="submit">Přihlásit se</button></form>{err}</div></body></html>"""
+<label>Username</label><input type="text" name="username" autofocus autocomplete="username">
+<label>Password</label><input type="password" name="password" autocomplete="current-password">
+<button type="submit">Log in</button></form>{err}</div></body></html>"""
 
-    TOTP_HTML = """<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8">
+    TOTP_HTML = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Dvoufaktorové ověření</title>
 <style>*{{box-sizing:border-box;margin:0;padding:0}}body{{background:#0d1b2a;color:#eee;font-family:monospace;display:flex;align-items:center;justify-content:center;min-height:100vh}}.box{{background:#16213e;border:1px solid #0f3460;border-radius:12px;padding:36px 40px;width:320px}}h2{{color:#00d4ff;margin-bottom:8px;font-size:18px;text-align:center}}.sub{{color:#888;font-size:12px;text-align:center;margin-bottom:24px}}label{{font-size:12px;color:#888;display:block;margin-bottom:4px}}input{{width:100%;padding:10px 12px;background:#0d1b2a;border:1px solid #0f3460;border-radius:6px;color:#eee;font-family:monospace;font-size:18px;margin-bottom:16px;text-align:center;letter-spacing:6px}}button{{width:100%;padding:11px;background:#0f3460;color:#00d4ff;border:1px solid #00d4ff;border-radius:6px;font-family:monospace;font-size:14px;cursor:pointer}}.err{{color:#ff6b6b;font-size:12px;margin-top:12px;text-align:center}}.back{{display:block;text-align:center;margin-top:14px;font-size:12px;color:#555;text-decoration:none}}.back:hover{{color:#00d4ff}}</style>
 </head><body><div class="box"><h2>🔐 Two-Factor Auth</h2>
@@ -250,7 +249,7 @@ def _load_dashboard_app():
             resp = RedirectResponse("/", status_code=303)
             resp.set_cookie("session", token, httponly=True, samesite="lax")
             return resp
-        return HTMLResponse(LOGIN_HTML.format(err='<div class="err">Špatné jméno nebo heslo.</div>'), status_code=401)
+        return HTMLResponse(LOGIN_HTML.format(err='<div class="err">Invalid username or password.</div>'), status_code=401)
 
     @dashboard.get("/login/totp", response_class=HTMLResponse)
     async def totp_page(request: Request):
@@ -307,7 +306,8 @@ def _load_dashboard_app():
     def get_stats():
         result = parse_stats(proxmox_ssh())
         try:
-            net_raw = open("/proc/net/dev").read()
+            with open("/proc/net/dev") as _f:
+                net_raw = _f.read()
             net_data = {}
             for line in net_raw.strip().split("\n")[2:]:
                 parts = line.split()
@@ -381,10 +381,12 @@ def _load_dashboard_app():
 
     @dashboard.post("/api/wol")
     def send_wol(data: dict):
+        mac = data.get("mac", "")
+        if not re.match(r'^([0-9a-fA-F]{2}[:\-]){5}[0-9a-fA-F]{2}$', mac):
+            return JSONResponse({"error": "Invalid MAC address"}, status_code=400)
         try:
-            mac = data.get("mac")
             wakeonlan.send_magic_packet(mac)
-            return {"ok": True, "message": f"WoL paket odeslán na {mac}"}
+            return {"ok": True, "message": f"WoL packet sent to {mac}"}
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
@@ -406,6 +408,8 @@ def _load_dashboard_app():
 
     @dashboard.get("/api/ping")
     def ping_host(ip: str):
+        if not re.match(r'^\d{1,3}(\.\d{1,3}){3}$', ip):
+            return JSONResponse({"error": "Invalid IP"}, status_code=400)
         try:
             result = subprocess.run(["ping", "-c", "1", "-W", "1", ip], capture_output=True, timeout=3)
             return {"online": result.returncode == 0}
@@ -821,12 +825,18 @@ def _load_dashboard_app():
 
     @dashboard.get("/api/speedtest/poll/{job_id}")
     def poll_speedtest_job(job_id: str):
+        if not re.match(r'^[0-9a-f]{8}$', job_id):
+            return JSONResponse({"error": "Invalid job_id"}, status_code=400)
         job = speed_jobs.get(job_id)
         if not job:
             return {"error": "Job not found"}
         lines = job["lines"][:]
         job["lines"] = []
-        return {"lines": lines, "done": job["done"], "result": job.get("result")}
+        done = job["done"]
+        result = job.get("result")
+        if done:
+            speed_jobs.pop(job_id, None)
+        return {"lines": lines, "done": done, "result": result}
 
     # ── LXC wizard ────────────────────────────────────────────────────────────
 
@@ -991,8 +1001,14 @@ def _load_dashboard_app():
             if not re.match(r'^\d{1,3}(\.\d{1,3}){3}$', ip):
                 raise Exception("Neplatná IP adresa")
             ram = int(params.get("ram", 2048))
+            if not (128 <= ram <= 65536):
+                raise Exception("RAM must be 128–65536 MB")
             cores = int(params.get("cores", 2))
+            if not (1 <= cores <= 128):
+                raise Exception("Cores must be 1–128")
             disk = int(params.get("disk", 8))
+            if not (1 <= disk <= 4096):
+                raise Exception("Disk must be 1–4096 GB")
             password = params.get("password", "changeme123")
             gw = params.get("gateway", "10.0.1.1")
             if not re.match(r'^\d{1,3}(\.\d{1,3}){3}$', gw):
@@ -1082,6 +1098,8 @@ def _load_dashboard_app():
         ct_id = data.get("ct_id")
         if not ct_id or not re.match(r'^\d+$', str(ct_id)):
             return JSONResponse({"error": "ct_id must be a number"}, status_code=400)
+        _allowed_pkgs = {"docker", "node", "pnpm", "vercel", "claude", "micro", "supabase"}
+        data["packages"] = [p for p in data.get("packages", []) if p in _allowed_pkgs]
         job_id = str(_uuid.uuid4())[:8]
         lxc_jobs[job_id] = {"lines": [], "done": False, "error": None, "ct_id": str(ct_id)}
         _threading.Thread(target=lxc_worker, args=(job_id, data), daemon=True).start()
@@ -1089,12 +1107,18 @@ def _load_dashboard_app():
 
     @dashboard.get("/api/lxc/poll/{job_id}")
     def lxc_poll(job_id: str):
+        if not re.match(r'^[0-9a-f]{8}$', job_id):
+            return JSONResponse({"error": "Invalid job_id"}, status_code=400)
         job = lxc_jobs.get(job_id)
         if not job:
             return JSONResponse({"error": "Job not found"}, status_code=404)
         lines = job["lines"][:]
         job["lines"] = []
-        return {"lines": lines, "done": job["done"], "error": job.get("error")}
+        done = job["done"]
+        error = job.get("error")
+        if done:
+            lxc_jobs.pop(job_id, None)
+        return {"lines": lines, "done": done, "error": error}
 
     # ── Main page ─────────────────────────────────────────────────────────────
 
