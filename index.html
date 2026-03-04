@@ -820,7 +820,7 @@ function showPage(name, el) {
   if (name === "network") { loadNetwork(); startNetworkSpeeds(); }
   if (name === "dns") loadDNS();
   if (name === "wol") { renderWol(); startWolRefresh(); }
-  if (name === "smart") { loadSmart(); loadStorage(); startStorageExtRefresh(); }
+  if (name === "smart") { loadSmart(); loadStorage(); startStorageExtRefresh(); startSmartRefresh(); }
   if (name === "backups") loadBackups();
   if (name === "speed") loadSpeedHistory();
 }
@@ -1384,13 +1384,10 @@ function startCfMetrics() {
 
 // STORAGE
 var DISK_NOTES = {
-  "sda": "SSD Proxmox",
   "pve-root": "Proxmox OS",
   "pve-swap": "Swap",
-  "pve-data": "VM/kontejnery",
+  "pve-data": "VMs / containers",
   "pve-data_tdata": "", "pve-data_tmeta": "",
-  "sdb": "USB záloha",
-  "sdb_crypt": "Šifrovaný",
 };
 
 function fmtBlkBytes(b) {
@@ -1520,6 +1517,8 @@ function renderBlkSection(elId, devs, vms) {
 }
 
 var storageExtInterval = null;
+var smartInterval = null;
+var smartKnownDevs = "";
 
 async function loadStorage() {
   document.getElementById("storageServerContent").innerHTML = '<span style="color:#888">' + t('lbl_loading') + '</span>';
@@ -1547,38 +1546,59 @@ function startStorageExtRefresh() {
   storageExtInterval = setInterval(refreshStorageExt, 30000);
 }
 
+async function refreshSmart() {
+  try {
+    var r = await fetch("/api/smart");
+    var d = await r.json();
+    var devKey = (d.disks || []).map(function(x){ return x.dev; }).sort().join(",");
+    if (devKey !== smartKnownDevs) {
+      smartKnownDevs = devKey;
+      renderSmartData(d);
+    }
+  } catch(e) {}
+}
+
+function startSmartRefresh() {
+  if (smartInterval) return;
+  smartInterval = setInterval(refreshSmart, 20000);
+}
+
 // SMART
+function renderSmartData(d) {
+  var html = "";
+  if (d.disks && d.disks.length > 0) {
+    d.disks.forEach(function(disk) {
+      var warn = disk.reallocated > 0 || disk.pending > 0;
+      var healthColor = disk.health === "PASSED" ? "#6bcb77" : "#ff6b6b";
+      var tempColor = disk.temp >= 55 ? "#ff6b6b" : disk.temp >= 45 ? "#ffd93d" : "#ff9f43";
+      var yearsStr = (disk.hours / 8760).toFixed(1) + " " + t('smart_years');
+      html += '<div class="disk-card' + (warn ? ' warn' : '') + '">';
+      html += '<div class="disk-header">';
+      html += '<div><div class="disk-model">' + (warn ? '⚠️' : '✅') + ' ' + (disk.model || disk.dev) + '</div>';
+      html += '<div class="disk-sub">' + disk.host + ' · ' + disk.dev + ' · ' + (disk.size || '?') + '</div></div>';
+      html += '<div style="font-size:18px;font-weight:bold;color:' + healthColor + '">' + (disk.health || '?') + '</div>';
+      html += '</div>';
+      html += '<div class="disk-metrics">';
+      html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + tempColor + '">' + (disk.temp || '?') + '°C</div><div class="disk-metric-label">' + t('smart_temp') + '</div></div>';
+      html += '<div class="disk-metric"><div class="disk-metric-val" style="color:#00d4ff">' + yearsStr + '</div><div class="disk-metric-label">' + t('smart_runtime') + ' (' + (disk.hours || 0).toLocaleString() + ' h)</div></div>';
+      html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + (disk.reallocated > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.reallocated || 0) + '</div><div class="disk-metric-label">Reallocated</div></div>';
+      html += '</div>';
+      html += '<div class="disk-detail"><span>Reallocated sectors</span><span style="color:' + (disk.reallocated > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.reallocated || 0) + '</span></div>';
+      html += '<div class="disk-detail"><span>Pending sectors</span><span style="color:' + (disk.pending > 0 ? '#ffd93d' : '#6bcb77') + '">' + (disk.pending || 0) + '</span></div>';
+      html += '<div class="disk-detail"><span>Uncorrectable</span><span style="color:' + (disk.uncorrectable > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.uncorrectable || 0) + '</span></div>';
+      html += '</div>';
+    });
+  }
+  document.getElementById("smartContent").innerHTML = html || '<span style="color:#888">' + t('lbl_no_data') + '</span>';
+}
+
 async function loadSmart() {
   document.getElementById("smartContent").innerHTML = t('lbl_loading');
   try {
     var r = await fetch("/api/smart");
     var d = await r.json();
-    var html = "";
-    // Disks
-    if (d.disks && d.disks.length > 0) {
-      d.disks.forEach(function(disk) {
-        var warn = disk.reallocated > 0 || disk.pending > 0;
-        var healthColor = disk.health === "PASSED" ? "#6bcb77" : "#ff6b6b";
-        var tempColor = disk.temp >= 55 ? "#ff6b6b" : disk.temp >= 45 ? "#ffd93d" : "#ff9f43";
-        var yearsStr = (disk.hours / 8760).toFixed(1) + " " + t('smart_years');
-        html += '<div class="disk-card' + (warn ? ' warn' : '') + '">';
-        html += '<div class="disk-header">';
-        html += '<div><div class="disk-model">' + (warn ? '⚠️' : '✅') + ' ' + (disk.model || disk.dev) + '</div>';
-        html += '<div class="disk-sub">' + disk.host + ' · ' + disk.dev + ' · ' + (disk.size || '?') + '</div></div>';
-        html += '<div style="font-size:18px;font-weight:bold;color:' + healthColor + '">' + (disk.health || '?') + '</div>';
-        html += '</div>';
-        html += '<div class="disk-metrics">';
-        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + tempColor + '">' + (disk.temp || '?') + '°C</div><div class="disk-metric-label">' + t('smart_temp') + '</div></div>';
-        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:#00d4ff">' + yearsStr + '</div><div class="disk-metric-label">' + t('smart_runtime') + ' (' + (disk.hours || 0).toLocaleString() + ' h)</div></div>';
-        html += '<div class="disk-metric"><div class="disk-metric-val" style="color:' + (disk.reallocated > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.reallocated || 0) + '</div><div class="disk-metric-label">Reallocated</div></div>';
-        html += '</div>';
-        html += '<div class="disk-detail"><span>Reallocated sectors</span><span style="color:' + (disk.reallocated > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.reallocated || 0) + '</span></div>';
-        html += '<div class="disk-detail"><span>Pending sectors</span><span style="color:' + (disk.pending > 0 ? '#ffd93d' : '#6bcb77') + '">' + (disk.pending || 0) + '</span></div>';
-        html += '<div class="disk-detail"><span>Uncorrectable</span><span style="color:' + (disk.uncorrectable > 0 ? '#ff6b6b' : '#6bcb77') + '">' + (disk.uncorrectable || 0) + '</span></div>';
-        html += '</div>';
-      });
-    }
-    document.getElementById("smartContent").innerHTML = html || '<span style="color:#888">' + t('lbl_no_data') + '</span>';
+    smartKnownDevs = (d.disks || []).map(function(x){ return x.dev; }).sort().join(",");
+    renderSmartData(d);
   } catch(e) { document.getElementById("smartContent").innerHTML = t('lbl_error') + e.message; }
 }
 
