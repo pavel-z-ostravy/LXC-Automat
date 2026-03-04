@@ -385,7 +385,7 @@ def _load_dashboard_app():
             for line in df_local.strip().split("\n")[1:]:
                 parts = line.split()
                 if len(parts) >= 6:
-                    usage.append({"host": "local", "mount": "Systémový disk",
+                    usage.append({"host": "local", "mount": "System disk",
                                    "size": parts[1], "used": parts[2], "pct": parts[4].rstrip("%")})
 
             if MODULES["home_assistant"]["enabled"]:
@@ -394,14 +394,14 @@ def _load_dashboard_app():
                     parts = line.split()
                     if len(parts) >= 6:
                         usage.append({"host": "Home Assistant", "mount": "HA disk",
-                                       "size": parts[1], "used": parts[2], "pct": parts[4].rstrip("%")})
+                                       "size": parts[1], "used": parts[2], "pct": parts[4].rstrip("%")})  # "HA disk" is neutral
 
             if PROXMOX["ip"]:
                 df_prox = subprocess.run(ssh + ["df -h /"], capture_output=True, text=True, timeout=10).stdout
                 for line in df_prox.strip().split("\n")[1:]:
                     parts = line.split()
                     if len(parts) >= 6:
-                        usage.append({"host": "Proxmox", "mount": "Systém",
+                        usage.append({"host": "Proxmox", "mount": "System",
                                        "size": parts[1], "used": parts[2], "pct": parts[4].rstrip("%")})
 
                 pvd_out = subprocess.run(
@@ -419,6 +419,15 @@ def _load_dashboard_app():
                 smart_out = subprocess.run(ssh + ["smartctl -a /dev/sda"], capture_output=True, text=True, timeout=15).stdout
                 disks.append(parse_smart(smart_out, "Proxmox", "/dev/sda"))
 
+            # Scan local external disks (not sda/sr0)
+            r_blk = subprocess.run(["lsblk", "-b", "-J", "-o", "NAME,TYPE"], capture_output=True, text=True, timeout=5)
+            if r_blk.stdout.strip():
+                for blk in json.loads(r_blk.stdout).get("blockdevices", []):
+                    if blk.get("type") == "disk" and blk.get("name") not in ("sda", "sr0"):
+                        dev = f"/dev/{blk['name']}"
+                        s_out = subprocess.run(["smartctl", "-a", dev], capture_output=True, text=True, timeout=15).stdout
+                        disks.append(parse_smart(s_out, "local", dev))
+
             return {"disks": disks, "usage": usage}
         except Exception as e:
             return {"error": str(e), "disks": [], "usage": []}
@@ -434,7 +443,7 @@ def _load_dashboard_app():
                 p = line.split()
                 if len(p) >= 4:
                     total, used, free = int(p[1]), int(p[2]), int(p[3])
-                    vms.append({"name": "local", "label": "Lokální disk",
+                    vms.append({"name": "local", "label": "Local disk",
                                  "total": total, "used": used, "free": free, "pct": round(used/total*100, 1)})
 
             if MODULES["home_assistant"]["enabled"]:
@@ -461,7 +470,7 @@ def _load_dashboard_app():
                     pvd_total = pvd.get("total", 0)
                     pvd_used = pvd.get("used", 0)
                     pct = round(pvd_used / pvd_total * 100, 1) if pvd_total else 0
-                    pools.append({"name": "pve-data", "label": "VM/kontejnery",
+                    pools.append({"name": "pve-data", "label": "VMs / containers",
                                    "total": pvd_total, "used": pvd_used, "free": pvd_total - pvd_used, "pct": pct})
 
             r2 = subprocess.run(["lsblk", "-b", "-J", "-o", "NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT,FSUSE%,MODEL"],
