@@ -687,7 +687,7 @@
   <div id="lxc_wizard_panel" style="display:none;margin-bottom:16px">
     <div class="lxc-out-hdr">
       <span class="lxc-out-title" data-dt="lxc_wizard_log">// Wizard log</span>
-      <span id="lxc_wizard_status" style="font-size:12px;color:#ffd93d">Spouštím...</span>
+      <span id="lxc_wizard_status" style="font-size:12px;color:#ffd93d">Starting...</span>
     </div>
     <pre id="lxc_wizard_log" class="lxc-pre" style="max-height:420px;overflow-y:auto;background:#050d14"></pre>
   </div>
@@ -702,47 +702,47 @@
     <div class="card" style="font-size:13px;line-height:1.9;margin-bottom:16px">
       <h2 style="margin-bottom:14px" data-dt="lxc_how_title">📋 Jak postupovat</h2>
       <ol style="margin:0 0 0 18px;padding:0;display:flex;flex-direction:column;gap:12px">
-        <li>Vytvoř nový LXC v Proxmox webUI — <em>Ubuntu 22.04, privileged, 2 CPU, 2 GB RAM</em></li>
+        <li>Create a new LXC in Proxmox web UI — <em>Ubuntu 22.04, privileged, 2 CPU, 2 GB RAM</em></li>
         <li>
           <span class="lxc-step-toggle" onclick="lxcToggle('conf')" id="lxc-toggle-conf">
-            Uprav <code>/etc/pve/lxc/[CT_ID].conf</code> na Proxmox hostu
+            Edit <code>/etc/pve/lxc/[CT_ID].conf</code> on the Proxmox host
             <span class="lxc-step-arrow" id="lxc-arrow-conf">▶</span>
           </span>
           <div class="lxc-expand" id="lxc-expand-conf">
-            SSH na Proxmox a uprav conf soubor:
+            SSH into Proxmox and edit the conf file:
             <pre>ssh root@10.0.1.9
 nano /etc/pve/lxc/<span class="inst_ctid">202</span>.conf</pre>
-            Na konec souboru přidej tyto tři řádky (nutné pro Docker v LXC):
+            Append these three lines at the end (required for Docker inside LXC):
             <pre>lxc.apparmor.profile: unconfined
 lxc.cgroup2.devices.allow: a
 lxc.cap.drop:</pre>
-            Ulož <code>Ctrl+O → Enter → Ctrl+X</code>, pak restartuj LXC:
+            Save <code>Ctrl+O → Enter → Ctrl+X</code>, then reboot the LXC:
             <pre>pct reboot <span class="inst_ctid">202</span></pre>
-            <div class="note">Bez těchto řádků Docker v LXC kontejneru nefunguje.</div>
+            <div class="note">Without these lines Docker will not work inside the LXC container.</div>
           </div>
         </li>
         <li>
           <span class="lxc-step-toggle" onclick="lxcToggle('upload')" id="lxc-toggle-upload">
-            Nahraj <code>setup.sh</code> do LXC a spusť ho
+            Upload <code>setup.sh</code> into the LXC and run it
             <span class="lxc-step-arrow" id="lxc-arrow-upload">▶</span>
           </span>
           <div class="lxc-expand" id="lxc-expand-upload">
-            <strong>Možnost A — pct push z Proxmox hostu (doporučeno)</strong> — klikni "☁ uložit na server", pak <strong>na Proxmox hostu</strong> (ssh root@10.0.1.9):
+            <strong>Option A — pct push from the Proxmox host (recommended)</strong> — click "☁ save to server", then <strong>on the Proxmox host</strong>:
             <pre>pct push <span class="inst_ctid">202</span> /tmp/setup-lxc.sh /root/setup.sh
 pct exec <span class="inst_ctid">202</span> -- bash /root/setup.sh</pre>
-            <div class="note">Příkazy <code>pct</code> patří na Proxmox host — nespouštěj je uvnitř kontejneru.</div>
-            <strong>Možnost B — přes konzoli LXC</strong> (alternativa):
+            <div class="note"><code>pct</code> commands run on the Proxmox host — do not run them inside the container.</div>
+            <strong>Option B — via LXC console</strong> (alternative):
             <pre>pct enter <span class="inst_ctid">202</span>
-# uvnitř kontejneru:
+# inside the container:
 bash &lt;(cat &lt;&lt; 'EOF'
-# ... vlož celý obsah vygenerovaného setup.sh ...
+# ... paste the full contents of the generated setup.sh ...
 EOF
 )</pre>
-            <strong>Možnost C — scp + SSH</strong> (jen pokud SSH už funguje):
+            <strong>Option C — scp + SSH</strong> (only if SSH is already working):
             <pre>scp ~/setup.sh root@<span class="inst_ip">10.0.1.X</span>:/root/
 ssh root@<span class="inst_ip">10.0.1.X</span>
 bash setup.sh</pre>
-            <div class="note">Skript sám vypíše SSH klíč k přidání na GitHub — počkej na konec výstupu.</div>
+            <div class="note">The script will print the SSH public key to add to GitHub — wait for the output to finish.</div>
           </div>
         </li>
       </ol>
@@ -1974,14 +1974,14 @@ function lxcCheckIp() {
   var ip = document.getElementById("lxc_ip").value;
   var el = document.getElementById("lxc_ip_status");
   if (!ip || ip === "10.0.1." || ip.endsWith(".")) { el.textContent = ""; return; }
-  el.style.color = "#888"; el.textContent = "kontroluji...";
+  el.style.color = "#888"; el.textContent = t('lxc_ip_checking');
   fetch("/api/ping?ip=" + encodeURIComponent(ip))
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d.online) {
-        el.style.color = "#ff6b6b"; el.textContent = "⚠ IP obsazena!";
+        el.style.color = "#ff6b6b"; el.textContent = t('lxc_ip_taken');
       } else {
-        el.style.color = "#6bcb77"; el.textContent = "✓ volná";
+        el.style.color = "#6bcb77"; el.textContent = t('lxc_ip_free');
       }
     }).catch(function() { el.textContent = ""; });
 }
@@ -2003,10 +2003,10 @@ function lxcWizardStart() {
 
   var ip  = document.getElementById("lxc_ip").value;
   var pwd = document.getElementById("lxc_password").value;
-  if (!ip || ip === "10.0.1." || ip.endsWith(".")) { alert("Zadej platnou IP adresu kontejneru!"); return; }
-  if (!pwd) { alert("Zadej root heslo nebo klikni 'generovat heslo'!"); return; }
+  if (!ip || ip === "10.0.1." || ip.endsWith(".")) { alert(t('lxc_alert_ip')); return; }
+  if (!pwd) { alert(t('lxc_alert_pw')); return; }
   var ipStatus = document.getElementById("lxc_ip_status").textContent;
-  if (ipStatus.includes("obsazena") && !confirm("IP " + ip + " je obsazená (ping odpovídá). Opravdu pokračovat?")) return;
+  if (ipStatus === t('lxc_ip_taken') && !confirm(t('lxc_confirm_ip') + " " + ip)) return;
 
   var pkgs = Array.from(document.querySelectorAll("#lxc_packages input:checked"))
                .map(function(cb) { return cb.value; });
@@ -2027,7 +2027,7 @@ function lxcWizardStart() {
   };
 
   btn.disabled = true;
-  btn.textContent = "Probíhá...";
+  btn.textContent = t('lxc_wizard_running');
   logEl.textContent = "";
   panel.style.display = "block";
   status.textContent = t('lxc_wizard_starting');
