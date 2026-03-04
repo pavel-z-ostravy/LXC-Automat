@@ -159,7 +159,7 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS, EN/CS)
 ## Struktura souborů
 
 ```
-/opt/monitor-public/
+/opt/lxc-automat/
 ├── install.sh           # curl | bash vstupní bod
 ├── installer.py         # backend wizardu (FastAPI)
 ├── installer.html       # UI wizardu (vícekrokový formulář)
@@ -171,7 +171,7 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS, EN/CS)
 │   ├── dashboard-en.json  # překlady dashboardu (EN)
 │   └── dashboard-cs.json  # překlady dashboardu (CS)
 ├── requirements.txt
-├── monitor-public.service
+├── lxc-automat.service
 ├── screenshots/         # screenshoty pro README
 ├── keys/                # SSH klíče generované wizardem (gitignored)
 └── config.json          # generovaný wizardem (gitignored)
@@ -238,6 +238,8 @@ Záložka Tools obsahuje wizard pro provisioning LXC kontejnerů. Vyplň identit
 
 ## Řešení problémů
 
+> **Poznámka k cestám:** Příkazy níže používají výchozí název instalace `lxc-automat`. Pokud sis zvolil jiný název, nahraď `lxc-automat` svým názvem ve všech příkazech.
+
 ### Špatné heslo — nelze se přihlásit
 
 Heslo je uloženo jako SHA-256 hash v `config.json`. Reset:
@@ -247,12 +249,12 @@ Heslo je uloženo jako SHA-256 hash v `config.json`. Reset:
 python3 -c "import hashlib; print(hashlib.sha256(b'TVOJE_NOVE_HESLO').hexdigest())"
 
 # Uprav config.json a nahraď hodnotu auth.password_hash
-nano /opt/monitor-public/config.json
+nano /opt/lxc-automat/config.json
 ```
 
 Pak restartuj service:
 ```bash
-sudo systemctl restart monitor-public
+sudo systemctl restart lxc-automat
 ```
 
 ---
@@ -262,7 +264,7 @@ sudo systemctl restart monitor-public
 Pokud ztratíš přístup k aplikaci pro ověřování, vypni 2FA přímo v `config.json`:
 
 ```bash
-nano /opt/monitor-public/config.json
+nano /opt/lxc-automat/config.json
 ```
 
 V sekci `auth` nastav `totp_secret` na `null`:
@@ -277,7 +279,7 @@ V sekci `auth` nastav `totp_secret` na `null`:
 
 Restartuj service — přihlášení bude opět fungovat jen heslem:
 ```bash
-sudo systemctl restart monitor-public
+sudo systemctl restart lxc-automat
 ```
 
 ---
@@ -286,22 +288,22 @@ sudo systemctl restart monitor-public
 
 Zkontroluj logy:
 ```bash
-sudo journalctl -u monitor-public -n 50 --no-pager
+sudo journalctl -u lxc-automat -n 50 --no-pager
 ```
 
 Časté příčiny:
 - **`ModuleNotFoundError`** — chybí Python závislost. Nainstaluj ji do venvu:
   ```bash
-  /opt/monitor-public/venv/bin/pip install <název-modulu>
+  /opt/lxc-automat/venv/bin/pip install <název-modulu>
   ```
 - **Port je obsazený** — jiná service běží na portu 8091. Zastav ji nebo změň port v `config.json` a v service souboru:
   ```bash
-  sudo nano /etc/systemd/system/monitor-public.service
-  sudo systemctl daemon-reload && sudo systemctl restart monitor-public
+  sudo nano /etc/systemd/system/lxc-automat.service
+  sudo systemctl daemon-reload && sudo systemctl restart lxc-automat
   ```
 - **Chyba syntaxe v `config.json`** — ověř soubor:
   ```bash
-  python3 -m json.tool /opt/monitor-public/config.json
+  python3 -m json.tool /opt/lxc-automat/config.json
   ```
 
 ---
@@ -311,8 +313,8 @@ sudo journalctl -u monitor-public -n 50 --no-pager
 Smazání `config.json` způsobí, že app při příštím startu znovu zobrazí instalační wizard:
 
 ```bash
-sudo rm /opt/monitor-public/config.json
-sudo systemctl restart monitor-public
+sudo rm /opt/lxc-automat/config.json
+sudo systemctl restart lxc-automat
 ```
 
 Pak otevři `http://<IP-serveru>:8091/setup` — spustí se celý wizard znovu. SSH klíče v `keys/` jsou zachovány, ale lze je ručně smazat.
@@ -324,10 +326,10 @@ Pak otevři `http://<IP-serveru>:8091/setup` — spustí se celý wizard znovu. 
 ### Kompletní reinstalace
 
 ```bash
-sudo systemctl stop monitor-public
-sudo systemctl disable monitor-public
-sudo rm -rf /opt/monitor-public
-sudo rm /etc/systemd/system/monitor-public.service
+sudo systemctl stop lxc-automat
+sudo systemctl disable lxc-automat
+sudo rm -rf /opt/lxc-automat
+sudo rm /etc/systemd/system/lxc-automat.service
 sudo systemctl daemon-reload
 ```
 

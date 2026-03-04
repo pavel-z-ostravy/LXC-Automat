@@ -1,5 +1,5 @@
 #!/bin/bash
-# monitor-public installer
+# lxc-automat installer
 # Usage: curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/LXC-Automat/main/install.sh | sudo bash
 
 set -e
@@ -10,9 +10,9 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-INSTALL_DIR="/opt/monitor-public"
+INSTALL_DIR="/opt/lxc-automat"
 REPO_URL="https://github.com/pavel-z-ostravy/LXC-Automat.git"
-SERVICE_NAME="monitor-public"
+SERVICE_NAME="lxc-automat"
 PORT=8091
 
 log()  { echo -e "${CYAN}>>> $1${NC}"; }
@@ -27,7 +27,7 @@ fi
 
 echo ""
 echo -e "${CYAN}╔═══════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║      monitor-public installer         ║${NC}"
+echo -e "${CYAN}║        lxc-automat installer          ║${NC}"
 echo -e "${CYAN}╚═══════════════════════════════════════╝${NC}"
 echo ""
 
@@ -105,7 +105,7 @@ ok "Python závislosti nainstalovány"
 
 # --- Systemd service ---
 log "Nastavuji systemd service..."
-cp "$INSTALL_DIR/monitor-public.service" "/etc/systemd/system/${SERVICE_NAME}.service"
+cp "$INSTALL_DIR/lxc-automat.service" "/etc/systemd/system/${SERVICE_NAME}.service"
 systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"
 ok "Systemd service $SERVICE_NAME nastaven"
