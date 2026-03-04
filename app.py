@@ -37,6 +37,7 @@ def _load_dashboard_app():
     import threading as _threading
     import uuid as _uuid
     import shlex
+    import pyotp
 
     # ── Config load ─────────────────────────────────────────────────────────
     with open(CONFIG_FILE) as f:
@@ -83,12 +84,14 @@ def _load_dashboard_app():
 
     # ── Auth middleware ──────────────────────────────────────────────────────
 
+    TOTP_SECRET = AUTH.get("totp_secret")  # None if 2FA not configured
     valid_tokens: set = set()
+    pending_tokens: set = set()  # short-lived TOTP-pending tokens
 
     class AuthMiddleware(BaseHTTPMiddleware):
         async def dispatch(self, request: Request, call_next):
             path = request.url.path
-            if path in ("/login", "/setup") or path.startswith("/static"):
+            if path in ("/login", "/login/totp", "/setup") or path.startswith("/static"):
                 return await call_next(request)
             token = request.cookies.get("session")
             if not token or token not in valid_tokens:
@@ -214,6 +217,16 @@ def _load_dashboard_app():
 <label>Heslo</label><input type="password" name="password" autocomplete="current-password">
 <button type="submit">Přihlásit se</button></form>{err}</div></body></html>"""
 
+    TOTP_HTML = """<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Dvoufaktorové ověření</title>
+<style>*{{box-sizing:border-box;margin:0;padding:0}}body{{background:#0d1b2a;color:#eee;font-family:monospace;display:flex;align-items:center;justify-content:center;min-height:100vh}}.box{{background:#16213e;border:1px solid #0f3460;border-radius:12px;padding:36px 40px;width:320px}}h2{{color:#00d4ff;margin-bottom:8px;font-size:18px;text-align:center}}.sub{{color:#888;font-size:12px;text-align:center;margin-bottom:24px}}label{{font-size:12px;color:#888;display:block;margin-bottom:4px}}input{{width:100%;padding:10px 12px;background:#0d1b2a;border:1px solid #0f3460;border-radius:6px;color:#eee;font-family:monospace;font-size:18px;margin-bottom:16px;text-align:center;letter-spacing:6px}}button{{width:100%;padding:11px;background:#0f3460;color:#00d4ff;border:1px solid #00d4ff;border-radius:6px;font-family:monospace;font-size:14px;cursor:pointer}}.err{{color:#ff6b6b;font-size:12px;margin-top:12px;text-align:center}}.back{{display:block;text-align:center;margin-top:14px;font-size:12px;color:#555;text-decoration:none}}.back:hover{{color:#00d4ff}}</style>
+</head><body><div class="box"><h2>🔐 Two-Factor Auth</h2>
+<div class="sub">Enter the 6-digit code from your authenticator app</div>
+<form method="post" action="/login/totp">
+<label>Verification code</label><input type="text" name="totp_code" maxlength="6" pattern="[0-9]{{6}}" placeholder="000000" autofocus autocomplete="one-time-code" inputmode="numeric">
+<button type="submit">Verify</button></form>{err}
+<a href="/login" class="back">← Back to login</a></div></body></html>"""
+
     @dashboard.get("/login", response_class=HTMLResponse)
     def login_page():
         return LOGIN_HTML.format(err='<div class="err" id="err"></div>')
@@ -226,12 +239,40 @@ def _load_dashboard_app():
         pass_hash = hashlib.sha256(password.encode()).hexdigest()
         if (hmac.compare_digest(username, AUTH["username"]) and
                 hmac.compare_digest(pass_hash, AUTH["password_hash"])):
+            if TOTP_SECRET:
+                pending = secrets.token_hex(16)
+                pending_tokens.add(pending)
+                resp = RedirectResponse("/login/totp", status_code=303)
+                resp.set_cookie("pending_totp", pending, httponly=True, samesite="lax", max_age=120)
+                return resp
             token = secrets.token_hex(32)
             valid_tokens.add(token)
             resp = RedirectResponse("/", status_code=303)
             resp.set_cookie("session", token, httponly=True, samesite="lax")
             return resp
         return HTMLResponse(LOGIN_HTML.format(err='<div class="err">Špatné jméno nebo heslo.</div>'), status_code=401)
+
+    @dashboard.get("/login/totp", response_class=HTMLResponse)
+    async def totp_page(request: Request):
+        pending = request.cookies.get("pending_totp")
+        if not pending or pending not in pending_tokens:
+            return RedirectResponse("/login")
+        return HTMLResponse(TOTP_HTML.format(err=''))
+
+    @dashboard.post("/login/totp")
+    async def totp_verify(request: Request):
+        form = await request.form()
+        pending = request.cookies.get("pending_totp")
+        code = form.get("totp_code", "").strip()
+        if pending and pending in pending_tokens and pyotp.TOTP(TOTP_SECRET).verify(code):
+            pending_tokens.discard(pending)
+            token = secrets.token_hex(32)
+            valid_tokens.add(token)
+            resp = RedirectResponse("/", status_code=303)
+            resp.set_cookie("session", token, httponly=True, samesite="lax")
+            resp.delete_cookie("pending_totp")
+            return resp
+        return HTMLResponse(TOTP_HTML.format(err='<div class="err">Invalid code. Try again.</div>'), status_code=401)
 
     @dashboard.post("/logout")
     def logout(request: Request):

@@ -43,7 +43,7 @@ App automaticky detekuje zda existuje `config.json`:
 | Krok | Co nastavuješ |
 |------|---------------|
 | 1. Kontrola systému | Python, sshpass, paramiko |
-| 2. Přihlašovací údaje | Název dashboardu, port, uživatel + heslo (SHA-256 hash, s generátorem) |
+| 2. Přihlašovací údaje | Název dashboardu, port, uživatel + heslo (SHA-256 hash, s generátorem) + volitelné TOTP 2FA |
 | 3. Proxmox | IP, node name, SSH auth (heslo **nebo** generovaný keypair) |
 | 4. Moduly | Home Assistant, Router, Cloudflare, NextDNS (každý volitelný) |
 | 5. Služby | URL adresy pro monitoring dostupnosti |
@@ -57,6 +57,7 @@ App automaticky detekuje zda existuje `config.json`:
 - **Název dashboardu** — dynamicky aktualizuje titulek prohlížeče i navbar dashboardu
 - **Generátor hesel** — generuje 32/64/128-znakové heslo přes `crypto.getRandomValues`, zobrazí strength bar
 - **Validace shody hesel** — živá zpětná vazba ✓/✗ pod polem pro potvrzení hesla
+- **Volitelné TOTP 2FA** — zaškrtávátko v kroku přihlašovacích údajů; vygeneruje QR kód ke skenování v Google Authenticator / Authy, zobrazí base32 secret pro ruční zadání, vyžaduje ověřený 6-místný kód před pokračováním
 - **Šedé výchozí hodnoty** — předvyplněná pole (`admin`, `proxmox`, `root`) jsou šedá dokud nezačneš psát
 - **Generické placeholdery** — IP pole zobrazují `např. 192.168.1.x` místo konkrétních adres
 - **Ikonka oka v review** — možnost zobrazit heslo naposledy před instalací
@@ -133,7 +134,7 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS, EN/CS)
 
 - **Backend**: Python 3.11+ / FastAPI / Uvicorn
 - **Frontend**: Single-page HTML+JS, bez frameworku, bez build kroku
-- **Auth**: Cookie session, SHA-256 hash hesla, nikdy neuloženo v plaintextu
+- **Auth**: Cookie session, SHA-256 hash hesla, volitelné TOTP 2FA (pyotp), nikdy neuloženo v plaintextu
 - **Config**: `config.json` — gitignored, generovaný wizardem
 - **SSH klíče**: adresář `keys/` — gitignored, generovaný wizardem
 
@@ -149,6 +150,7 @@ Prohlížeč  ──→  Web UI (single-page HTML + JS, EN/CS)
 
 - `config.json` a `keys/` jsou gitignored — credentials se nikdy nedostanou do repo
 - Hesla uložena pouze jako SHA-256 hash
+- TOTP secret uložen v `config.json` (práva 600, gitignored), nikdy se neloguje
 - Cloudflare/NextDNS tokeny se nikdy nelogují
 - SSH klíče mají práva `600`
 
@@ -189,7 +191,11 @@ Ověření dostupnosti Pythonu 3, sshpass a paramiko; detekce lokální IP adres
 #### Krok 2 — Přihlašovací údaje
 Nastavení názvu dashboardu (live aktualizace titulku prohlížeče), portu, uživatelského jména a hesla. Zabudovaný generátor vytváří 32/64/128-znaková hesla se strength barem; živý indikátor ✓/✗ potvrzuje shodu obou polí.
 
+**Volitelně: dvoufaktorové ověřování (TOTP)** — zaškrtni „Povolit 2FA", klikni na **Generovat QR kód**, naskenuj v Google Authenticator nebo Authy a zadej 6-místný kód pro ověření. Base32 secret se zobrazí i pro ruční zadání. Wizard nepustí dál bez úspěšného ověření.
+
 ![Krok 2 - Přihlašovací údaje](screenshots/wizard-step2-credentials.png)
+
+![Krok 2 - Nastavení TOTP 2FA](screenshots/wizard-step2-totp.png)
 
 #### Krok 3 — Připojení k Proxmoxu
 IP adresa, název nodu a SSH přihlášení — heslem nebo wizardem generovaným ed25519 klíčem (veřejný klíč se zobrazí s tlačítkem Kopírovat pro vložení do `authorized_keys`). Tlačítko **Test SSH connection** ověří přihlašovací údaje před pokračováním.
@@ -229,6 +235,105 @@ Záložka Resources zobrazuje živé hodnoty ze senzorů (PCH, ACPITZ, teploty p
 Záložka Tools obsahuje wizard pro provisioning LXC kontejnerů. Vyplň identitu kontejneru (CT ID, hostname, RAM, CPU, disk), síťovou konfiguraci (IP adresa s živou kontrolou dostupnosti, brána), volitelnou Git konfiguraci a vyber balíčky k instalaci. Kliknutím na **Vytvořit LXC a nainstalovat** se kontejner provisionuje na Proxmoxu s live logem.
 
 ![Dashboard - Nástroje LXC](screenshots/dashboard-tools-lxc.png)
+
+---
+
+## Řešení problémů
+
+### Špatné heslo — nelze se přihlásit
+
+Heslo je uloženo jako SHA-256 hash v `config.json`. Reset:
+
+```bash
+# Vygeneruj nový hash pro zvolené heslo
+python3 -c "import hashlib; print(hashlib.sha256(b'TVOJE_NOVE_HESLO').hexdigest())"
+
+# Uprav config.json a nahraď hodnotu auth.password_hash
+nano /opt/monitor-public/config.json
+```
+
+Pak restartuj service:
+```bash
+sudo systemctl restart monitor-public
+```
+
+---
+
+### Ztracený TOTP / nelze projít 2FA
+
+Pokud ztratíš přístup k aplikaci pro ověřování, vypni 2FA přímo v `config.json`:
+
+```bash
+nano /opt/monitor-public/config.json
+```
+
+V sekci `auth` nastav `totp_secret` na `null`:
+
+```json
+"auth": {
+  "username": "admin",
+  "password_hash": "...",
+  "totp_secret": null
+}
+```
+
+Restartuj service — přihlášení bude opět fungovat jen heslem:
+```bash
+sudo systemctl restart monitor-public
+```
+
+---
+
+### Service se nespustí
+
+Zkontroluj logy:
+```bash
+sudo journalctl -u monitor-public -n 50 --no-pager
+```
+
+Časté příčiny:
+- **`ModuleNotFoundError`** — chybí Python závislost. Nainstaluj ji do venvu:
+  ```bash
+  /opt/monitor-public/venv/bin/pip install <název-modulu>
+  ```
+- **Port je obsazený** — jiná service běží na portu 8091. Zastav ji nebo změň port v `config.json` a v service souboru:
+  ```bash
+  sudo nano /etc/systemd/system/monitor-public.service
+  sudo systemctl daemon-reload && sudo systemctl restart monitor-public
+  ```
+- **Chyba syntaxe v `config.json`** — ověř soubor:
+  ```bash
+  python3 -m json.tool /opt/monitor-public/config.json
+  ```
+
+---
+
+### Reset wizardu (začít nastavení znovu)
+
+Smazání `config.json` způsobí, že app při příštím startu znovu zobrazí instalační wizard:
+
+```bash
+sudo rm /opt/monitor-public/config.json
+sudo systemctl restart monitor-public
+```
+
+Pak otevři `http://<IP-serveru>:8091/setup` — spustí se celý wizard znovu. SSH klíče v `keys/` jsou zachovány, ale lze je ručně smazat.
+
+> **Poznámka:** Tímto se nic neodinstaluje — resetuje se jen konfigurace. Service, venv a všechny soubory zůstávají.
+
+---
+
+### Kompletní reinstalace
+
+```bash
+sudo systemctl stop monitor-public
+sudo systemctl disable monitor-public
+sudo rm -rf /opt/monitor-public
+sudo rm /etc/systemd/system/monitor-public.service
+sudo systemctl daemon-reload
+```
+
+Pak znovu spusť instalační skript.
 
 ---
 
@@ -291,6 +396,13 @@ Záložka Tools obsahuje wizard pro provisioning LXC kontejnerů. Vyplň identit
 - Přidán krok 7 Vývojové prostředí do wizardu: Node.js ekosystém + nezávislé nástroje v 2-sloupcovém gridu karet
 - Instalace na pozadí přes `subprocess.Popen` po dokončení wizardu; průběh v `dev_install.log`
 - LXC formulář: přidáno pole CT ID + sekce "02 — Síťová konfigurace" (IP + brána)
+
+**Pátá iterace — TOTP dvoufaktorové ověřování:**
+- Volitelné TOTP 2FA v kroku 2 wizardu: zaškrtávátko → QR kód (qrcode.js) → ověření 6-místným kódem
+- `GET /api/installer/generate_totp` + `POST /api/installer/verify_totp` v `installer.py`
+- `totp_secret` uložen do `config.json` (null pokud zakázáno)
+- Dvoufázové přihlášení v `app.py`: heslo → cookie `pending_totp` (120s TTL) → `/login/totp` → pyotp ověření → session
+- Nulová režie při vypnutém 2FA — přihlašovací flow beze změny
 
 ---
 

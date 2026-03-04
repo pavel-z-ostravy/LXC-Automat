@@ -150,6 +150,7 @@
   .lang-name  { font-size: 15px; letter-spacing: 1px; }
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -252,6 +253,32 @@
         <label data-t="auth_password2">Confirm password</label>
         <input type="password" id="auth-password2" data-t-ph="auth_password2_ph" placeholder="Repeat password" oninput="checkPwMatch()">
         <div id="pw-match-msg" style="font-size:11px;margin-top:5px;display:none;"></div>
+      </div>
+
+      <div class="field" style="border-top:1px solid #1a2a4a;margin-top:16px;padding-top:16px;">
+        <label>
+          <input type="checkbox" id="totp-enabled" onchange="toggleTotp()">
+          <span data-t="auth_totp_enable">Enable two-factor authentication (TOTP)</span>
+        </label>
+        <div class="hint" data-t="auth_totp_hint">Requires authenticator app (Google Authenticator, Authy…)</div>
+      </div>
+
+      <div id="totp-setup" style="display:none">
+        <button class="btn btn-secondary" style="margin-bottom:12px" onclick="generateTotp()" data-t="auth_totp_generate">Generate QR code</button>
+        <div id="totp-scan-label" style="display:none;font-size:12px;color:#888;margin-bottom:6px;" data-t="auth_totp_scan">Scan with your authenticator app:</div>
+        <div id="totp-qr" style="margin:0 0 8px;background:#fff;display:none;padding:8px;border-radius:6px;display:inline-block"></div>
+        <div id="totp-secret-row" style="display:none;margin-bottom:12px;">
+          <span style="font-size:11px;color:#888;">Manual entry: </span>
+          <code id="totp-secret-display" style="font-size:12px;color:#00d4ff"></code>
+        </div>
+        <div class="field" id="totp-verify-row" style="display:none;margin-top:12px">
+          <label data-t="auth_totp_code">Enter 6-digit code from app to verify</label>
+          <div class="input-row">
+            <input type="text" id="totp-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="max-width:120px;letter-spacing:4px;text-align:center">
+            <button class="btn btn-secondary" onclick="verifyTotp()" data-t="auth_totp_verify">Verify</button>
+          </div>
+          <div id="totp-status" style="font-size:12px;margin-top:6px"></div>
+        </div>
       </div>
     </div>
     <div class="btn-row">
@@ -605,7 +632,7 @@ let proxAuth = 'password';
 let routerAuth = 'key';
 let pwGenOpen = false;
 let reviewPassShown = false;
-const STATE = { services: [], wol: [] };
+const STATE = { services: [], wol: [], totpSecret: null, totpVerified: false };
 
 // ── i18n ──────────────────────────────────────────────────────────────────────
 let LOCALE = {};
@@ -802,7 +829,53 @@ function validateAuth() {
   if (!u)       { alert(t('err_username'));   return; }
   if (p.length < 6) { alert(t('err_pass_short')); return; }
   if (p !== p2) { alert(t('err_pass_match')); return; }
+  if (document.getElementById('totp-enabled').checked && !STATE.totpVerified) {
+    alert(t('auth_totp_code') + ' — ' + t('auth_totp_verify'));
+    return;
+  }
   goStep(2);
+}
+
+function toggleTotp() {
+  const enabled = document.getElementById('totp-enabled').checked;
+  document.getElementById('totp-setup').style.display = enabled ? 'block' : 'none';
+  if (!enabled) { STATE.totpSecret = null; STATE.totpVerified = false; }
+}
+
+async function generateTotp() {
+  const name = encodeURIComponent(document.getElementById('dashboard-name').value.trim() || 'Homelab');
+  const r = await fetch(`/api/installer/generate_totp?name=${name}`).then(r => r.json()).catch(() => null);
+  if (!r || !r.secret) { alert('Error generating TOTP secret'); return; }
+  STATE.totpSecret = r.secret;
+  STATE.totpVerified = false;
+  document.getElementById('totp-secret-display').textContent = r.secret;
+  document.getElementById('totp-secret-row').style.display = 'block';
+  document.getElementById('totp-scan-label').style.display = 'block';
+  document.getElementById('totp-verify-row').style.display = 'block';
+  document.getElementById('totp-status').textContent = '';
+  const qrEl = document.getElementById('totp-qr');
+  qrEl.innerHTML = '';
+  qrEl.style.display = 'inline-block';
+  new QRCode(qrEl, { text: r.uri, width: 160, height: 160, colorDark: '#000', colorLight: '#fff' });
+}
+
+async function verifyTotp() {
+  const code = document.getElementById('totp-code').value.trim();
+  const statusEl = document.getElementById('totp-status');
+  if (!STATE.totpSecret) { statusEl.textContent = 'Generate QR code first'; statusEl.style.color = '#ff6b6b'; return; }
+  const r = await fetch('/api/installer/verify_totp', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ secret: STATE.totpSecret, code })
+  }).then(r => r.json()).catch(() => null);
+  if (r && r.ok) {
+    STATE.totpVerified = true;
+    statusEl.textContent = t('auth_totp_verified');
+    statusEl.style.color = '#6bcb77';
+  } else {
+    STATE.totpVerified = false;
+    statusEl.textContent = t('auth_totp_invalid');
+    statusEl.style.color = '#ff6b6b';
+  }
 }
 
 // ── Step 2: Proxmox ───────────────────────────────────────────────────────────
@@ -1036,6 +1109,8 @@ async function install() {
     wol_devices: STATE.wol.filter(w => w && w.name && w.mac),
     dev_packages: ['node','pnpm','vercel','supabase','claude','bun','docker','redis','python','micro']
       .filter(id => { const el = document.getElementById(`dev-${id}`); return el && el.checked; }),
+    totp_enabled: document.getElementById('totp-enabled').checked,
+    totp_secret: STATE.totpSecret,
   };
 
   fill.style.width = '60%'; msg.textContent = t('install_writing');

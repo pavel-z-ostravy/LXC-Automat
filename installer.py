@@ -14,6 +14,7 @@ import subprocess
 import socket
 import paramiko
 import io
+import pyotp
 
 INSTALL_PATH = os.environ.get("INSTALL_PATH", "/opt/monitor-public")
 CONFIG_FILE = os.path.join(INSTALL_PATH, "config.json")
@@ -296,6 +297,23 @@ def _generate_dev_script(packages: list, install_path: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+@app.get("/api/installer/generate_totp")
+async def generate_totp(name: str = "Homelab"):
+    secret = pyotp.random_base32()
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(name=name, issuer_name="LXC-Automat")
+    return {"secret": secret, "uri": uri}
+
+
+@app.post("/api/installer/verify_totp")
+async def verify_totp_code(request: Request):
+    data = await request.json()
+    secret = data.get("secret", "")
+    code = data.get("code", "").strip()
+    if pyotp.TOTP(secret).verify(code):
+        return {"ok": True}
+    return {"ok": False, "error": "Invalid code"}
+
+
 @app.post("/api/installer/save")
 async def save_config(request: Request):
     """Final step: save config.json and switch to dashboard mode."""
@@ -318,6 +336,7 @@ async def save_config(request: Request):
         "auth": {
             "username": username,
             "password_hash": password_hash,
+            "totp_secret": data.get("totp_secret") if data.get("totp_enabled") else None,
         },
         "port": port,
         "install_path": INSTALL_PATH,

@@ -4,3 +4,4 @@ httpx
 wakeonlan
 paramiko
 python-multipart
+pyotp
