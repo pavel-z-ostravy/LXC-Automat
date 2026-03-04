@@ -1625,7 +1625,7 @@ async function loadBackups() {
     var pathsHtml = Object.keys(storagePaths).map(function(sid) {
       return '<div style="margin-bottom:8px;padding:10px;background:#0a1520;border-radius:6px;border:1px solid #0f3460">' +
         '<div style="color:#00d4ff;font-weight:bold;font-size:13px;margin-bottom:4px">📁 ' + sid + ' <span style="color:#555;font-size:11px;font-weight:normal">' + storageNotes[sid] + '</span></div>' +
-        '<div style="font-family:monospace;font-size:12px;color:#aaa;cursor:pointer;padding:4px 8px;background:#111;border-radius:4px;display:inline-block" onclick="navigator.clipboard.writeText(\'' + storagePaths[sid] + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#aaa\',1000)">' + storagePaths[sid] + ' <span style="color:#555;font-size:10px">✂ ' + t('btn_copy') + '</span></div>' +
+        '<div style="font-family:monospace;font-size:12px;color:#aaa;cursor:pointer;padding:4px 8px;background:#111;border-radius:4px;display:inline-block" onclick="copyText(\'' + storagePaths[sid] + '\',this)">' + storagePaths[sid] + ' <span style="color:#555;font-size:10px">✂ ' + t('btn_copy') + '</span></div>' +
         '</div>';
     }).join("");
     if (!d.backups || d.backups.length === 0) {
@@ -1640,7 +1640,7 @@ async function loadBackups() {
         var filename = b.volid.split("/").pop();
         var fullpath = storePath + filename;
         tableHtml += '<tr><td>' + esc(dt) + '</td><td>VM ' + esc(String(b.vmid)) + '</td><td>' + esc(size) + '</td><td style="color:#00d4ff;font-size:11px">' + esc(storageId) + '</td>' +
-          '<td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer" onclick="navigator.clipboard.writeText(\'' + esc(fullpath) + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#888\',1000)" title="' + t('bkp_click_copy') + '">' + esc(filename) + '</td>' +
+          '<td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer" onclick="copyText(\'' + esc(fullpath) + '\',this)" title="' + t('bkp_click_copy') + '">' + esc(filename) + '</td>' +
           '<td style="color:#888">' + esc(b.notes||"—") + '</td></tr>';
       });
       tableHtml += '</tbody></table>';
@@ -1927,6 +1927,22 @@ function lxcGenerate() {
 }
 
 function lxcEsc(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function copyText(text, el) {
+  var done = function() { if (el) { var c = el.style.color; el.style.color = '#6bcb77'; setTimeout(function() { el.style.color = c; }, 1000); } };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done);
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
+}
 
 function lxcCopy() {
   var msg = document.getElementById("lxc_copied");
