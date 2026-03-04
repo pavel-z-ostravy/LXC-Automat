@@ -582,12 +582,6 @@
         <label class="stat-item" style="display:block"><label>Hostname</label></label>
         <input type="text" id="lxc_hostname" class="lxc-input" value="webdev-new" placeholder="webdev-projekt">
       </div>
-      <div class="lxc-field">
-        <label class="stat-item" style="display:block"><label>IP adresa</label></label>
-        <input type="text" id="lxc_ip" class="lxc-input" value="10.0.1." placeholder="10.0.1.93" oninput="lxcSyncInst();lxcCheckIpDebounce()">
-        <span class="lxc-hint">nastav rezervaci na routeru</span>
-        <span id="lxc_ip_status" style="font-size:11px;margin-top:3px;display:block"></span>
-      </div>
     </div>
     <div class="lxc-grid3" style="margin-top:10px">
       <div class="lxc-field">
@@ -601,6 +595,20 @@
       <div class="lxc-field">
         <label class="stat-item" style="display:block"><label>Disk (GB)</label></label>
         <input type="number" id="lxc_disk" class="lxc-input" value="8" min="4" max="500">
+      </div>
+    </div>
+
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:18px 0 12px;opacity:0.5">02 — Síťová konfigurace</div>
+    <div class="lxc-grid3">
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>IP adresa</label></label>
+        <input type="text" id="lxc_ip" class="lxc-input" value="10.0.1." placeholder="10.0.1.93" oninput="lxcSyncInst();lxcCheckIpDebounce()">
+        <span id="lxc_ip_status" style="font-size:11px;margin-top:4px;display:block;min-height:16px"></span>
+      </div>
+      <div class="lxc-field">
+        <label class="stat-item" style="display:block"><label>Gateway</label></label>
+        <input type="text" id="lxc_gw" class="lxc-input" value="10.0.1.1" placeholder="10.0.1.1">
+        <span class="lxc-hint">výchozí brána sítě</span>
       </div>
     </div>
     <div class="lxc-grid2" style="margin-top:10px">
@@ -1767,6 +1775,7 @@ function lxcGenerate() {
   var ct_id = document.getElementById("lxc_ct_id").value || "202";
   var hostname = document.getElementById("lxc_hostname").value || "webdev-new";
   var ip = document.getElementById("lxc_ip").value || "10.0.1.X";
+  var gw = document.getElementById("lxc_gw").value || "10.0.1.1";
   var git_name = document.getElementById("lxc_git_name").value;
   var git_email = document.getElementById("lxc_git_email").value;
   var ssh_key = document.getElementById("lxc_ssh_key").value.trim();
@@ -1776,7 +1785,7 @@ function lxcGenerate() {
   L.push("# ============================================");
   L.push("# LXC Webdev Setup Script");
   L.push("# Generováno: " + new Date().toLocaleString("cs-CZ"));
-  L.push("# CT ID: " + ct_id + " | Hostname: " + hostname + " | IP: " + ip);
+  L.push("# CT ID: " + ct_id + " | Hostname: " + hostname + " | IP: " + ip + " | GW: " + gw);
   L.push("# ============================================");
   L.push("set -e");
   L.push("export DEBIAN_FRONTEND=noninteractive");
@@ -1986,6 +1995,7 @@ function lxcWizardStart() {
     ct_id:    document.getElementById("lxc_ct_id").value,
     hostname: document.getElementById("lxc_hostname").value,
     ip:       ip,
+    gateway:  document.getElementById("lxc_gw").value || "10.0.1.1",
     ram:      parseInt(document.getElementById("lxc_ram").value) || 2048,
     cores:    parseInt(document.getElementById("lxc_cores").value) || 2,
     disk:     parseInt(document.getElementById("lxc_disk").value) || 8,
