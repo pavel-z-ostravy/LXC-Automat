@@ -1,6 +1,6 @@
 #!/bin/bash
 # monitor-public installer
-# Usage: curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/proxmox-lxc-hud/main/install.sh | sudo bash
+# Usage: curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/LXC-Automat/main/install.sh | sudo bash
 
 set -e
 
@@ -11,7 +11,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 INSTALL_DIR="/opt/monitor-public"
-REPO_URL="https://github.com/pavel-z-ostravy/proxmox-lxc-hud.git"
+REPO_URL="https://github.com/pavel-z-ostravy/LXC-Automat.git"
 SERVICE_NAME="monitor-public"
 PORT=8091
 

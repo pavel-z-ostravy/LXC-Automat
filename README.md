@@ -1,4 +1,4 @@
-# proxmox-lxc-hud
+# LXC-Automat
 
 > Self-hosted homelab dashboard with web-based installer
 
@@ -11,7 +11,7 @@ A config-driven homelab dashboard for Proxmox + optional modules (Home Assistant
 ## Quick Install
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/proxmox-lxc-hud/main/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/LXC-Automat/main/install.sh | sudo bash
 ```
 
 Then open `http://<your-server-ip>:8091/setup` and complete the wizard.
