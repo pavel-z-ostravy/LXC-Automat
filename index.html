@@ -318,22 +318,32 @@
   body.dark .dropdown-divider { background: #0f3460; }
   body.light .dropdown-divider { background: #dde; }
 
-  /* ── Modals ── */
-  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.7); align-items: flex-start; justify-content: center; padding-top: 60px; }
-  .modal-overlay.open { display: flex; }
-  .modal-box { border-radius: 12px; padding: 24px; width: 440px; max-width: 95vw; max-height: 85vh; overflow-y: auto; }
-  .modal-box-wide { width: 600px; }
-  body.dark .modal-box { background: #16213e; border: 1px solid #0f3460; }
-  body.light .modal-box { background: #fff; border: 1px solid #bcd; box-shadow: 0 8px 32px #ccc; }
-  .modal-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-  .modal-hdr span { font-size: 16px; font-weight: bold; }
-  body.dark .modal-hdr span { color: #00d4ff; }
-  body.light .modal-hdr span { color: #0066aa; }
-  .modal-close { border: none; background: none; font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
-  body.dark .modal-close { color: #888; }
-  body.light .modal-close { color: #999; }
-  body.dark .modal-close:hover { background: #0f3460; color: #eee; }
-  body.light .modal-close:hover { background: #eef4f8; color: #222; }
+  /* ── Settings panels (full-page overlay below navbar) ── */
+  .settings-panel { display: none; position: fixed; top: 52px; left: 0; right: 0; bottom: 0; z-index: 400; overflow-y: auto; }
+  .settings-panel.open { display: block; }
+  body.dark .settings-panel { background: #1a1a2e; }
+  body.light .settings-panel { background: #f0f4f8; }
+  .panel-header { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid; }
+  body.dark .panel-header { background: #16213e; border-color: #0f3460; }
+  body.light .panel-header { background: #fff; border-color: #bcd; box-shadow: 0 2px 8px #ccc; }
+  .panel-back { border: none; background: none; cursor: pointer; font-size: 20px; padding: 4px 8px; border-radius: 6px; line-height: 1; }
+  body.dark .panel-back { color: #00d4ff; }
+  body.light .panel-back { color: #0066aa; }
+  body.dark .panel-back:hover { background: #0f3460; }
+  body.light .panel-back:hover { background: #eef4f8; }
+  .panel-title { font-size: 17px; font-weight: bold; }
+  body.dark .panel-title { color: #00d4ff; }
+  body.light .panel-title { color: #0066aa; }
+  .panel-body { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+  .settings-section { border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  body.dark .settings-section { background: #16213e; border: 1px solid #0f3460; }
+  body.light .settings-section { background: #fff; border: 1px solid #bcd; box-shadow: 0 2px 8px #ccc; }
+  .settings-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid; display: flex; align-items: center; gap: 8px; }
+  body.dark .settings-section-title { color: #00d4ff; border-color: #0f3460; }
+  body.light .settings-section-title { color: #0066aa; border-color: #bcd; }
+  .settings-actions { display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .settings-hint { font-size: 11px; opacity: 0.5; }
+  /* Shared form elements used in both panels */
   .modal-label { font-size: 12px; margin-bottom: 4px; display: block; }
   body.dark .modal-label { color: #00d4ff; }
   body.light .modal-label { color: #0066aa; }
@@ -342,22 +352,14 @@
   body.light .modal-input { background: #eef4f8; border: 1px solid #bcd; color: #222; }
   body.dark .modal-input:focus { border-color: #00d4ff; }
   body.light .modal-input:focus { border-color: #0066aa; }
-  .modal-msg { font-size: 12px; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; display: none; }
+  .modal-input:disabled { opacity: 0.45; cursor: not-allowed; }
+  .modal-msg { font-size: 12px; padding: 8px 10px; border-radius: 6px; margin-top: 8px; display: none; }
   .modal-msg.ok { background: #6bcb7722; color: #6bcb77; }
   .modal-msg.err { background: #ff6b6b22; color: #ff6b6b; }
-  .modal-sep { height: 1px; margin: 16px 0; }
-  body.dark .modal-sep { background: #0f3460; }
-  body.light .modal-sep { background: #dde; }
-  .modal-tabs { display: flex; gap: 4px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid; }
-  body.dark .modal-tabs { border-color: #0f3460; }
-  body.light .modal-tabs { border-color: #dde; }
-  .modal-tab { border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; background: none; font-family: inherit; }
-  body.dark .modal-tab { color: #888; }
-  body.light .modal-tab { color: #999; }
-  body.dark .modal-tab:hover { background: #0f3460; color: #eee; }
-  body.light .modal-tab:hover { background: #eef4f8; color: #222; }
-  body.dark .modal-tab.active { background: #0f3460; color: #00d4ff; }
-  body.light .modal-tab.active { background: #dde8f0; color: #0066aa; }
+  /* btop offline notice */
+  .btop-offline { display: flex; align-items: center; justify-content: center; height: 120px; border-radius: 6px; font-size: 13px; text-align: center; padding: 20px; line-height: 1.6; }
+  body.dark .btop-offline { background: #0d1b2a; color: #888; border: 1px dashed #0f3460; }
+  body.light .btop-offline { background: #eef4f8; color: #999; border: 1px dashed #bcd; }
   .mod-item { border-radius: 8px; padding: 14px; margin-bottom: 10px; }
   body.dark .mod-item { background: #0d1b2a; border: 1px solid #0f3460; }
   body.light .mod-item { background: #eef4f8; border: 1px solid #bcd; }
@@ -424,15 +426,8 @@
     <div class="user-menu" id="userMenu">
       <button class="user-btn" onclick="toggleUserMenu(event)">👤 <span id="userDisplayName">admin</span> <span class="arrow">▾</span></button>
       <div class="user-dropdown" id="userDropdown">
-        <div class="dropdown-section">👤 Účet</div>
-        <button onclick="openModal('accountModal');closeUserMenu()">Název dashboardu</button>
-        <button onclick="openModal('accountModal');closeUserMenu()">Změna hesla</button>
-        <button onclick="openModal('accountModal');closeUserMenu()">Reset 2FA</button>
-        <div class="dropdown-divider"></div>
-        <div class="dropdown-section">⚙️ Nastavení</div>
-        <button onclick="openModal('settingsModal','modules');closeUserMenu()">Moduly</button>
-        <button onclick="openModal('settingsModal','wol');closeUserMenu()">WoL zařízení</button>
-        <button onclick="openModal('settingsModal','services');closeUserMenu()">Monitorované služby</button>
+        <button onclick="openPanel('accountPanel');closeUserMenu()" style="font-size:14px;padding:10px 14px">👤 Účet</button>
+        <button onclick="openPanel('settingsPanel');closeUserMenu()" style="font-size:14px;padding:10px 14px">⚙️ Nastavení</button>
       </div>
     </div>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
@@ -454,80 +449,130 @@
   <button class="nav-tab" onclick="showPage('wol',this);closeMobileMenu()" data-dt="nav_wol">⚡ WoL</button>
 </div>
 
-<!-- ── Account modal ── -->
-<div class="modal-overlay" id="accountModal" onclick="closeModalOutside(event,'accountModal')">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <div class="modal-hdr">
-      <span>👤 Účet</span>
-      <button class="modal-close" onclick="closeModal('accountModal')">✕</button>
+<!-- ── Account panel ── -->
+<div class="settings-panel" id="accountPanel">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('accountPanel')" title="Zavřít">←</button>
+    <span class="panel-title">👤 Účet</span>
+  </div>
+  <div class="panel-body">
+
+    <div class="settings-section">
+      <div class="settings-section-title">Identita</div>
+      <label class="modal-label">Název dashboardu</label>
+      <input id="accDashName" type="text" class="modal-input" placeholder="Homelab">
+      <label class="modal-label">Uživatelské jméno</label>
+      <input id="accUsername" type="text" class="modal-input" disabled>
+      <div class="settings-actions">
+        <button class="run-btn" onclick="saveAccount()">Uložit</button>
+      </div>
+      <div class="modal-msg" id="accMsg"></div>
     </div>
-    <div class="modal-msg" id="accMsg"></div>
-    <label class="modal-label">Název dashboardu</label>
-    <input id="accDashName" type="text" class="modal-input" placeholder="Homelab">
-    <label class="modal-label">Nové heslo <span style="font-weight:normal;opacity:0.6">(prázdné = nezměnit)</span></label>
-    <input id="accPassword" type="password" class="modal-input" placeholder="Nechte prázdné pro zachování">
-    <label class="modal-label">Potvrzení hesla</label>
-    <input id="accPasswordConfirm" type="password" class="modal-input" placeholder="Opakujte heslo">
-    <button class="run-btn" onclick="saveAccount()">Uložit</button>
-    <div class="modal-sep"></div>
-    <div style="font-size:13px;margin-bottom:10px">🔐 Dvoufaktorové ověření: <span id="twoFAStatus" style="font-weight:bold"></span></div>
-    <button class="refresh-btn" onclick="reset2FA()">Reset 2FA</button>
-    <div class="modal-msg" id="twoFAMsg" style="margin-top:8px"></div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Heslo</div>
+      <label class="modal-label">Nové heslo <span style="font-weight:normal;opacity:0.5">(prázdné = nezměnit)</span></label>
+      <input id="accPassword" type="password" class="modal-input" placeholder="Nechte prázdné pro zachování">
+      <label class="modal-label">Potvrzení nového hesla</label>
+      <input id="accPasswordConfirm" type="password" class="modal-input" placeholder="Zopakujte nové heslo">
+      <div class="settings-actions">
+        <button class="run-btn" onclick="savePassword()">Změnit heslo</button>
+      </div>
+      <div class="modal-msg" id="accPasswordMsg"></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Dvoufaktorové ověření</div>
+      <div style="font-size:14px;margin-bottom:10px">Stav: <span id="twoFAStatus" style="font-weight:bold"></span></div>
+      <div style="font-size:12px;opacity:0.55;line-height:1.6;margin-bottom:16px">
+        Reset odstraní TOTP secret — přihlášení bez kódu bude možné ihned.<br>
+        Pro opětovné nastavení 2FA spusť wizard znovu (nebo ho přidáme do nastavení).
+      </div>
+      <div class="settings-actions">
+        <button class="refresh-btn" onclick="reset2FA()">Reset 2FA</button>
+      </div>
+      <div class="modal-msg" id="twoFAMsg"></div>
+    </div>
+
   </div>
 </div>
 
-<!-- ── Settings modal ── -->
-<div class="modal-overlay" id="settingsModal" onclick="closeModalOutside(event,'settingsModal')">
-  <div class="modal-box modal-box-wide" onclick="event.stopPropagation()">
-    <div class="modal-hdr">
-      <span>⚙️ Nastavení</span>
-      <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
-    </div>
-    <div class="modal-tabs">
-      <button class="modal-tab active" id="stab-modules" onclick="switchSettingsTab('modules')">Moduly</button>
-      <button class="modal-tab" id="stab-wol" onclick="switchSettingsTab('wol')">WoL zařízení</button>
-      <button class="modal-tab" id="stab-services" onclick="switchSettingsTab('services')">Monitorované služby</button>
-    </div>
-    <!-- Moduly -->
-    <div id="stab-content-modules" class="stab-content active">
+<!-- ── Settings panel ── -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('settingsPanel')" title="Zavřít">←</button>
+    <span class="panel-title">⚙️ Nastavení</span>
+  </div>
+  <div class="panel-body">
+
+    <div class="settings-section">
+      <div class="settings-section-title">🔌 Moduly</div>
       <div id="modulesForm"><span style="opacity:0.5;font-size:13px">Načítám...</span></div>
-      <button class="run-btn" onclick="saveModules()" style="margin-top:16px">Uložit moduly</button>
-      <div class="modal-msg" id="modulesMsg" style="margin-top:8px"></div>
+      <div class="settings-actions">
+        <button class="run-btn" onclick="saveModules()">Uložit moduly</button>
+        <span class="settings-hint">⚠️ Uložení restartuje lxc-automat service (stránka se obnoví za 5 s)</span>
+      </div>
+      <div class="modal-msg" id="modulesMsg"></div>
     </div>
-    <!-- WoL -->
-    <div id="stab-content-wol" class="stab-content">
+
+    <div class="settings-section">
+      <div class="settings-section-title">⚡ Wake-on-LAN zařízení</div>
       <table class="settings-table" id="wolTable">
         <tr><th>Název</th><th>MAC</th><th>IP</th><th></th></tr>
       </table>
-      <div style="padding-top:12px;border-top:1px solid #0f346044">
-        <div style="font-size:12px;font-weight:bold;margin-bottom:10px;opacity:0.8">Přidat zařízení</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="padding-top:14px;border-top:1px solid #0f346033;margin-top:4px">
+        <div style="font-size:12px;font-weight:bold;margin-bottom:10px;opacity:0.7">+ Přidat zařízení</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
           <div><label class="modal-label">Název</label><input id="newWolName" class="modal-input" placeholder="Mac mini" style="margin:0"></div>
-          <div><label class="modal-label">MAC</label><input id="newWolMac" class="modal-input" placeholder="AA:BB:CC:DD:EE:FF" style="margin:0"></div>
-          <div><label class="modal-label">IP</label><input id="newWolIp" class="modal-input" placeholder="10.0.1.X" style="margin:0"></div>
+          <div><label class="modal-label">MAC adresa</label><input id="newWolMac" class="modal-input" placeholder="AA:BB:CC:DD:EE:FF" style="margin:0"></div>
+          <div><label class="modal-label">IP adresa</label><input id="newWolIp" class="modal-input" placeholder="10.0.1.X" style="margin:0"></div>
         </div>
         <button class="refresh-btn" onclick="addWolDevice()">+ Přidat</button>
       </div>
-      <button class="run-btn" onclick="saveWol()" style="margin-top:16px">Uložit</button>
-      <div class="modal-msg" id="wolMsg" style="margin-top:8px"></div>
+      <div class="settings-actions">
+        <button class="run-btn" onclick="saveWol()">Uložit</button>
+      </div>
+      <div class="modal-msg" id="wolMsg"></div>
     </div>
-    <!-- Služby -->
-    <div id="stab-content-services" class="stab-content">
+
+    <div class="settings-section">
+      <div class="settings-section-title">🔌 Monitorované služby</div>
       <table class="settings-table" id="servicesTable">
         <tr><th>Název</th><th>URL</th><th>Ikona</th><th></th></tr>
       </table>
-      <div style="padding-top:12px;border-top:1px solid #0f346044">
-        <div style="font-size:12px;font-weight:bold;margin-bottom:10px;opacity:0.8">Přidat službu</div>
-        <div style="display:grid;grid-template-columns:2fr 3fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="padding-top:14px;border-top:1px solid #0f346033;margin-top:4px">
+        <div style="font-size:12px;font-weight:bold;margin-bottom:10px;opacity:0.7">+ Přidat službu</div>
+        <div style="display:grid;grid-template-columns:2fr 3fr 80px;gap:10px;margin-bottom:10px">
           <div><label class="modal-label">Název</label><input id="newSvcName" class="modal-input" placeholder="Nextcloud" style="margin:0"></div>
           <div><label class="modal-label">URL</label><input id="newSvcUrl" class="modal-input" placeholder="http://10.0.1.22:8080" style="margin:0"></div>
           <div><label class="modal-label">Ikona</label><input id="newSvcIcon" class="modal-input" placeholder="🌐" style="margin:0"></div>
         </div>
         <button class="refresh-btn" onclick="addService()">+ Přidat</button>
       </div>
-      <button class="run-btn" onclick="saveServices()" style="margin-top:16px">Uložit</button>
-      <div class="modal-msg" id="servicesMsg" style="margin-top:8px"></div>
+      <div class="settings-actions">
+        <button class="run-btn" onclick="saveServices()">Uložit</button>
+      </div>
+      <div class="modal-msg" id="servicesMsg"></div>
     </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">🖥️ btop terminály (ttyd)</div>
+      <div style="font-size:12px;opacity:0.55;line-height:1.6;margin-bottom:16px">
+        URL adresa ttyd serveru pro každý terminál.<br>
+        Pro přístup přes Cloudflare tunnel zadejte veřejnou URL (např. <code>https://btop-proxmox.tvá-doména.cz</code>).
+      </div>
+      <label class="modal-label">Proxmox host</label>
+      <input id="btopProxmoxUrl" type="text" class="modal-input" placeholder="http://10.0.1.9:7681">
+      <label class="modal-label">Server / VM</label>
+      <input id="btopVmUrl" type="text" class="modal-input" placeholder="http://10.0.1.9:7682">
+      <label class="modal-label">Home Assistant</label>
+      <input id="btopHaUrl" type="text" class="modal-input" placeholder="http://10.0.1.9:7683">
+      <div class="settings-actions">
+        <button class="run-btn" onclick="saveBtop()">Uložit btop URL</button>
+      </div>
+      <div class="modal-msg" id="btopMsg"></div>
+    </div>
+
   </div>
 </div>
 
@@ -569,9 +614,9 @@
     </div>
   </div>
   <div class="desktop-btop">
-    <div class="btop-card"><h2>btop — Proxmox host</h2><iframe src="http://10.0.1.9:7681" title="btop proxmox"></iframe></div>
-    <div class="btop-card"><h2 id="btopVmTitle">btop — homelab-server VM</h2><iframe src="http://10.0.1.9:7682" title="btop vm"></iframe></div>
-    <div class="btop-card"><h2>btop — Home Assistant</h2><iframe src="http://10.0.1.9:7683" title="btop ha"></iframe></div>
+    <div class="btop-card"><h2>btop — Proxmox host</h2><div id="btopProxmoxContainer"></div></div>
+    <div class="btop-card"><h2 id="btopVmTitle">btop — homelab-server VM</h2><div id="btopVmContainer"></div></div>
+    <div class="btop-card"><h2>btop — Home Assistant</h2><div id="btopHaContainer"></div></div>
   </div>
 </div>
 
@@ -2391,19 +2436,18 @@ document.addEventListener('click', function(e) {
   if (menu && !menu.contains(e.target)) closeUserMenu();
 });
 
-// ── Modals ────────────────────────────────────────────────────────────────
+// ── Settings panels ───────────────────────────────────────────────────────
 var _settingsData = null;
 
-function openModal(id, tab) {
+function openPanel(id) {
   document.getElementById(id).classList.add('open');
-  if (id === 'accountModal') _loadAccountModal();
-  if (id === 'settingsModal') { _loadSettingsModal(tab || 'modules'); }
+  document.body.style.overflow = 'hidden';
+  if (id === 'accountPanel') _loadAccountPanel();
+  if (id === 'settingsPanel') _loadSettingsPanel();
 }
-function closeModal(id) {
+function closePanel(id) {
   document.getElementById(id).classList.remove('open');
-}
-function closeModalOutside(e, id) {
-  if (e.target === document.getElementById(id)) closeModal(id);
+  document.body.style.overflow = '';
 }
 
 function showMsg(elId, text, type) {
@@ -2411,77 +2455,95 @@ function showMsg(elId, text, type) {
   el.textContent = text;
   el.className = 'modal-msg ' + type;
   el.style.display = 'block';
-  setTimeout(function() { el.style.display = 'none'; }, 4000);
+  if (type !== 'ok' || text.indexOf('restart') === -1) {
+    setTimeout(function() { el.style.display = 'none'; }, 5000);
+  }
 }
 
-function switchSettingsTab(tab) {
-  ['modules','wol','services'].forEach(function(t) {
-    document.getElementById('stab-' + t).classList.toggle('active', t === tab);
-    document.getElementById('stab-content-' + t).classList.toggle('active', t === tab);
-  });
-}
-
-// Account modal
-function _loadAccountModal() {
+// ── Account panel ─────────────────────────────────────────────────────────
+function _loadAccountPanel() {
   fetch('/api/settings').then(function(r) { return r.json(); }).then(function(d) {
     _settingsData = d;
     document.getElementById('accDashName').value = d.dashboard_name || '';
+    document.getElementById('accUsername').value = d.username || '';
     document.getElementById('accPassword').value = '';
     document.getElementById('accPasswordConfirm').value = '';
+    document.getElementById('userDisplayName').textContent = d.username || 'admin';
     var twoFA = document.getElementById('twoFAStatus');
     twoFA.textContent = d.totp_enabled ? 'Aktivní' : 'Neaktivní';
     twoFA.style.color = d.totp_enabled ? '#6bcb77' : '#ff6b6b';
-    document.getElementById('userDisplayName').textContent = d.username || 'admin';
-    document.getElementById('accMsg').style.display = 'none';
-    document.getElementById('twoFAMsg').style.display = 'none';
+    ['accMsg','accPasswordMsg','twoFAMsg'].forEach(function(id) {
+      document.getElementById(id).style.display = 'none';
+    });
   }).catch(function() {});
 }
 
 async function saveAccount() {
   var name = document.getElementById('accDashName').value.trim();
-  var pw = document.getElementById('accPassword').value;
-  var pw2 = document.getElementById('accPasswordConfirm').value;
-  if (pw && pw !== pw2) { showMsg('accMsg', 'Hesla se neshodují.', 'err'); return; }
-  var body = {};
-  if (name) body.dashboard_name = name;
-  if (pw) body.password = pw;
+  if (!name) { showMsg('accMsg', 'Název nesmí být prázdný.', 'err'); return; }
   try {
-    var r = await fetch('/api/settings/account', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    var r = await fetch('/api/settings/account', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({dashboard_name: name})
+    });
     var d = await r.json();
     if (d.ok) {
       showMsg('accMsg', 'Uloženo.', 'ok');
-      if (d.dashboard_name) {
-        document.getElementById('navBrand').textContent = '🖥️ ' + d.dashboard_name;
-        document.title = d.dashboard_name;
-      }
+      document.getElementById('navBrand').textContent = '🖥️ ' + (d.dashboard_name || name);
+      document.title = d.dashboard_name || name;
     } else { showMsg('accMsg', d.error || 'Chyba.', 'err'); }
   } catch(e) { showMsg('accMsg', 'Chyba sítě.', 'err'); }
 }
 
-async function reset2FA() {
-  if (!confirm('Opravdu resetovat 2FA? Po restartu bude přihlášení bez TOTP kódu.')) return;
+async function savePassword() {
+  var pw = document.getElementById('accPassword').value;
+  var pw2 = document.getElementById('accPasswordConfirm').value;
+  if (!pw) { showMsg('accPasswordMsg', 'Zadejte nové heslo.', 'err'); return; }
+  if (pw !== pw2) { showMsg('accPasswordMsg', 'Hesla se neshodují.', 'err'); return; }
   try {
-    var r = await fetch('/api/settings/2fa/reset', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    var r = await fetch('/api/settings/account', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({password: pw})
+    });
     var d = await r.json();
     if (d.ok) {
-      showMsg('twoFAMsg', '2FA resetováno. Při příštím přihlášení nebude vyžadován TOTP kód.', 'ok');
+      showMsg('accPasswordMsg', 'Heslo změněno.', 'ok');
+      document.getElementById('accPassword').value = '';
+      document.getElementById('accPasswordConfirm').value = '';
+    } else { showMsg('accPasswordMsg', d.error || 'Chyba.', 'err'); }
+  } catch(e) { showMsg('accPasswordMsg', 'Chyba sítě.', 'err'); }
+}
+
+async function reset2FA() {
+  if (!confirm('Opravdu resetovat 2FA? Přihlášení bez TOTP kódu bude možné ihned.')) return;
+  try {
+    var r = await fetch('/api/settings/2fa/reset', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+    });
+    var d = await r.json();
+    if (d.ok) {
+      showMsg('twoFAMsg', '2FA resetováno — přihlášení bez kódu je nyní možné.', 'ok');
       document.getElementById('twoFAStatus').textContent = 'Neaktivní';
       document.getElementById('twoFAStatus').style.color = '#ff6b6b';
     } else { showMsg('twoFAMsg', d.error || 'Chyba.', 'err'); }
   } catch(e) { showMsg('twoFAMsg', 'Chyba sítě.', 'err'); }
 }
 
-// Settings modal
-function _loadSettingsModal(tab) {
-  switchSettingsTab(tab);
+// ── Settings panel ────────────────────────────────────────────────────────
+function _loadSettingsPanel() {
   fetch('/api/settings').then(function(r) { return r.json(); }).then(function(d) {
     _settingsData = d;
     _renderModulesForm(d.modules || {});
     _renderWolTable(d.wol_devices || []);
     _renderServicesTable(d.services || []);
-    document.getElementById('modulesMsg').style.display = 'none';
-    document.getElementById('wolMsg').style.display = 'none';
-    document.getElementById('servicesMsg').style.display = 'none';
+    var btop = d.btop || {};
+    document.getElementById('btopProxmoxUrl').value = btop.proxmox || '';
+    document.getElementById('btopVmUrl').value = btop.vm || '';
+    document.getElementById('btopHaUrl').value = btop.ha || '';
+    ['modulesMsg','wolMsg','servicesMsg','btopMsg'].forEach(function(id) {
+      document.getElementById(id).style.display = 'none';
+    });
+    loadBtopIframes(d.btop || {});
   }).catch(function() {});
 }
 
@@ -2643,11 +2705,65 @@ async function saveServices() {
   } catch(e) { showMsg('servicesMsg', 'Chyba sítě.', 'err'); }
 }
 
+// ── btop ──────────────────────────────────────────────────────────────────
+function isLocalAccess() {
+  var h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' ||
+    /^10\./.test(h) || /^192\.168\./.test(h) ||
+    /^172\.(1[6-9]|2[0-9]|3[01])\./.test(h);
+}
+
+function _isBtopUrlLocal(url) {
+  return /^https?:\/\/(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|localhost|127\.)/.test(url);
+}
+
+function loadBtopIframes(btop) {
+  var local = isLocalAccess();
+  var items = [
+    {containerId: 'btopProxmoxContainer', url: btop.proxmox, label: 'Proxmox'},
+    {containerId: 'btopVmContainer',      url: btop.vm,      label: 'VM'},
+    {containerId: 'btopHaContainer',      url: btop.ha,      label: 'Home Assistant'},
+  ];
+  items.forEach(function(item) {
+    var c = document.getElementById(item.containerId);
+    if (!c) return;
+    if (!item.url) {
+      c.innerHTML = '<div class="btop-offline">btop URL není nakonfigurováno<br><small>Nastav v ⚙️ Nastavení → btop terminály</small></div>';
+      return;
+    }
+    if (!local && _isBtopUrlLocal(item.url)) {
+      c.innerHTML = '<div class="btop-offline">⚠️ btop je dostupný pouze z lokální sítě.<br>' +
+        '<small>Pro přístup přes Cloudflare tunnel nastav veřejnou URL<br>v ⚙️ Nastavení → btop terminály</small></div>';
+    } else {
+      c.innerHTML = '<iframe src="' + item.url + '" title="btop ' + item.label + '"></iframe>';
+    }
+  });
+}
+
+async function saveBtop() {
+  var body = {
+    proxmox: document.getElementById('btopProxmoxUrl').value.trim(),
+    vm:      document.getElementById('btopVmUrl').value.trim(),
+    ha:      document.getElementById('btopHaUrl').value.trim(),
+  };
+  try {
+    var r = await fetch('/api/settings/btop', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    var d = await r.json();
+    if (d.ok) {
+      showMsg('btopMsg', 'Uloženo. Iframy se aktualizují.', 'ok');
+      loadBtopIframes(body);
+    } else { showMsg('btopMsg', d.error || 'Chyba.', 'err'); }
+  } catch(e) { showMsg('btopMsg', 'Chyba sítě.', 'err'); }
+}
+
 // INIT
 initTheme();
 fetch('/api/config/modules').then(function(r) { return r.json(); }).then(applyModules).catch(function() {});
 fetch('/api/settings').then(function(r) { return r.json(); }).then(function(d) {
   if (d.username) document.getElementById('userDisplayName').textContent = d.username;
+  loadBtopIframes(d.btop || {});
 }).catch(function() {});
 // Load dashboard language
 setDashLang(DASH_LANG);

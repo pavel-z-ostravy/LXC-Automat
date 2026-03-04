@@ -49,6 +49,12 @@ def _load_dashboard_app():
     SERVICES_CFG = config.get("services", [])
     WOL_DEVICES = config.get("wol_devices", [])
     DASHBOARD_NAME = config.get("dashboard_name", "Homelab")
+    _prox_ip = PROXMOX.get("ip", "10.0.1.9")
+    BTOP_URLS = config.get("btop", {
+        "proxmox": f"http://{_prox_ip}:7681",
+        "vm":      f"http://{_prox_ip}:7682",
+        "ha":      f"http://{_prox_ip}:7683",
+    })
 
     HISTORY_FILE = os.path.join(INSTALL_PATH, "temp_history.json")
     STATS_HISTORY_FILE = os.path.join(INSTALL_PATH, "stats_history.json")
@@ -316,6 +322,7 @@ def _load_dashboard_app():
         cfg["services"] = SERVICES_CFG
         cfg["wol_devices"] = WOL_DEVICES
         cfg["dashboard_name"] = DASHBOARD_NAME
+        cfg["btop"] = BTOP_URLS
         with open(CONFIG_FILE, "w") as f:
             json.dump(cfg, f, indent=2)
 
@@ -335,6 +342,7 @@ def _load_dashboard_app():
             "modules": mods,
             "wol_devices": WOL_DEVICES,
             "services": SERVICES_CFG,
+            "btop": BTOP_URLS,
         }
 
     @dashboard.post("/api/settings/account")
@@ -382,6 +390,15 @@ def _load_dashboard_app():
         services = data.get("services", [])
         SERVICES_CFG.clear()
         SERVICES_CFG.extend(services)
+        _save_config_file()
+        return {"ok": True}
+
+    @dashboard.post("/api/settings/btop")
+    async def save_btop_cfg(request: Request):
+        data = await request.json()
+        for k in ("proxmox", "vm", "ha"):
+            if data.get(k, "").strip():
+                BTOP_URLS[k] = data[k].strip()
         _save_config_file()
         return {"ok": True}
 
