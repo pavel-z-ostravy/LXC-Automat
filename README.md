@@ -16,6 +16,8 @@ curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/LXC-Automat/main/ins
 
 Then open `http://<your-server-ip>:8091/setup` and complete the wizard.
 
+> The setup wizard always runs on port **8091**. During the wizard you choose which port the dashboard itself will use (default: 8091).
+
 ---
 
 ## How It Works

@@ -16,6 +16,8 @@ curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/LXC-Automat/main/ins
 
 Pak otevři `http://<IP-serveru>:8091/setup` a projdi wizard.
 
+> Instalační wizard vždy běží na portu **8091**. V průběhu wizardu si zvolíš, na kterém portu poběží samotný dashboard (výchozí: 8091).
+
 ---
 
 ## Jak to funguje
