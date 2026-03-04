@@ -779,25 +779,134 @@ def _load_dashboard_app():
         git_email = params.get("git_email", "")
         ssh_key = params.get("ssh_key", "").strip()
         pkgs = params.get("packages", [])
-        L = ["#!/bin/bash", f"# LXC Setup — CT{ct_id} | {hostname}", "set -e",
-             "export DEBIAN_FRONTEND=noninteractive",
-             "log() { echo -e \"\\033[1;33m>>> $1\\033[0m\"; }",
-             "ok()  { echo -e \"\\033[0;32m✓ $1\\033[0m\"; }",
-             "apt-get update && apt-get upgrade -y -q && apt-get install -y -q curl wget git nano build-essential",
-             "ok \"Base packages installed\""]
+        L = [
+            "#!/bin/bash",
+            f"# LXC Setup — CT{ct_id} | {hostname}",
+            "set -e",
+            "export DEBIAN_FRONTEND=noninteractive",
+            "log() { echo -e \"\\033[1;33m>>> $1\\033[0m\"; }",
+            "ok()  { echo -e \"\\033[0;32m✓ $1\\033[0m\"; }",
+            "",
+            "log \"Aktualizace systému...\"",
+            "apt-get update -qq && apt-get upgrade -y -q",
+            "apt-get install -y -q curl wget git nano unzip build-essential lsb-release",
+            "ok \"Základní balíčky nainstalovány\"",
+            "",
+        ]
         if "docker" in pkgs:
-            L += ["curl -fsSL https://get.docker.com | sh", "ok \"Docker installed\""]
+            L += [
+                "log \"Instalace Dockeru...\"",
+                "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
+                "echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] "
+                "https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" "
+                "| tee /etc/apt/sources.list.d/docker.list > /dev/null",
+                "apt-get update -qq && apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
+                "systemctl stop docker && rm -rf /var/lib/docker && mkdir -p /etc/docker",
+                "printf '{\\n  \"storage-driver\": \"overlay2\"\\n}\\n' > /etc/docker/daemon.json",
+                "systemctl start docker && systemctl enable docker",
+                f"docker run --rm hello-world > /dev/null 2>&1 && ok \"Docker funguje\" "
+                f"|| echo \"VAROVÁNÍ: Docker test selhal — zkontroluj /etc/pve/lxc/{ct_id}.conf\"",
+                "",
+            ]
         if "node" in pkgs:
-            L += ["curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash",
-                  "export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"",
-                  "nvm install --lts && nvm use --lts"]
-        if git_name: L.append(f"git config --global user.name {shlex.quote(git_name)}")
-        if git_email: L.append(f"git config --global user.email {shlex.quote(git_email)}")
+            L += [
+                "log \"Instalace NVM a Node.js LTS...\"",
+                "export NVM_DIR=\"$HOME/.nvm\"",
+                "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash",
+                r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"',
+                "echo 'export NVM_DIR=\"$HOME/.nvm\"' >> ~/.bashrc",
+                r'echo "[ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"" >> ~/.bashrc',
+                "nvm install --lts && nvm use --lts && nvm alias default node",
+                "ok \"Node.js $(node --version) nainstalován\"",
+                "",
+            ]
+        if "pnpm" in pkgs:
+            L += [
+                "log \"Instalace pnpm...\"",
+                "npm install -g pnpm",
+                "ok \"pnpm $(pnpm --version) nainstalován\"",
+                "",
+            ]
+        if "vercel" in pkgs:
+            L += [
+                "log \"Instalace Vercel CLI...\"",
+                "npm install -g vercel",
+                "ok \"Vercel CLI nainstalován\"",
+                "",
+            ]
+        if "claude" in pkgs:
+            L += [
+                "log \"Instalace Claude Code...\"",
+                "npm install -g @anthropic-ai/claude-code",
+                "ok \"Claude Code nainstalován\"",
+                "",
+            ]
+        if "micro" in pkgs:
+            L += [
+                "log \"Instalace micro editoru...\"",
+                "apt-get install -y micro",
+                "ok \"micro nainstalován\"",
+                "",
+            ]
+        if "supabase" in pkgs:
+            L += [
+                "log \"Instalace Supabase CLI...\"",
+                "npm install -g supabase",
+                "ok \"Supabase CLI $(supabase --version) nainstalován\"",
+                "",
+            ]
+        if git_name:
+            L.append(f"git config --global user.name {shlex.quote(git_name)}")
+        if git_email:
+            L.append(f"git config --global user.email {shlex.quote(git_email)}")
+        if git_name or git_email:
+            L += ["git config --global init.defaultBranch main", "ok \"Git nakonfigurován\"", ""]
         if ssh_key:
-            L += ["mkdir -p ~/.ssh && chmod 700 ~/.ssh",
-                  f"printf '%s\\n' {shlex.quote(ssh_key)} >> ~/.ssh/authorized_keys",
-                  "chmod 600 ~/.ssh/authorized_keys"]
-        L.append(f"echo \"Setup done: ssh root@{ip}\"")
+            L += [
+                "mkdir -p ~/.ssh && chmod 700 ~/.ssh",
+                f"printf '%s\\n' {shlex.quote(ssh_key)} >> ~/.ssh/authorized_keys",
+                "chmod 600 ~/.ssh/authorized_keys",
+                "ok \"SSH klíč přidán do authorized_keys\"",
+                "",
+            ]
+        else:
+            eml = git_email or "webdev@lxc"
+            L += [
+                f"ssh-keygen -t ed25519 -C {shlex.quote(eml)} -f ~/.ssh/id_ed25519 -N \"\"",
+                "echo \"\" && echo \"══ Přidej tento klíč na GitHub → Settings → SSH Keys ══\"",
+                "cat ~/.ssh/id_ed25519.pub",
+                "echo \"══ Po přidání: ssh -T git@github.com ══\"",
+                "",
+            ]
+        if "supabase" in pkgs:
+            L += [
+                "# ── Supabase — per-projekt instrukce ────────────────────────────────",
+                "# Předpoklad: Docker musí běžet (supabase start ho interně využívá)",
+                "#",
+                "# Nový projekt:",
+                "#   mkdir muj-projekt && cd muj-projekt",
+                "#   supabase init          # vytvoří adresář supabase/ s konfigurací",
+                "#   supabase start         # spustí lokální PG, Auth, Storage, Studio...",
+                "#   supabase status        # zobrazí API URL, anon klíč, service_role klíč",
+                "#",
+                "# Propojení se Supabase Cloud:",
+                "#   supabase login                        # přihlášení do Supabase Cloud",
+                "#   supabase link --project-ref <ref>     # ref je v URL dashboardu",
+                "#   supabase db push                      # sync schématu do cloudu",
+                "#   supabase db pull                      # stáhni schéma z cloudu",
+                "#   supabase stop                         # zastavení lokálního stacku",
+                "",
+            ]
+        L += [
+            "echo \"\"",
+            f"echo -e \"\\033[0;32m══ Setup dokončen! {hostname} je připraven. ══\\033[0m\"",
+            "echo \"\"",
+        ]
+        if "docker" in pkgs:
+            L.append("echo \"  Docker:  $(docker --version)\"")
+        if "node" in pkgs:
+            L.append("echo \"  Node.js: $(node --version)\"")
+        L.append(f"echo \"  SSH:     ssh root@{ip}\"")
         return "\n".join(L)
 
     def lxc_worker(job_id, params):

@@ -639,37 +639,37 @@
       <label class="lxc-check">
         <input type="checkbox" value="docker" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">Docker</span><span class="lxc-cdesc">+ daemon.json overlay2</span></div>
+        <div><span class="lxc-clabel">Docker</span><span class="lxc-cdesc">CE + daemon.json s overlay2 storage driverem</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="node" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">Node.js LTS</span><span class="lxc-cdesc">přes nvm</span></div>
+        <div><span class="lxc-clabel">Node.js LTS</span><span class="lxc-cdesc">NVM v0.39.7 — základ pro pnpm, Vercel, Claude Code</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="pnpm" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">pnpm</span><span class="lxc-cdesc">rychlejší npm</span></div>
+        <div><span class="lxc-clabel">pnpm</span><span class="lxc-cdesc">5× rychlejší než npm, sdílená cache balíčků</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="vercel" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">Vercel CLI</span><span class="lxc-cdesc">npm install -g vercel</span></div>
+        <div><span class="lxc-clabel">Vercel CLI</span><span class="lxc-cdesc">deploy na Vercel přímo z terminálu</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="claude" checked>
         <div class="lxc-box">✓</div>
-        <div><span class="lxc-clabel">Claude Code</span><span class="lxc-cdesc">@anthropic-ai/claude-code</span></div>
+        <div><span class="lxc-clabel">Claude Code</span><span class="lxc-cdesc">AI asistent pro kódování přímo v terminálu</span></div>
       </label>
       <label class="lxc-check">
         <input type="checkbox" value="micro">
         <div class="lxc-box"></div>
-        <div><span class="lxc-clabel">micro</span><span class="lxc-cdesc">lepší editor než nano</span></div>
+        <div><span class="lxc-clabel">micro editor</span><span class="lxc-cdesc">moderní CLI editor — Ctrl+S, Ctrl+Z, Ctrl+C fungují</span></div>
       </label>
       <label class="lxc-check">
-        <input type="checkbox" value="supabase_note">
+        <input type="checkbox" value="supabase">
         <div class="lxc-box"></div>
-        <div><span class="lxc-clabel">Supabase info</span><span class="lxc-cdesc">instrukce per-projekt</span></div>
+        <div><span class="lxc-clabel">Supabase CLI</span><span class="lxc-cdesc">globální CLI + per-projekt instrukce v setup.sh (vyžaduje Docker)</span></div>
       </label>
     </div>
   </div>
@@ -1813,10 +1813,31 @@ function lxcGenerate() {
     L.push("nvm install --lts && nvm use --lts && nvm alias default node");
     L.push("ok \"Node.js $(node --version) nainstalován\""); L.push("");
   }
-  if (pkgs.includes("pnpm")) { L.push("npm install -g pnpm"); L.push("ok \"pnpm $(pnpm --version) nainstalován\""); L.push(""); }
-  if (pkgs.includes("vercel")) { L.push("npm install -g vercel"); L.push("ok \"Vercel CLI $(vercel --version) nainstalován\""); L.push(""); }
-  if (pkgs.includes("claude")) { L.push("npm install -g @anthropic-ai/claude-code"); L.push("ok \"Claude Code nainstalován\""); L.push(""); }
-  if (pkgs.includes("micro")) { L.push("apt install -y micro"); L.push("ok \"micro nainstalován\""); L.push(""); }
+  if (pkgs.includes("pnpm")) {
+    L.push("log \"Instalace pnpm...\"");
+    L.push("npm install -g pnpm");
+    L.push("ok \"pnpm $(pnpm --version) nainstalován\""); L.push("");
+  }
+  if (pkgs.includes("vercel")) {
+    L.push("log \"Instalace Vercel CLI...\"");
+    L.push("npm install -g vercel");
+    L.push("ok \"Vercel CLI nainstalován\""); L.push("");
+  }
+  if (pkgs.includes("claude")) {
+    L.push("log \"Instalace Claude Code...\"");
+    L.push("npm install -g @anthropic-ai/claude-code");
+    L.push("ok \"Claude Code nainstalován\""); L.push("");
+  }
+  if (pkgs.includes("micro")) {
+    L.push("log \"Instalace micro editoru...\"");
+    L.push("apt-get install -y micro");
+    L.push("ok \"micro nainstalován\""); L.push("");
+  }
+  if (pkgs.includes("supabase")) {
+    L.push("log \"Instalace Supabase CLI...\"");
+    L.push("npm install -g supabase");
+    L.push("ok \"Supabase CLI $(supabase --version) nainstalován\""); L.push("");
+  }
   if (git_name || git_email) {
     L.push("log \"Nastavení Gitu...\"");
     if (git_name) L.push("git config --global user.name \"" + git_name + "\"");
@@ -1834,9 +1855,25 @@ function lxcGenerate() {
     L.push("cat ~/.ssh/id_ed25519.pub && echo \"══ Po přidání: ssh -T git@github.com ══\"");
   }
   L.push("");
-  if (pkgs.includes("supabase_note")) {
-    L.push("# Supabase CLI — instaluje se per-projekt:");
-    L.push("#   npm install supabase && npx supabase init && npx supabase start"); L.push("");
+  if (pkgs.includes("supabase")) {
+    L.push("");
+    L.push("# ── Supabase — per-projekt instrukce ────────────────────────────────");
+    L.push("# Předpoklad: Docker musí běžet (supabase start ho interně využívá)");
+    L.push("#");
+    L.push("# Nový projekt:");
+    L.push("#   mkdir muj-projekt && cd muj-projekt");
+    L.push("#   supabase init          # vytvoří adresář supabase/ s konfigurací");
+    L.push("#   supabase start         # spustí lokální PG, Auth, Storage, Studio...");
+    L.push("#   supabase status        # zobrazí API URL, anon klíč, service_role klíč");
+    L.push("#");
+    L.push("# Propojení se Supabase Cloud:");
+    L.push("#   supabase login                        # přihlášení do Supabase Cloud");
+    L.push("#   supabase link --project-ref <ref>     # propojení projektu (ref z URL dashboardu)");
+    L.push("#   supabase db push                      # sync lokálního schématu do cloudu");
+    L.push("#   supabase db pull                      # stáhni schéma z cloudu");
+    L.push("#");
+    L.push("#   supabase stop                         # zastavení lokálního stacku");
+    L.push("");
   }
   L.push("echo \"\" && echo -e \"\\${GREEN}══ Setup dokončen! " + hostname + " je připraven. ══\\${NC}\" && echo \"\"");
   if (pkgs.includes("docker")) L.push("echo \"  Docker:  $(docker --version)\"");
