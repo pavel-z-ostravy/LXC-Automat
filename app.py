@@ -497,14 +497,46 @@ def _load_dashboard_app():
     @dashboard.get("/api/network")
     def get_network():
         try:
-            result = subprocess.run(["ip", "neigh", "show"], capture_output=True, text=True, timeout=5)
-            devices = []
-            for line in result.stdout.strip().split("\n"):
-                parts = line.split()
-                if len(parts) >= 5:
-                    devices.append({"ip": parts[0], "mac": parts[4] if len(parts) > 4 else "",
-                                     "state": parts[-1], "iface": parts[2] if len(parts) > 2 else ""})
-            return {"devices": devices}
+            # Parse ip neigh output → dict keyed by IP
+            def parse_neigh(output):
+                devs = {}
+                for line in output.strip().split("\n"):
+                    parts = line.split()
+                    if len(parts) >= 5:
+                        ip = parts[0]
+                        devs[ip] = {"ip": ip, "mac": parts[4], "state": parts[-1],
+                                    "iface": parts[2] if len(parts) > 2 else "", "name": ""}
+                return devs
+
+            # Local ARP table
+            local = subprocess.run(["ip", "neigh", "show"], capture_output=True, text=True, timeout=5)
+            devs = parse_neigh(local.stdout)
+
+            if MODULES["router"]["enabled"]:
+                try:
+                    # Router ARP table
+                    r_neigh = subprocess.run(router_ssh() + ["ip neigh show"],
+                                             capture_output=True, text=True, timeout=8)
+                    for ip, d in parse_neigh(r_neigh.stdout).items():
+                        if ip not in devs:
+                            devs[ip] = d
+                    # DHCP leases for hostnames (OpenWRT: /tmp/dhcp.leases; dnsmasq standard)
+                    leases_r = subprocess.run(router_ssh() + ["cat /tmp/dhcp.leases 2>/dev/null || cat /var/lib/misc/dnsmasq.leases 2>/dev/null"],
+                                              capture_output=True, text=True, timeout=6)
+                    for line in leases_r.stdout.strip().split("\n"):
+                        parts = line.split()
+                        # format: expiry mac ip hostname clientid
+                        if len(parts) >= 4:
+                            mac_l, ip_l, hostname = parts[1].upper(), parts[2], parts[3]
+                            if ip_l in devs:
+                                devs[ip_l]["name"] = hostname if hostname != "*" else ""
+                            else:
+                                devs[ip_l] = {"ip": ip_l, "mac": mac_l, "state": "LEASE",
+                                               "iface": "", "name": hostname if hostname != "*" else ""}
+                except Exception:
+                    pass  # router not reachable — local data is still returned
+
+            return {"devices": list(devs.values())}
         except Exception as e:
             return {"devices": [], "error": str(e)}
 
@@ -851,6 +883,8 @@ def _load_dashboard_app():
                                 headers=headers, timeout=5)
                 r2 = httpx.get(f"https://api.nextdns.io/profiles/{_NDNS['profile_id']}/analytics/devices?from=-1d&limit=10",
                                 headers=headers, timeout=5)
+                if r1.status_code != 200:
+                    return {"error": f"NextDNS API {r1.status_code}: {r1.text[:200]}"}
                 return {"status": r1.json().get("data", []), "devices": r2.json().get("data", [])}
             except Exception as e:
                 return {"error": str(e)}

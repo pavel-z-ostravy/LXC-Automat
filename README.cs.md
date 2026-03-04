@@ -95,6 +95,36 @@ Všechny moduly jsou **volitelné** — neaktivní se v UI úplně skryjí.
 
 ---
 
+### Cloudflare modul — nastavení tokenu
+
+Cloudflare modul potřebuje API token s read přístupem k tunnelu a DNS zóně.
+
+**Krok 1 — Vytvořit API Token**
+
+1. Jdi na [dash.cloudflare.com](https://dash.cloudflare.com) → **Profile** (vpravo nahoře) → **API Tokens**
+2. Klikni **Create Token** → **Create Custom Token**
+3. Nastav tato oprávnění:
+   - `Account` → `Cloudflare Tunnel` → **Read**
+   - `Zone` → `DNS` → **Read** (vyber svou zónu/doménu)
+4. Klikni **Continue to Summary** → **Create Token**
+5. **Zkopíruj token** — zobrazí se jen jednou
+
+**Krok 2 — Najdi potřebná ID**
+
+| Pole | Kde najít |
+|------|----------|
+| **Account ID** | Cloudflare dashboard → pravý sidebar na jakékoli stránce zóny → *Account ID* |
+| **Zone ID** | Cloudflare dashboard → tvá doména → pravý sidebar → *Zone ID* |
+| **Tunnel ID** | Cloudflare dashboard → **Zero Trust** → **Networks** → **Tunnels** → klikni na tunnel → zkopíruj UUID z URL nebo detailu tunnelu |
+
+**Krok 3 — Zadat ve wizardu nebo v Nastavení**
+
+Vlož všechny čtyři hodnoty (token, account ID, zone ID, tunnel ID) do wizardu při instalaci, nebo později přes **Nastavení → Moduly → Cloudflare**.
+
+> **Poznámka:** Endpoint cloudflared metrik (`http://127.0.0.1:20241/metrics`) je dostupný jen pokud `cloudflared` běží na stejném stroji jako lxc-automat s přepínačem `--metrics localhost:20241`.
+
+---
+
 ## LXC Provisioning Wizard
 
 Vyplň formulář, klikni **"Vytvořit LXC a nainstalovat"** — nástroj se postará o vše:

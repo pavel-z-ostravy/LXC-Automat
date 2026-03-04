@@ -95,6 +95,36 @@ All modules are **optional** — inactive ones are completely hidden in the UI.
 
 ---
 
+### Cloudflare Module — Token Setup
+
+The Cloudflare module needs an API token with read access to your tunnel and DNS zone.
+
+**Step 1 — Create API Token**
+
+1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Profile** (top right) → **API Tokens**
+2. Click **Create Token** → **Create Custom Token**
+3. Set these permissions:
+   - `Account` → `Cloudflare Tunnel` → **Read**
+   - `Zone` → `DNS` → **Read** (select your zone/domain)
+4. Click **Continue to Summary** → **Create Token**
+5. **Copy the token** — it's shown only once
+
+**Step 2 — Find your IDs**
+
+| Field | Where to find |
+|-------|--------------|
+| **Account ID** | Cloudflare dashboard → right sidebar on any zone page → *Account ID* |
+| **Zone ID** | Cloudflare dashboard → your domain → right sidebar → *Zone ID* |
+| **Tunnel ID** | Cloudflare dashboard → **Zero Trust** → **Networks** → **Tunnels** → click your tunnel → copy the UUID from the URL or tunnel detail page |
+
+**Step 3 — Enter in wizard or Settings**
+
+Paste all four values (token, account ID, zone ID, tunnel ID) into the wizard during install, or later via **Settings → Modules → Cloudflare**.
+
+> **Note:** The cloudflared metrics endpoint (`http://127.0.0.1:20241/metrics`) is only available if `cloudflared` runs on the same machine as lxc-automat with `--metrics localhost:20241`.
+
+---
+
 ## LXC Provisioning Wizard
 
 Fill in a form, click **"Create LXC and Install"** — the tool handles everything:

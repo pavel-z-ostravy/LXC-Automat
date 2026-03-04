@@ -31,7 +31,7 @@
   }
   body.dark { background: #1a1a2e; color: #eee; }
   body.light { background: #f0f4f8; color: #222; }
-  .navbar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 52px; flex-wrap: wrap; }
+  .navbar { position: sticky; top: 0; z-index: 500; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 52px; flex-wrap: wrap; }
   body.dark .navbar { background: #16213e; border-bottom: 1px solid #0f3460; }
   body.light .navbar { background: #ffffff; border-bottom: 1px solid #bcd; box-shadow: 0 2px 8px #ccc; }
   .nav-brand { font-size: 16px; font-weight: bold; }
@@ -326,7 +326,7 @@
   .dropdown-section { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 8px 12px 4px; }
   body.dark .dropdown-section { color: #555; }
   body.light .dropdown-section { color: #999; }
-  .user-dropdown button { text-align: left; width: 100%; border: none; background: none; border-radius: 5px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
+  .user-dropdown button { text-align: left; width: 100%; border: none; background: none; border-radius: 5px; padding: 8px 14px; font-size: 14px; font-weight: 500; cursor: pointer; }
   body.dark .user-dropdown button { color: #ccc; }
   body.light .user-dropdown button { color: #444; }
   body.dark .user-dropdown button:hover { background: #0f3460; color: #eee; }
@@ -399,6 +399,9 @@
   .settings-table td { padding: 5px 8px; }
   .del-btn { border: none; background: none; cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; color: #ff6b6b; }
   .del-btn:hover { background: #ff6b6b22; }
+  .drag-handle { cursor: grab; opacity: 0.4; padding: 2px 6px; user-select: none; -webkit-user-select: none; }
+  .drag-handle:hover { opacity: 0.8; }
+  tr.drag-over td { border-top: 2px solid #00d4ff; }
   .stab-content { display: none; }
   .stab-content.active { display: block; }
 </style>
@@ -1048,6 +1051,11 @@ function closeMobileMenu() {
 }
 
 function showPage(name, el) {
+  // Stop network intervals when leaving network page
+  if (networkSpeedInterval && name !== "network") {
+    clearInterval(networkSpeedInterval); networkSpeedInterval = null;
+    clearInterval(networkRefreshInterval); networkRefreshInterval = null;
+  }
   document.querySelectorAll(".page").forEach(function(p) { p.classList.remove("active"); });
   document.querySelectorAll(".nav-tab").forEach(function(t) { t.classList.remove("active"); });
   document.querySelectorAll(".nav-dropdown-trigger").forEach(function(t) { t.classList.remove("active"); });
@@ -1365,8 +1373,11 @@ function renderNetworkTable(speeds, devices) {
 }
 
 var networkSpeedInterval = null;
+var networkRefreshInterval = null;
 async function startNetworkSpeeds() {
   if (networkSpeedInterval) return;
+  // Refresh device list every 30s
+  networkRefreshInterval = setInterval(loadNetwork, 30000);
   networkSpeedInterval = setInterval(async function() {
     try {
       var r = await fetch("/api/network/speeds");
@@ -2692,14 +2703,39 @@ async function saveWol() {
 
 // Services table
 var _svcList = [];
+var _svcDragIdx = null;
 function _renderServicesTable(svcs) {
   _svcList = svcs.slice();
-  var html = '<tr><th>Název</th><th>URL</th><th>Ikona</th><th></th></tr>';
+  var tbl = document.getElementById('servicesTable');
+  tbl.innerHTML = '<tr><th></th><th>Název</th><th>URL</th><th>Ikona</th><th></th></tr>';
   _svcList.forEach(function(s, i) {
-    html += '<tr><td>' + esc(s.name) + '</td><td style="font-size:11px;color:#888">' + esc(s.url||s.host||'') + '</td><td>' + esc(s.icon||'') + '</td>';
-    html += '<td><button class="del-btn" onclick="delService(' + i + ')">✕</button></td></tr>';
+    var tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.dataset.idx = i;
+    tr.innerHTML = '<td><span class="drag-handle" title="Přetáhnout">⠿</span></td>' +
+      '<td>' + esc(s.name) + '</td>' +
+      '<td style="font-size:11px;color:#888">' + esc(s.url||s.host||'') + '</td>' +
+      '<td>' + esc(s.icon||'') + '</td>' +
+      '<td><button class="del-btn" onclick="delService(' + i + ')">✕</button></td>';
+    tr.addEventListener('dragstart', function(e) {
+      _svcDragIdx = i; e.dataTransfer.effectAllowed = 'move';
+    });
+    tr.addEventListener('dragover', function(e) {
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      tbl.querySelectorAll('tr').forEach(function(r) { r.classList.remove('drag-over'); });
+      tr.classList.add('drag-over');
+    });
+    tr.addEventListener('dragleave', function() { tr.classList.remove('drag-over'); });
+    tr.addEventListener('drop', function(e) {
+      e.preventDefault(); tr.classList.remove('drag-over');
+      if (_svcDragIdx === null || _svcDragIdx === i) return;
+      var moved = _svcList.splice(_svcDragIdx, 1)[0];
+      _svcList.splice(i, 0, moved);
+      _svcDragIdx = null;
+      _renderServicesTable(_svcList);
+    });
+    tbl.appendChild(tr);
   });
-  document.getElementById('servicesTable').innerHTML = html;
 }
 function addService() {
   var name = document.getElementById('newSvcName').value.trim();
