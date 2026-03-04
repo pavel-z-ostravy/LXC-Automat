@@ -110,6 +110,7 @@
   "lxc_git_email": "Git email",
   "lxc_ssh_label": "GitHub SSH public key (optional)",
   "lxc_ssh_hint": "empty → script will generate a new key and display it",
+  "lxc_ssh_ph": "ssh-ed25519 AAAA... your@email.com\nLeave empty to have the script generate a new key",
   "lxc_pkgs_title": "📦 What to install",
   "lxc_wizard_btn": "⚙ Create LXC and Install",
   "lxc_wizard_log": "// Wizard log",

@@ -110,6 +110,7 @@
   "lxc_git_email": "Git email",
   "lxc_ssh_label": "GitHub SSH veřejný klíč (volitelně)",
   "lxc_ssh_hint": "prázdné → skript vygeneruje nový klíč a zobrazí ho",
+  "lxc_ssh_ph": "ssh-ed25519 AAAA... tvuj@email.com\nNech prázdné pokud chceš klíč vygenerovat",
   "lxc_pkgs_title": "📦 Co instalovat",
   "lxc_wizard_btn": "⚙ Vytvořit LXC a nainstalovat",
   "lxc_wizard_log": "// Wizard log",
