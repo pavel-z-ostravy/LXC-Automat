@@ -91,8 +91,26 @@ def _load_dashboard_app():
     # ── Auth middleware ──────────────────────────────────────────────────────
 
     TOTP_SECRET = AUTH.get("totp_secret")  # None if 2FA not configured
-    valid_tokens: set = set()
     pending_tokens: set = set()  # short-lived TOTP-pending tokens
+
+    # Sessions persisted to file so restarts don't force re-login
+    SESSIONS_FILE = os.path.join(INSTALL_PATH, "sessions.json")
+
+    def _load_sessions() -> set:
+        try:
+            with open(SESSIONS_FILE) as _f:
+                return set(json.load(_f))
+        except Exception:
+            return set()
+
+    def _save_sessions(tokens: set):
+        try:
+            with open(SESSIONS_FILE, "w") as _f:
+                json.dump(list(tokens), _f)
+        except Exception:
+            pass
+
+    valid_tokens: set = _load_sessions()
 
     class AuthMiddleware(BaseHTTPMiddleware):
         async def dispatch(self, request: Request, call_next):
@@ -258,6 +276,7 @@ def _load_dashboard_app():
                 return resp
             token = secrets.token_hex(32)
             valid_tokens.add(token)
+            _save_sessions(valid_tokens)
             resp = RedirectResponse("/", status_code=303)
             resp.set_cookie("session", token, httponly=True, samesite="lax")
             return resp
@@ -279,6 +298,7 @@ def _load_dashboard_app():
             pending_tokens.discard(pending)
             token = secrets.token_hex(32)
             valid_tokens.add(token)
+            _save_sessions(valid_tokens)
             resp = RedirectResponse("/", status_code=303)
             resp.set_cookie("session", token, httponly=True, samesite="lax")
             resp.delete_cookie("pending_totp")
@@ -290,6 +310,7 @@ def _load_dashboard_app():
         token = request.cookies.get("session")
         if token:
             valid_tokens.discard(token)
+            _save_sessions(valid_tokens)
         resp = RedirectResponse("/login", status_code=303)
         resp.delete_cookie("session")
         return resp
@@ -895,7 +916,7 @@ def _load_dashboard_app():
                 r2 = httpx.get(f"https://api.nextdns.io/profiles/{_NDNS['profile_id']}/analytics/devices?from=-1d&limit=10",
                                 headers=headers, timeout=5)
                 if r1.status_code != 200:
-                    return {"error": f"NextDNS API {r1.status_code}: {r1.text[:200]}"}
+                    return {"error": f"NextDNS API {r1.status_code} (profile: {_NDNS['profile_id']}): {r1.text[:200]}"}
                 return {"status": r1.json().get("data", []), "devices": r2.json().get("data", [])}
             except Exception as e:
                 return {"error": str(e)}
