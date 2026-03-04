@@ -149,5 +149,10 @@
   "lbl_offline": "Server offline",
   "lbl_done": "✓ Hotovo!",
   "lbl_online": "Online",
-  "lbl_poll_err": "Chyba polling"
+  "lbl_poll_err": "Chyba polling",
+  "btop_no_url": "btop URL není nakonfigurováno",
+  "btop_no_url_hint": "Nastav v ⚙️ Nastavení → btop terminály",
+  "btop_local_only": "⚠️ btop je dostupný pouze z lokální sítě",
+  "btop_cf_hint": "Pro přístup přes Cloudflare tunnel nastav veřejnou URL",
+  "btop_cf_hint2": "v ⚙️ Nastavení → btop terminály"
 }

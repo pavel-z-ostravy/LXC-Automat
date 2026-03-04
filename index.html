@@ -374,7 +374,7 @@
   .modal-msg.ok { background: #6bcb7722; color: #6bcb77; }
   .modal-msg.err { background: #ff6b6b22; color: #ff6b6b; }
   /* btop offline notice */
-  .btop-offline { display: flex; align-items: center; justify-content: center; height: 120px; border-radius: 6px; font-size: 13px; text-align: center; padding: 20px; line-height: 1.6; }
+  .btop-offline { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 120px; border-radius: 6px; font-size: 13px; text-align: center; padding: 20px; line-height: 1.5; }
   body.dark .btop-offline { background: #0d1b2a; color: #888; border: 1px dashed #0f3460; }
   body.light .btop-offline { background: #eef4f8; color: #999; border: 1px dashed #bcd; }
   .mod-item { border-radius: 8px; padding: 14px; margin-bottom: 10px; }
@@ -2781,12 +2781,14 @@ function loadBtopIframes(btop) {
     var c = document.getElementById(item.containerId);
     if (!c) return;
     if (!item.url) {
-      c.innerHTML = '<div class="btop-offline">btop URL není nakonfigurováno<br><small>Nastav v ⚙️ Nastavení → btop terminály</small></div>';
+      c.innerHTML = '<div class="btop-offline"><span>' + t('btop_no_url') + '</span>' +
+        '<small style="opacity:0.6">' + t('btop_no_url_hint') + '</small></div>';
       return;
     }
     if (!local && _isBtopUrlLocal(item.url)) {
-      c.innerHTML = '<div class="btop-offline">⚠️ btop je dostupný pouze z lokální sítě.<br>' +
-        '<small>Pro přístup přes Cloudflare tunnel nastav veřejnou URL<br>v ⚙️ Nastavení → btop terminály</small></div>';
+      c.innerHTML = '<div class="btop-offline"><span>' + t('btop_local_only') + '</span>' +
+        '<small style="opacity:0.6">' + t('btop_cf_hint') + '</small>' +
+        '<small style="opacity:0.6">' + t('btop_cf_hint2') + '</small></div>';
     } else {
       c.innerHTML = '<iframe src="' + item.url + '" title="btop ' + item.label + '"></iframe>';
     }

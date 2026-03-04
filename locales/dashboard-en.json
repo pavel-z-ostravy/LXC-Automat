@@ -149,5 +149,10 @@
   "lbl_offline": "Server offline",
   "lbl_done": "✓ Done!",
   "lbl_online": "Online",
-  "lbl_poll_err": "Polling error"
+  "lbl_poll_err": "Polling error",
+  "btop_no_url": "btop URL not configured",
+  "btop_no_url_hint": "Set in ⚙️ Settings → btop terminals",
+  "btop_local_only": "⚠️ btop is only accessible from local network",
+  "btop_cf_hint": "For access via Cloudflare tunnel, set a public URL",
+  "btop_cf_hint2": "in ⚙️ Settings → btop terminals"
 }
