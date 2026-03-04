@@ -536,7 +536,18 @@ def _load_dashboard_app():
                 except Exception:
                     pass  # router not reachable — local data is still returned
 
-            return {"devices": list(devs.values())}
+            # Filter: keep only IPv4 addresses matching the router subnet
+            subnet = MODULES["router"].get("subnet", "10.0.") if MODULES["router"]["enabled"] else None
+            filtered = []
+            for d in devs.values():
+                ip = d["ip"]
+                if ":" in ip:  # skip IPv6
+                    continue
+                if subnet and not ip.startswith(subnet):  # skip other subnets (Docker, etc.)
+                    continue
+                filtered.append(d)
+
+            return {"devices": filtered}
         except Exception as e:
             return {"devices": [], "error": str(e)}
 
