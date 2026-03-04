@@ -190,6 +190,116 @@ async def test_ssh(request: Request):
         return _ssh_test_key(ip, user, key_path, port)
 
 
+def _generate_dev_script(packages: list, install_path: str) -> str:
+    """Generate a bash script that installs selected dev tools."""
+    log = f"{install_path}/dev_install.log"
+    lines = [
+        "#!/usr/bin/env bash",
+        "set -euo pipefail",
+        f'LOG="{log}"',
+        'log() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }',
+        'log "=== Dev install started ==="',
+        "export DEBIAN_FRONTEND=noninteractive",
+    ]
+
+    if "node" in packages:
+        lines += [
+            'log "Installing Node.js LTS via NVM..."',
+            "export NVM_DIR=\"$HOME/.nvm\"",
+            "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash",
+            r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"',
+            "nvm install --lts",
+            "nvm use --lts",
+            "nvm alias default node",
+            # Make node/npm available system-wide for subsequent installs
+            r'NODE_BIN=$(dirname $(nvm which current))',
+            r'export PATH="$NODE_BIN:$PATH"',
+            'log "Node.js $(node --version) installed"',
+        ]
+
+    if "pnpm" in packages:
+        lines += [
+            'log "Installing pnpm..."',
+            r'[ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"',
+            "npm install -g pnpm",
+            'log "pnpm installed"',
+        ]
+
+    if "vercel" in packages:
+        lines += [
+            'log "Installing Vercel CLI..."',
+            r'[ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"',
+            "npm install -g vercel",
+            'log "Vercel CLI installed"',
+        ]
+
+    if "supabase" in packages:
+        lines += [
+            'log "Installing Supabase CLI..."',
+            r'[ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"',
+            "npm install -g supabase",
+            'log "Supabase CLI installed"',
+        ]
+
+    if "claude" in packages:
+        lines += [
+            'log "Installing Claude Code..."',
+            r'[ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"',
+            "npm install -g @anthropic-ai/claude-code",
+            'log "Claude Code installed"',
+        ]
+
+    if "bun" in packages:
+        lines += [
+            'log "Installing Bun..."',
+            "curl -fsSL https://bun.sh/install | bash",
+            'log "Bun installed"',
+        ]
+
+    if "docker" in packages:
+        lines += [
+            'log "Installing Docker..."',
+            "apt-get update -qq",
+            "apt-get install -y ca-certificates curl gnupg lsb-release",
+            "install -m 0755 -d /etc/apt/keyrings",
+            "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg",
+            'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] '
+            'https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" '
+            '> /etc/apt/sources.list.d/docker.list',
+            "apt-get update -qq",
+            "apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
+            "mkdir -p /etc/docker",
+            'echo \'{"storage-driver":"overlay2"}\' > /etc/docker/daemon.json',
+            "systemctl enable --now docker",
+            'log "Docker installed"',
+        ]
+
+    if "redis" in packages:
+        lines += [
+            'log "Installing Redis..."',
+            "apt-get install -y redis-server",
+            "systemctl enable --now redis-server",
+            'log "Redis installed"',
+        ]
+
+    if "python" in packages:
+        lines += [
+            'log "Installing Python 3 + pip + venv..."',
+            "apt-get install -y python3-pip python3-venv python3-full",
+            'log "Python tools installed"',
+        ]
+
+    if "micro" in packages:
+        lines += [
+            'log "Installing micro editor..."',
+            "apt-get install -y micro",
+            'log "micro installed"',
+        ]
+
+    lines.append('log "=== Dev install complete ==="')
+    return "\n".join(lines) + "\n"
+
+
 @app.post("/api/installer/save")
 async def save_config(request: Request):
     """Final step: save config.json and switch to dashboard mode."""
@@ -272,6 +382,23 @@ async def save_config(request: Request):
             with open(service_path, "w") as f:
                 f.write(svc_updated)
             subprocess.run(["systemctl", "daemon-reload"], capture_output=True)
+
+    # Background dev tools install (if any selected)
+    dev_packages = data.get("dev_packages", [])
+    allowed_packages = {"node","pnpm","vercel","supabase","claude","bun","docker","redis","python","micro"}
+    dev_packages = [p for p in dev_packages if p in allowed_packages]
+    if dev_packages:
+        dev_script = _generate_dev_script(dev_packages, INSTALL_PATH)
+        dev_script_path = os.path.join(INSTALL_PATH, "dev_install.sh")
+        with open(dev_script_path, "w") as f:
+            f.write(dev_script)
+        os.chmod(dev_script_path, 0o700)
+        subprocess.Popen(
+            ["bash", dev_script_path],
+            start_new_session=True,
+            stdout=open(os.path.join(INSTALL_PATH, "dev_install.log"), "w"),
+            stderr=subprocess.STDOUT,
+        )
 
     # Restart service to switch from installer to dashboard
     subprocess.Popen(

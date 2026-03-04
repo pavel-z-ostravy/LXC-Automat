@@ -179,7 +179,8 @@
     <div class="step-indicator" id="si-3" data-t="step_modules">4. Modules</div>
     <div class="step-indicator" id="si-4" data-t="step_services">5. Services</div>
     <div class="step-indicator" id="si-5" data-t="step_wol">6. WoL</div>
-    <div class="step-indicator" id="si-6" data-t="step_review">7. Review</div>
+    <div class="step-indicator" id="si-6" data-t="step_dev">7. Dev Env</div>
+    <div class="step-indicator" id="si-7" data-t="step_review">8. Review</div>
   </div>
 
   <!-- ── STEP 0: System check ── -->
@@ -484,8 +485,34 @@
     </div>
   </div>
 
-  <!-- ── STEP 6: Review + Install ── -->
+  <!-- ── STEP 6: Dev Environment ── -->
   <div id="step-6" class="step" style="display:none">
+    <div class="card">
+      <h2><span class="icon">🛠️</span> <span data-t="dev_title">Dev Environment</span></h2>
+      <p class="subtitle" data-t="dev_subtitle">Optionally install developer tools on this server.</p>
+
+      <div class="mod-list" style="margin-top:16px;">
+        <label class="mod-item"><input type="checkbox" id="dev-node" onchange="devNodeChanged()"> <span><strong data-t="dev_node">Node.js LTS</strong><br><small data-t="dev_node_desc">via NVM</small></span></label>
+        <label class="mod-item" id="dev-pnpm-row"  style="opacity:.45"><input type="checkbox" id="dev-pnpm"    disabled> <span><strong data-t="dev_pnpm">pnpm</strong><br><small data-t="dev_pnpm_desc">fast package manager</small></span></label>
+        <label class="mod-item" id="dev-vercel-row" style="opacity:.45"><input type="checkbox" id="dev-vercel"  disabled> <span><strong data-t="dev_vercel">Vercel CLI</strong><br><small data-t="dev_vercel_desc">deploy to Vercel from CLI</small></span></label>
+        <label class="mod-item" id="dev-supabase-row" style="opacity:.45"><input type="checkbox" id="dev-supabase" disabled> <span><strong data-t="dev_supabase">Supabase CLI</strong><br><small data-t="dev_supabase_desc">manage Supabase projects locally</small></span></label>
+        <label class="mod-item" id="dev-claude-row" style="opacity:.45"><input type="checkbox" id="dev-claude"  disabled> <span><strong data-t="dev_claude">Claude Code</strong><br><small data-t="dev_claude_desc">AI coding assistant in terminal</small></span></label>
+        <label class="mod-item"><input type="checkbox" id="dev-bun">    <span><strong data-t="dev_bun">Bun</strong><br><small data-t="dev_bun_desc">fast JS runtime & package manager</small></span></label>
+        <label class="mod-item"><input type="checkbox" id="dev-docker"> <span><strong data-t="dev_docker">Docker</strong><br><small data-t="dev_docker_desc">container runtime with overlay2</small></span></label>
+        <label class="mod-item"><input type="checkbox" id="dev-redis">  <span><strong data-t="dev_redis">Redis</strong><br><small data-t="dev_redis_desc">in-memory data store</small></span></label>
+        <label class="mod-item"><input type="checkbox" id="dev-python"> <span><strong data-t="dev_python">Python 3 + pip + venv</strong><br><small data-t="dev_python_desc">pip and venv on top of system Python</small></span></label>
+        <label class="mod-item"><input type="checkbox" id="dev-micro">  <span><strong data-t="dev_micro">micro editor</strong><br><small data-t="dev_micro_desc">modern terminal editor</small></span></label>
+      </div>
+      <p class="hint" style="margin-top:16px;" data-t="dev_note">Selected tools install in background after dashboard starts. Check dev_install.log for progress.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(5)" data-t="btn_back">← Back</button>
+      <button class="btn btn-primary"   onclick="goStep(7)" data-t="btn_next">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 7: Review + Install ── -->
+  <div id="step-7" class="step" style="display:none">
     <div class="card">
       <h2><span class="icon">✅</span> <span data-t="review_title">Configuration Review</span></h2>
       <div id="review-content"></div>
@@ -501,7 +528,7 @@
       </div>
     </div>
     <div class="btn-row" id="install-btn-row">
-      <button class="btn btn-secondary" onclick="goStep(5)" data-t="btn_back">← Back</button>
+      <button class="btn btn-secondary" onclick="goStep(6)" data-t="btn_back">← Back</button>
       <button class="btn btn-primary" id="install-btn" onclick="install()" data-t="btn_install">🚀 Install & Start</button>
     </div>
   </div>
@@ -657,7 +684,18 @@ function goStep(n) {
   currentStep = n;
   document.getElementById(`step-${n}`).style.display = 'block';
   document.getElementById(`si-${n}`).className = 'step-indicator active';
-  if (n === 6) buildReview();
+  if (n === 7) buildReview();
+}
+
+function devNodeChanged() {
+  const nodeOn = document.getElementById('dev-node').checked;
+  ['pnpm','vercel','supabase','claude'].forEach(id => {
+    const cb  = document.getElementById(`dev-${id}`);
+    const row = document.getElementById(`dev-${id}-row`);
+    cb.disabled = !nodeOn;
+    row.style.opacity = nodeOn ? '1' : '.45';
+    if (!nodeOn) cb.checked = false;
+  });
 }
 
 // ── Step 0: System check ──────────────────────────────────────────────────────
@@ -927,6 +965,8 @@ async function install() {
     nextdns_profile_id: document.getElementById('nextdns-profile-id').value,
     services: STATE.services.filter(s => s && s.name && s.url),
     wol_devices: STATE.wol.filter(w => w && w.name && w.mac),
+    dev_packages: ['node','pnpm','vercel','supabase','claude','bun','docker','redis','python','micro']
+      .filter(id => { const el = document.getElementById(`dev-${id}`); return el && el.checked; }),
   };
 
   fill.style.width = '60%'; msg.textContent = t('install_writing');
