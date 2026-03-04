@@ -193,8 +193,6 @@ Set the dashboard name (updates the browser title live), port, username, and pas
 
 **Optional: Two-Factor Authentication (TOTP)** — check "Enable 2FA", click **Generate QR code**, scan with Google Authenticator or Authy, and enter the 6-digit code to confirm before proceeding. The base32 secret is displayed for manual entry if QR scanning isn't possible. The wizard requires a successful verification before you can continue.
 
-![Step 2 - Credentials](screenshots/wizard-step2-credentials.png)
-
 ![Step 2 - TOTP 2FA setup](screenshots/wizard-step2-totp.png)
 
 #### Step 3 — Proxmox Connection
