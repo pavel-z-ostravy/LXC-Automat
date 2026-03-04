@@ -4,9 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Setup Wizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..900&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0d1b2a; color: #eee; font-family: monospace; min-height: 100vh; }
+  body { background: #0d1b2a; color: #eee; font-family: 'Roboto Flex', sans-serif; min-height: 100vh; }
+  button, input, select, textarea { font-family: inherit; }
   .header { background: #16213e; border-bottom: 1px solid #0f3460; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
   .header h1 { color: #00d4ff; font-size: 18px; }
   .header .sub { color: #555; font-size: 12px; margin-top: 2px; }
@@ -27,7 +31,7 @@
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
   .field input[type="text"], .field input[type="password"], .field input[type="number"],
-  .field select { width: 100%; padding: 10px 12px; background: #0d1b2a; border: 1px solid #0f3460; border-radius: 6px; color: #eee; font-family: monospace; font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .field select { width: 100%; padding: 10px 12px; background: #0d1b2a; border: 1px solid #0f3460; border-radius: 6px; color: #eee; font-size: 13px; outline: none; transition: border-color 0.2s; }
   .field input:focus, .field select:focus { border-color: #00d4ff; }
   .field .hint { font-size: 11px; color: #555; margin-top: 5px; line-height: 1.5; }
   .field code { background: #0d1b2a; padding: 1px 5px; border-radius: 3px; color: #00d4ff; font-size: 11px; }
@@ -49,13 +53,13 @@
 
   /* Dynamic list (services, wol) */
   .list-item { display: grid; gap: 8px; align-items: center; background: #0d1b2a; border: 1px solid #0f3460; border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
-  .list-item .del-btn { background: none; border: 1px solid #ff6b6b44; color: #ff6b6b; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-family: monospace; font-size: 11px; justify-self: end; }
+  .list-item .del-btn { background: none; border: 1px solid #ff6b6b44; color: #ff6b6b; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 11px; justify-self: end; }
   .list-item .del-btn:hover { background: #ff6b6b22; }
-  .add-btn { border: 1px dashed #0f3460; background: none; color: #555; border-radius: 8px; padding: 10px; width: 100%; cursor: pointer; font-family: monospace; font-size: 12px; transition: all 0.2s; margin-bottom: 16px; }
+  .add-btn { border: 1px dashed #0f3460; background: none; color: #555; border-radius: 8px; padding: 10px; width: 100%; cursor: pointer; font-size: 12px; transition: all 0.2s; margin-bottom: 16px; }
   .add-btn:hover { border-color: #00d4ff; color: #00d4ff; }
 
   /* Buttons */
-  .btn { padding: 12px 28px; border-radius: 8px; font-family: monospace; font-size: 14px; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn { padding: 12px 28px; border-radius: 8px; font-size: 14px; cursor: pointer; border: none; transition: all 0.2s; }
   .btn-primary { background: #00d4ff; color: #000; font-weight: bold; }
   .btn-primary:hover { opacity: 0.85; }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -79,7 +83,7 @@
 
   /* Public key box */
   .pubkey-box { background: #0d1b2a; border: 1px solid #0f3460; border-radius: 8px; padding: 12px 14px; font-size: 11px; color: #aaa; word-break: break-all; margin: 10px 0; font-family: monospace; position: relative; }
-  .copy-btn { position: absolute; top: 8px; right: 8px; background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff44; border-radius: 4px; padding: 3px 10px; cursor: pointer; font-size: 11px; font-family: monospace; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff44; border-radius: 4px; padding: 3px 10px; cursor: pointer; font-size: 11px; }
   .copy-btn:hover { opacity: 0.8; }
 
   /* Review */
@@ -104,7 +108,7 @@
 
   /* Language toggle */
   .lang-toggle { display: flex; gap: 4px; margin-left: auto; }
-  .lang-btn { background: none; border: 1px solid #0f3460; color: #555; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-family: monospace; font-size: 12px; transition: all 0.2s; }
+  .lang-btn { background: none; border: 1px solid #0f3460; color: #555; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
   .lang-btn.active { border-color: #00d4ff; color: #00d4ff; background: #00d4ff11; }
   .lang-btn:hover { border-color: #00d4ff33; color: #aaa; }
 
@@ -114,10 +118,10 @@
   /* Password generator */
   .input-row { display: flex; gap: 8px; align-items: stretch; }
   .input-row input { flex: 1; min-width: 0; }
-  .btn-gen { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff33; border-radius: 6px; padding: 0 14px; cursor: pointer; font-family: monospace; font-size: 12px; white-space: nowrap; flex-shrink: 0; transition: opacity 0.2s; }
+  .btn-gen { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff33; border-radius: 6px; padding: 0 14px; cursor: pointer; font-size: 12px; white-space: nowrap; flex-shrink: 0; transition: opacity 0.2s; }
   .btn-gen:hover { opacity: 0.8; }
   .pw-gen-panel { background: #0a1520; border: 1px solid #0f3460; border-radius: 6px; padding: 10px 12px; margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .len-btn { background: #16213e; color: #555; border: 1px solid #0f3460; border-radius: 4px; padding: 5px 14px; cursor: pointer; font-family: monospace; font-size: 12px; transition: all 0.2s; }
+  .len-btn { background: #16213e; color: #555; border: 1px solid #0f3460; border-radius: 4px; padding: 5px 14px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
   .len-btn.active { border-color: #00d4ff; color: #00d4ff; }
   .len-btn:hover { color: #aaa; border-color: #00d4ff33; }
   .pw-strength-bar { height: 3px; border-radius: 3px; background: #0f3460; margin-top: 6px; overflow: hidden; }
@@ -143,7 +147,7 @@
 
   /* Language selection screen */
   #lang-select { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0d1b2a; }
-  .lang-select-btn { background: #16213e; border: 2px solid #0f3460; border-radius: 14px; color: #eee; cursor: pointer; font-family: monospace; padding: 28px 52px; transition: all 0.2s; }
+  .lang-select-btn { background: #16213e; border: 2px solid #0f3460; border-radius: 14px; color: #eee; cursor: pointer; padding: 28px 52px; transition: all 0.2s; }
   .lang-select-btn:hover { border-color: #00d4ff; background: #1a2a4a; transform: translateY(-3px); box-shadow: 0 8px 24px #00d4ff22; }
   .lang-select-btn:active { transform: translateY(0); }
   .flag-icon { font-size: 38px; display: block; margin-bottom: 10px; }
@@ -157,8 +161,8 @@
 <!-- Language selection (shown first) -->
 <div id="lang-select">
   <div style="text-align:center;">
-    <div style="font-size:26px;color:#00d4ff;font-family:monospace;font-weight:bold;margin-bottom:6px;">🖥️ Setup Wizard</div>
-    <div style="font-size:13px;color:#555;font-family:monospace;margin-bottom:36px;">Choose language / Vyberte jazyk</div>
+    <div style="font-size:26px;color:#00d4ff;font-weight:bold;margin-bottom:6px;">🖥️ Setup Wizard</div>
+    <div style="font-size:13px;color:#555;margin-bottom:36px;">Choose language / Vyberte jazyk</div>
     <div style="display:flex;gap:24px;justify-content:center;">
       <button class="lang-select-btn" onclick="selectLang('en')">
         <span class="flag-icon">🇬🇧</span>
@@ -1004,8 +1008,8 @@ function addService() {
   div.style.gridTemplateColumns = '1fr 2fr auto';
   div.id = `svc-${idx}`;
   div.innerHTML = `
-    <input type="text" placeholder="${t('svc_name_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.services[${idx}].name=this.value">
-    <input type="text" placeholder="${t('svc_url_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.services[${idx}].url=this.value">
+    <input type="text" placeholder="${t('svc_name_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-size:12px;" oninput="STATE.services[${idx}].name=this.value">
+    <input type="text" placeholder="${t('svc_url_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-size:12px;" oninput="STATE.services[${idx}].url=this.value">
     <button class="del-btn" onclick="removeSvc(${idx})">✕</button>`;
   document.getElementById('services-list').appendChild(div);
 }
@@ -1020,9 +1024,9 @@ function addWol() {
   div.style.gridTemplateColumns = '1fr 1.5fr 1fr auto';
   div.id = `wol-${idx}`;
   div.innerHTML = `
-    <input type="text" placeholder="${t('wol_name_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.wol[${idx}].name=this.value">
-    <input type="text" placeholder="${t('wol_mac_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.wol[${idx}].mac=this.value">
-    <input type="text" placeholder="${t('wol_ip_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-family:monospace;font-size:12px;" oninput="STATE.wol[${idx}].ip=this.value">
+    <input type="text" placeholder="${t('wol_name_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-size:12px;" oninput="STATE.wol[${idx}].name=this.value">
+    <input type="text" placeholder="${t('wol_mac_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-size:12px;" oninput="STATE.wol[${idx}].mac=this.value">
+    <input type="text" placeholder="${t('wol_ip_ph')}" style="background:#0d1b2a;border:1px solid #0f3460;border-radius:5px;padding:8px;color:#eee;font-size:12px;" oninput="STATE.wol[${idx}].ip=this.value">
     <button class="del-btn" onclick="removeWol(${idx})">✕</button>`;
   document.getElementById('wol-list').appendChild(div);
 }

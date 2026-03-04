@@ -5,9 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Home Dashboard</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><style>
   * { box-sizing: border-box; }
-  body { font-family: monospace; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+  body { font-family: 'Roboto Flex', sans-serif; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+  button, input, select, textarea { font-family: inherit; }
   body.dark { background: #1a1a2e; color: #eee; }
   body.light { background: #f0f4f8; color: #222; }
   .navbar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 52px; flex-wrap: wrap; }
@@ -17,7 +21,7 @@
   body.dark .nav-brand { color: #00d4ff; }
   body.light .nav-brand { color: #0066aa; }
   .nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-  .nav-tab { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: monospace; border: none; background: none; transition: background 0.2s; }
+  .nav-tab { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; border: none; background: none; transition: background 0.2s; }
   body.dark .nav-tab { color: #aaa; }
   body.light .nav-tab { color: #666; }
   body.dark .nav-tab:hover { background: #0f3460; color: #eee; }
@@ -34,7 +38,7 @@
   .last-update { font-size: 11px; }
   body.dark .last-update { color: #555; }
   body.light .last-update { color: #999; }
-  .theme-btn { border: none; border-radius: 20px; padding: 4px 12px; cursor: pointer; font-size: 13px; font-family: monospace; }
+  .theme-btn { border: none; border-radius: 20px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
   body.dark .theme-btn { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff; }
   body.light .theme-btn { background: #dde8f0; color: #0066aa; border: 1px solid #0066aa; }
   .page { display: none; padding: 20px; max-width: 960px; margin: 0 auto; }
@@ -107,7 +111,7 @@
   body.dark .wol-mac { color: #666; }
   body.light .wol-mac { color: #999; }
   .wol-btn, .run-btn, .refresh-btn {
-    border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-family: monospace; font-size: 13px;
+    border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: 13px;
   }
   .run-btn { padding: 10px 24px; font-size: 14px; }
   .refresh-btn { padding: 6px 14px; margin-bottom: 15px; }
@@ -231,7 +235,7 @@
   @media(max-width:600px) { .lxc-grid2, .lxc-grid3 { grid-template-columns: 1fr; } }
   .lxc-field { display: flex; flex-direction: column; gap: 5px; }
   .lxc-field.full { grid-column: 1 / -1; }
-  .lxc-input, .lxc-textarea { border-radius: 6px; font-family: monospace; font-size: 13px; padding: 8px 12px; outline: none; width: 100%; transition: border-color 0.2s; }
+  .lxc-input, .lxc-textarea { border-radius: 6px; font-size: 13px; padding: 8px 12px; outline: none; width: 100%; transition: border-color 0.2s; }
   body.dark .lxc-input, body.dark .lxc-textarea { background: #0d1b2a; border: 1px solid #0f3460; color: #eee; }
   body.light .lxc-input, body.light .lxc-textarea { background: #eef4f8; border: 1px solid #bcd; color: #222; }
   body.dark .lxc-input:focus, body.dark .lxc-textarea:focus { border-color: #00d4ff; }
@@ -464,7 +468,7 @@
         <input id="schedMaxfiles" type="number" min="1" max="10" value="1" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px;border-radius:6px;width:100%;box-sizing:border-box">
       </div>
     </div>
-    <div id="schedCurrent" style="font-size:12px;color:#888;margin-bottom:12px;padding:10px;background:#0a1520;border-radius:6px;font-family:monospace"></div>
+    <div id="schedCurrent" style="font-size:12px;color:#888;margin-bottom:12px;padding:10px;background:#0a1520;border-radius:6px"></div>
     <button class="run-btn" onclick="saveSchedule()" data-dt="bkp_save">💾 Uložit plán</button>
     <div id="schedStatus" style="font-size:13px;color:#6bcb77;margin-top:10px"></div>
   </div>
@@ -523,7 +527,7 @@
     <h2 data-dt="spd_title">⚡ Speedtest</h2>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <button class="run-btn" id="speedBtn" onclick="runSpeedtest()" data-dt="spd_run">▶ Spustit test</button>
-      <select id="serverSelect" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px;font-family:monospace">
+      <select id="serverSelect" style="background:#0d1b2a;color:#eee;border:1px solid #0f3460;padding:8px 12px;border-radius:6px">
         <option value="" data-dt="spd_auto">Automatický výběr</option>
       </select>
       <button class="refresh-btn" style="margin-bottom:0" onclick="loadSpeedServers()" data-dt="spd_servers">↻ Servery</button>
