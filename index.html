@@ -428,7 +428,7 @@
         <option value="suspend" data-dt="bkp_mode_suspend">Suspend</option>
 
       </select>
-      <button class="run-btn" onclick="startBackup()">▶ Zálohovat nyní</button>
+      <button class="run-btn" onclick="startBackup()" data-dt="bkp_now">▶ Backup Now</button>
     </div>
     <div id="backupRunStatus" style="font-size:13px;color:#ffd93d;margin-top:5px"></div>
   </div>
@@ -511,8 +511,8 @@
       </div>
     </div>
     <table class="net-table">
-      <thead><tr><th>IP</th><th>Název</th><th class="net-mac">MAC</th><th class="net-stav" data-dt="net_status">Stav</th><th><span class="desktop-only">⬇ rx / ⬆ tx</span><span class="mobile-only">⬇⬆</span></th></tr></thead>
-      <tbody id="networkTable"><tr><td colspan="5">Nacitam...</td></tr></tbody>
+      <thead><tr><th>IP</th><th data-dt="net_name">Name</th><th class="net-mac">MAC</th><th class="net-stav" data-dt="net_status">Status</th><th><span class="desktop-only">⬇ rx / ⬆ tx</span><span class="mobile-only">⬇⬆</span></th></tr></thead>
+      <tbody id="networkTable"><tr><td colspan="5" data-dt="lbl_loading">Loading...</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -1298,7 +1298,7 @@ async function loadDNS() {
     document.getElementById("dnsGrid").innerHTML = html || t('lbl_no_data');
     // Top devices z dat co uz mame
     if (data.devices && data.devices.length > 0) {
-      var topHtml = '<h3 style="color:#00d4ff;margin-bottom:10px">' + t('dns_top_devices') + '</h3><table><thead><tr><th>Zařízení</th><th>IP</th><th>' + t('dns_queries') + '</th></tr></thead><tbody>';
+      var topHtml = '<h3 style="color:#00d4ff;margin-bottom:10px">' + t('dns_top_devices') + '</h3><table><thead><tr><th>' + t('net_name') + '</th><th>IP</th><th>' + t('dns_queries') + '</th></tr></thead><tbody>';
       data.devices.slice(0,10).forEach(function(dev) {
         topHtml += '<tr><td>' + (dev.name || dev.model || dev.id || "?") + '</td><td style="color:#888;font-size:11px">' + (dev.localIp || '-') + '</td><td>' + (dev.queries || 0) + '</td></tr>';
       });
@@ -1607,7 +1607,7 @@ async function loadBackups() {
   try {
     var r = await fetch("/api/backups"); var d = await r.json();
     var sel = document.getElementById("backupVmid");
-    sel.innerHTML = '<option value="">Vyber VM...</option>' +
+    sel.innerHTML = '<option value="">' + t('bkp_select_vm') + '</option>' +
       (d.vms || []).map(function(v) { return '<option value="' + v.vmid + '">' + v.vmid + ' — ' + v.name + '</option>'; }).join("");
     var bl = document.getElementById("backupsList");
     var storagePaths = {
@@ -1621,13 +1621,13 @@ async function loadBackups() {
     var pathsHtml = Object.keys(storagePaths).map(function(sid) {
       return '<div style="margin-bottom:8px;padding:10px;background:#0a1520;border-radius:6px;border:1px solid #0f3460">' +
         '<div style="color:#00d4ff;font-weight:bold;font-size:13px;margin-bottom:4px">📁 ' + sid + ' <span style="color:#555;font-size:11px;font-weight:normal">' + storageNotes[sid] + '</span></div>' +
-        '<div style="font-family:monospace;font-size:12px;color:#aaa;cursor:pointer;padding:4px 8px;background:#111;border-radius:4px;display:inline-block" onclick="navigator.clipboard.writeText(\'' + storagePaths[sid] + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#aaa\',1000)">' + storagePaths[sid] + ' <span style="color:#555;font-size:10px">✂ kopírovat</span></div>' +
+        '<div style="font-family:monospace;font-size:12px;color:#aaa;cursor:pointer;padding:4px 8px;background:#111;border-radius:4px;display:inline-block" onclick="navigator.clipboard.writeText(\'' + storagePaths[sid] + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#aaa\',1000)">' + storagePaths[sid] + ' <span style="color:#555;font-size:10px">✂ ' + t('btn_copy') + '</span></div>' +
         '</div>';
     }).join("");
     if (!d.backups || d.backups.length === 0) {
-      bl.innerHTML = pathsHtml + '<div style="color:#888">Žádné zálohy nenalezeny</div>';
+      bl.innerHTML = pathsHtml + '<div style="color:#888">' + t('bkp_none') + '</div>';
     } else {
-      var tableHtml = '<table><thead><tr><th>Datum</th><th>VM</th><th>Velikost</th><th>Storage</th><th>Soubor</th><th>Poznámka</th></tr></thead><tbody>';
+      var tableHtml = '<table><thead><tr><th>' + t('bkp_col_date') + '</th><th>VM</th><th>' + t('bkp_col_size') + '</th><th>Storage</th><th>' + t('bkp_col_file') + '</th><th>' + t('bkp_col_notes') + '</th></tr></thead><tbody>';
       d.backups.slice().reverse().forEach(function(b) {
         var dt = new Date(b.ctime * 1000).toLocaleString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
         var size = b.size > 1073741824 ? (b.size/1073741824).toFixed(2) + " GB" : (b.size/1048576).toFixed(0) + " MB";
@@ -1636,7 +1636,7 @@ async function loadBackups() {
         var filename = b.volid.split("/").pop();
         var fullpath = storePath + filename;
         tableHtml += '<tr><td>' + dt + '</td><td>VM ' + b.vmid + '</td><td>' + size + '</td><td style="color:#00d4ff;font-size:11px">' + storageId + '</td>' +
-          '<td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer" onclick="navigator.clipboard.writeText(\'' + fullpath + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#888\',1000)" title="Klikni pro kopírování">' + filename + '</td>' +
+          '<td style="font-family:monospace;font-size:11px;color:#888;cursor:pointer" onclick="navigator.clipboard.writeText(\'' + fullpath + '\');this.style.color=\'#6bcb77\';setTimeout(()=>this.style.color=\'#888\',1000)" title="' + t('bkp_click_copy') + '">' + filename + '</td>' +
           '<td style="color:#888">' + (b.notes||"—") + '</td></tr>';
       });
       tableHtml += '</tbody></table>';
@@ -1657,7 +1657,7 @@ async function startBackup() {
     var r = await fetch("/api/backups/run?vmid=" + vmid + "&mode=" + mode, {method:"POST"});
     var d = await r.json();
     if (d.error) { status.style.color="#ff6b6b"; status.textContent = "✗ " + t('lbl_error') + d.error; }
-    else { status.style.color="#6bcb77"; status.textContent = t('bkp_started') + d.pid + ") — může trvat několik minut"; }
+    else { status.style.color="#6bcb77"; status.textContent = t('bkp_started') + d.pid + ") " + t('bkp_may_take'); }
   } catch(e) { status.style.color="#ff6b6b"; status.textContent = "✗ " + t('lbl_error') + e.message; }
 }
 
@@ -1683,7 +1683,7 @@ async function loadBackupSchedule() {
     var ds = await rs.json();
     var sc = document.getElementById("schedCurrent");
     if (ds.schedule) {
-      sc.innerHTML = "📅 <b>" + ds.schedule + "</b> &nbsp;|&nbsp; VM: <b>" + ds.vmids + "</b> &nbsp;|&nbsp; Max zálohy: <b>" + ds.maxfiles + "</b> &nbsp;|&nbsp; Storage: local &nbsp;|&nbsp; Mode: stop";
+      sc.innerHTML = "📅 <b>" + ds.schedule + "</b> &nbsp;|&nbsp; VM: <b>" + ds.vmids + "</b> &nbsp;|&nbsp; " + t('bkp_maxfiles') + ": <b>" + ds.maxfiles + "</b> &nbsp;|&nbsp; Storage: local &nbsp;|&nbsp; Mode: stop";
       document.getElementById("schedVmids").value = ds.vmids || "";
       var parts = ds.schedule.split(" ");
       if (parts.length >= 2) {
