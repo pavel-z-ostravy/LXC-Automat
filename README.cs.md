@@ -8,13 +8,13 @@ Config-driven homelab dashboard pro Proxmox + volitelné moduly (Home Assistant,
 
 ---
 
-## Poslední aktualizace
+## Poslední velké aktualizace
 
 | Datum | Co se změnilo |
 |-------|--------------|
-| **4. 3. 2026** | **User menu + Settings panel** — dropdown `👤 admin ▾` v navbaru; modál Účet (název dashboardu, heslo, reset 2FA); modál Nastavení se záložkami Moduly, WoL zařízení a Monitorované služby — vše editovatelné živě bez nutnosti spouštět wizard znovu |
-| **1. 3. 2026** | **GitHub SSH klíč** + oprava vlastníka `monitor.service` |
-| **1. 2. 2026** | **První vydání** — webový instalační wizard, moduly Proxmox/HA/Router/Cloudflare/NextDNS, LXC generátor, speedtest, WoL, TOTP 2FA |
+| **4. 3. 2026** | **Opravy CSS pro cross-browser** — sjednocení vzhledu ve Firefoxu a Safari (macOS): `-webkit-appearance: none` na všech formulářových prvcích, vlastní SVG šipka pro `<select>`, oprava zkratky `background-color` vs `background`, prefixová doplnění `-webkit-transform` a `-webkit-user-select` |
+| **4. 3. 2026** | **Full-page panely + btop Cloudflare detekce** — Účet a Nastavení se otevírají jako celostránkové overlay panely; URL btop terminálů lze nastavit v Nastavení; automatická detekce lokálního vs. externího přístupu (hint o offline btop při přístupu přes Cloudflare tunnel) |
+| **4. 3. 2026** | **User menu + Settings panel** — dropdown `👤 admin ▾` v navbaru; panel Účet (název dashboardu, heslo, reset 2FA); panel Nastavení se sekcemi Moduly, WoL zařízení, Monitorované služby a btop URL — vše editovatelné živě bez spuštění wizardu |
 
 ---
 

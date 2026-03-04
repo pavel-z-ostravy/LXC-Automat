@@ -8,13 +8,13 @@ A config-driven homelab dashboard for Proxmox + optional modules (Home Assistant
 
 ---
 
-## Recent Updates
+## Latest Major Updates
 
 | Date | What changed |
 |------|-------------|
-| **2026-03-04** | **User menu + Settings panel** — `👤 admin ▾` dropdown in navbar; Account modal (dashboard name, password, 2FA reset); Settings modal with tabs for Modules, WoL devices and monitored Services — all editable live without re-running the wizard |
-| **2026-03-01** | **GitHub SSH key** + ownership fix for `monitor.service` |
-| **2026-02-01** | **Initial release** — web installer wizard, Proxmox/HA/Router/Cloudflare/NextDNS modules, LXC generator, speedtest, WoL, TOTP 2FA |
+| **2026-03-04** | **Cross-browser CSS fixes** — unified appearance across Firefox and Safari (macOS): `-webkit-appearance: none` on all form elements, custom SVG chevron for selects, `background-color` vs `background` shorthand fix, `-webkit-transform` and `-webkit-user-select` prefixes |
+| **2026-03-04** | **Full-page settings panels + btop Cloudflare detection** — Account and Settings now open as full-page overlays instead of modals; btop terminal URLs are configurable in Settings; local vs. external access is auto-detected (shows offline hint when accessed via Cloudflare tunnel) |
+| **2026-03-04** | **User menu + Settings panel** — `👤 admin ▾` dropdown in navbar; Account panel (dashboard name, password, 2FA reset); Settings panel with sections for Modules, WoL devices, monitored Services and btop URLs — all editable live without re-running the wizard |
 
 ---
 
