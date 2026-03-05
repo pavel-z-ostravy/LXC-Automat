@@ -504,6 +504,56 @@
   .toggle-switch.on .toggle-knob { transform: translateX(18px); }
   .auto-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text2); margin-top: 8px; width: 100%; justify-content: center; transition: all var(--transition); }
   .auto-badge.active-auto { border-color: var(--ok); color: var(--ok); background: rgba(0,230,118,.06); }
+
+  /* ── SYSTEM OVERVIEW + MONITOR REDESIGN ── */
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
+  .grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:18px; }
+  @media(max-width:680px){ .grid3,.grid2{ grid-template-columns:1fr; } }
+  .section-label {
+    font-family:var(--font-mono); font-size:9px; font-weight:500;
+    letter-spacing:.2em; text-transform:uppercase;
+    color:var(--text3); margin-bottom:12px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .section-label::after{ content:''; flex:1; height:1px; background:var(--border); }
+  .metric-label {
+    font-family:var(--font-mono); font-size:9px; font-weight:500;
+    letter-spacing:.17em; text-transform:uppercase; color:var(--text3); margin-bottom:10px;
+  }
+  .metric-value {
+    font-family:var(--font-mono); font-size:44px; font-weight:600;
+    color:var(--accent); line-height:1; letter-spacing:-.04em; text-shadow:var(--glow-sm);
+  }
+  .metric-unit { font-size:19px; font-weight:400; color:var(--text2); margin-left:2px; }
+  .metric-sub { font-family:var(--font-mono); font-size:10px; color:var(--text3); margin-top:8px; }
+  .metric-value.c-ok { color:var(--ok); text-shadow:none; }
+  .metric-value.c-warn { color:var(--warn); text-shadow:none; }
+  .metric-value.c-danger { color:var(--danger); text-shadow:none; }
+  .progress-wrap { margin-top:13px; }
+  .progress-track { height:2px; border-radius:99px; background:var(--surface2); overflow:hidden; }
+  .progress-fill { height:100%; border-radius:99px; background:var(--accent); transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+  .progress-fill.warn   { background:var(--warn); }
+  .progress-fill.danger { background:var(--danger); }
+  .temp-name {
+    font-family:var(--font-mono); font-size:9px; font-weight:600;
+    letter-spacing:.2em; text-transform:uppercase; color:var(--text3); margin-bottom:13px;
+  }
+  .temp-list { display:flex; flex-direction:column; gap:7px; }
+  .temp-row {
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--font-mono); font-size:11px;
+    padding-bottom:7px; border-bottom:1px solid var(--border);
+  }
+  .temp-row:last-child { border-bottom:none; padding-bottom:0; }
+  .temp-key { color:var(--text2); }
+  .temp-val { font-weight:600; }
+  .c-ok { color:var(--ok); } .c-warn { color:var(--warn); } .c-danger { color:var(--danger); }
+  .chart-title {
+    font-family:var(--font-ui); font-size:13px; font-weight:600;
+    color:var(--text); margin-bottom:16px; display:flex; align-items:center; gap:8px;
+  }
+  .chart-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:var(--glow-sm); flex-shrink:0; }
+  .chart-wrap { height:172px; }
 </style>
 </head>
 <body>
@@ -774,18 +824,46 @@
     <span class="uptime-item"><span class="status-dot dot-gray" id="dotVM"></span><svg width="14" height="14" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#E95420"/><circle cx="50" cy="50" r="20" fill="none" stroke="white" stroke-width="12"/><circle cx="50" cy="15" r="10" fill="white"/><circle cx="82" cy="68" r="10" fill="white"/><circle cx="18" cy="68" r="10" fill="white"/></svg> nextcloud: <span id="uptimeVM">...</span></span>
     <span class="uptime-item"><span class="status-dot dot-gray" id="dotHA"></span><svg width="14" height="14" viewBox="0 0 100 100"><rect width="100" height="100" rx="15" fill="#18BCF2"/><text y="72" x="50" font-size="55" text-anchor="middle" fill="white">H</text></svg> HA: <span id="uptimeHA">...</span></span>
   </div>
-  <div class="card">
-    <h2 data-dt="mon_temp">🌡️ Teploty</h2>
-    <button class="refresh-btn" onclick="loadSensors()" data-dt="lbl_refresh">↻ Obnovit</button>
-    <div class="sensors-grid" id="sensors"><span data-dt="lbl_loading">Loading...</span></div>
+  <!-- SYSTEM OVERVIEW -->
+  <div class="section-label">// system overview</div>
+  <div class="grid3" id="overviewCards">
+    <div class="card">
+      <div class="metric-label">CPU Usage</div>
+      <div class="metric-value" id="ovCpu">—<span class="metric-unit">%</span></div>
+      <div class="metric-sub" id="ovCpuSub">loading...</div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="ovCpuBar" style="width:0%"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="metric-label">RAM Usage</div>
+      <div class="metric-value" id="ovRam">—<span class="metric-unit">%</span></div>
+      <div class="metric-sub" id="ovRamSub">loading...</div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="ovRamBar" style="width:0%"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="metric-label">CPU Temp</div>
+      <div class="metric-value" id="ovTemp">—<span class="metric-unit" style="font-size:20px">°C</span></div>
+      <div class="metric-sub" id="ovTempSub">loading...</div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="ovTempBar" style="width:0%"></div></div></div>
+    </div>
   </div>
-  <div class="card">
-    <h2 data-dt="mon_temp_graph">📈 Graf teplot</h2>
-    <div class="chart-container"><canvas id="tempChart"></canvas></div>
+
+  <!-- TEMPERATURES -->
+  <div class="section-label">// temperatures</div>
+  <div class="grid3" id="sensorsGrid">
+    <div class="card" style="opacity:.4"><div class="temp-name">loading...</div></div>
   </div>
-  <div class="card">
-    <h2 data-dt="mon_cpu_graph">📈 Graf CPU & RAM</h2>
-    <div class="chart-container"><canvas id="statsChart"></canvas></div>
+
+  <!-- LIVE GRAPHS -->
+  <div class="section-label">// live graphs</div>
+  <div class="grid2">
+    <div class="card">
+      <div class="chart-title"><span class="chart-dot"></span><span data-dt="mon_cpu_graph">CPU &amp; RAM</span></div>
+      <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="chart-title"><span class="chart-dot" style="background:var(--c2)"></span><span data-dt="mon_temp_graph">Temperature</span></div>
+      <div class="chart-wrap"><canvas id="tempChart"></canvas></div>
+    </div>
   </div>
   <div class="mobile-stats">
     <div class="card">
@@ -1254,13 +1332,21 @@ function setTheme(name) {
   document.documentElement.setAttribute('data-theme', name);
   localStorage.setItem('lxc-theme', name);
   _refreshThemePicker();
-  _reinitCharts();
+  reinitCharts();
 }
 function setVariant(v) {
   document.documentElement.setAttribute('data-variant', v);
   localStorage.setItem('lxc-variant', v);
   _refreshThemePicker();
-  _reinitCharts();
+  reinitCharts();
+}
+function reinitCharts() {
+  setTimeout(function() {
+    if (tempChart) { tempChart.destroy(); tempChart = null; }
+    if (statsChart) { statsChart.destroy(); statsChart = null; }
+    initTempChart();
+    initStatsChart();
+  }, 80);
 }
 function toggleAutoSwitch() {
   var isOn = localStorage.getItem('lxc-auto') === 'true';
@@ -1507,26 +1593,26 @@ async function loadSensors() {
     var res = await fetch("/api/sensors");
     var data = await res.json();
     var blocks = parseSensors(data.output);
-    var container = document.getElementById("sensors");
-    container.innerHTML = "";
+    var gridHtml = '';
     for (var blockName in blocks) {
       var sensors = blocks[blockName];
       if (sensors.length === 0) continue;
-      var div = document.createElement("div");
-      div.className = "sensor-block";
-      var html = "<h3>" + esc(blockName) + "</h3>";
-      for (var i = 0; i < sensors.length; i++) {
-        var key = blockName + " / " + sensors[i].name;
-        var color = getColorForSensor(key);
-        var tempClass = sensors[i].temp >= 80 ? "sensor-warn" : sensors[i].temp >= 65 ? "sensor-hot" : "";
-        var tempColor = tempClass ? "" : 'style="color:' + esc(color) + '"';
-        html += '<div class="sensor-line ' + tempClass + '" ' + tempColor + '>' + esc(sensors[i].name) + ": " + esc(String(sensors[i].temp)) + "°C";
-        if (sensors[i].temp >= 80) html += " &#9888;";
-        html += "</div>";
+      if (blockName.toLowerCase().includes('coretemp')) {
+        var pkg = sensors.find(function(s){ return s.name.toLowerCase().includes('package'); });
+        if (pkg) lastCoreTemp = pkg.temp;
       }
-      div.innerHTML = html;
-      container.appendChild(div);
+      gridHtml += '<div class="card"><div class="temp-name">' + esc(blockName) + '</div>';
+      gridHtml += '<div class="temp-list">';
+      for (var i = 0; i < sensors.length; i++) {
+        var s = sensors[i];
+        var cls = s.temp >= 80 ? 'c-danger' : s.temp >= 65 ? 'c-warn' : 'c-ok';
+        gridHtml += '<div class="temp-row"><span class="temp-key">' + esc(s.name) + '</span>';
+        gridHtml += '<span class="temp-val ' + cls + '">' + s.temp + '°C</span></div>';
+      }
+      gridHtml += '</div></div>';
     }
+    document.getElementById('sensorsGrid').innerHTML = gridHtml || '<div class="card"><div class="temp-name">no sensors</div></div>';
+    updateOverview(lastProxmox, lastCoreTemp);
     updateTempChart(blocks);
   } catch(e) { document.getElementById("sensors").innerHTML = t('lbl_error') + e.message; }
 }
@@ -1556,6 +1642,35 @@ function renderStats(d, rowsId, procId) {
 }
 
 var lastProxmox = null, lastVM = null;
+var lastCoreTemp = null;
+
+function updateOverview(proxmox, coreTemp) {
+  if (!proxmox || !proxmox.online) return;
+  var cpu = proxmox.cpu.toFixed(1);
+  document.getElementById('ovCpu').innerHTML = cpu + '<span class="metric-unit">%</span>';
+  document.getElementById('ovCpuSub').textContent = (proxmox.hostname || 'Proxmox') + ' · ' + (proxmox.cores || '') + ' cores';
+  var cpuBar = document.getElementById('ovCpuBar');
+  cpuBar.style.width = Math.min(cpu, 100) + '%';
+  cpuBar.className = 'progress-fill' + (cpu >= 90 ? ' danger' : cpu >= 75 ? ' warn' : '');
+  var ram = proxmox.mem.pct;
+  document.getElementById('ovRam').innerHTML = ram + '<span class="metric-unit">%</span>';
+  document.getElementById('ovRamSub').textContent =
+    (proxmox.mem.used / 1073741824).toFixed(1) + ' GB / ' +
+    (proxmox.mem.total / 1073741824).toFixed(1) + ' GB';
+  var ramBar = document.getElementById('ovRamBar');
+  ramBar.style.width = ram + '%';
+  ramBar.className = 'progress-fill' + (ram >= 90 ? ' danger' : ram >= 75 ? ' warn' : '');
+  if (coreTemp !== null && coreTemp !== undefined) {
+    var t = coreTemp;
+    var tempEl = document.getElementById('ovTemp');
+    tempEl.innerHTML = t + '<span class="metric-unit" style="font-size:20px">°C</span>';
+    tempEl.className = 'metric-value ' + (t >= 80 ? 'c-danger' : t >= 65 ? 'c-warn' : 'c-ok');
+    document.getElementById('ovTempSub').textContent = 'Package · coretemp';
+    var tempBar = document.getElementById('ovTempBar');
+    tempBar.style.width = Math.min(t, 100) + '%';
+    tempBar.className = 'progress-fill' + (t >= 80 ? ' danger' : t >= 65 ? ' warn' : '');
+  }
+}
 
 async function loadAllStats() {
   try {
@@ -1565,6 +1680,7 @@ async function loadAllStats() {
     document.getElementById("dotProxmox").className = "status-dot dot-green";
     if (window.innerWidth <= 1200) renderStats(lastProxmox, "statRows", "procTable");
     renderMonitorCard(lastProxmox, "monProxmox");
+    updateOverview(lastProxmox, lastCoreTemp);
   } catch(e) { document.getElementById("dotProxmox").className = "status-dot dot-red"; lastProxmox = null; }
   try {
     var res2 = await fetch("/api/vm_stats");
