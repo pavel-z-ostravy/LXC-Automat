@@ -1,20 +1,28 @@
 # LXC-Automat
 
-> Self-hosted homelab dashboard with web-based installer
+> Self-hosted homelab dashboard with web-based installer for Proxmox
 
 [🇨🇿 Česky](README.cs.md) | 🇬🇧 English
 
+[![Version](https://img.shields.io/github/v/release/pavel-z-ostravy/LXC-Automat?style=flat&label=version&color=0077cc)](https://github.com/pavel-z-ostravy/LXC-Automat/releases)
+[![License](https://img.shields.io/github/license/pavel-z-ostravy/LXC-Automat?style=flat&color=0077cc)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/pavel-z-ostravy/LXC-Automat?style=flat&color=0077cc)](https://github.com/pavel-z-ostravy/LXC-Automat/stargazers)
+[![Python](https://img.shields.io/badge/python-3.11+-0077cc?style=flat)](https://www.python.org/)
+[![Proxmox](https://img.shields.io/badge/proxmox-required-e57000?style=flat)](https://www.proxmox.com/)
+
 A config-driven homelab dashboard for Proxmox + optional modules (Home Assistant, Router, Cloudflare, NextDNS). Installs via a single command — a web wizard guides you through the full setup, no config file editing required.
+
+🌐 **[Landing page](https://pavel-z-ostravy.github.io/LXC-Automat)**
 
 ---
 
 ## Latest Major Updates
 
-| Date | What changed |
-|------|-------------|
-| **2026-03-04** | **Cross-browser CSS fixes** — unified appearance across Firefox and Safari (macOS): `-webkit-appearance: none` on all form elements, custom SVG chevron for selects, `background-color` vs `background` shorthand fix, `-webkit-transform` and `-webkit-user-select` prefixes |
-| **2026-03-04** | **Full-page settings panels + btop Cloudflare detection** — Account and Settings now open as full-page overlays instead of modals; btop terminal URLs are configurable in Settings; local vs. external access is auto-detected (shows offline hint when accessed via Cloudflare tunnel) |
-| **2026-03-04** | **User menu + Settings panel** — `👤 admin ▾` dropdown in navbar; Account panel (dashboard name, password, 2FA reset); Settings panel with sections for Modules, WoL devices, monitored Services and btop URLs — all editable live without re-running the wizard |
+| Date | Update |
+|------|---------|
+| **2026-03-04** | **Cross-browser CSS fixes** — unified appearance across Firefox and Safari: `-webkit-appearance`, custom SVG chevron, background shorthand fix, `-webkit-transform` and `-webkit-user-select` prefixes |
+| **2026-03-04** | **Full-page settings panels + btop Cloudflare detection** — Account and Settings as full-page overlays; btop URLs configurable in Settings; local vs. Cloudflare tunnel auto-detected |
+| **2026-03-04** | **User menu + Settings panel** — `👤 admin ▾` dropdown; Account panel; Settings with live-editable Modules, WoL, Services and btop URLs — no wizard re-run needed |
 
 ---
 
@@ -32,8 +40,6 @@ Then open `http://<your-server-ip>:8091/setup` and complete the wizard.
 
 ## How It Works
 
-### Two-phase startup
-
 ```
 install.sh → [clone + deps + systemd] → /setup wizard (port 8091)
                                                ↓  (after wizard completes)
@@ -46,12 +52,26 @@ The app automatically detects whether `config.json` exists:
 
 ---
 
-## Web Installer Wizard
+## Screenshots
+
+| | |
+|---|---|
+| ![Dashboard — Resources & Temperatures](screenshots/dashboard-resources-temperatures.png) | ![Dashboard — LXC Tools](screenshots/dashboard-tools-lxc.png) |
+| **Monitor** — Live CPU, RAM, temperature graphs | **Tools** — LXC Setup Generator with live log |
+| ![Wizard — System Check](screenshots/wizard-step1-system-check.png) | ![Wizard — Credentials & 2FA](screenshots/wizard-step2-totp.png) |
+| **Wizard Step 1** — System check & prerequisites | **Wizard Step 2** — Credentials + optional TOTP 2FA |
+| ![Wizard — Proxmox](screenshots/wizard-step3-proxmox.png) | ![Wizard — Modules](screenshots/wizard-step4-modules.png) |
+| **Wizard Step 3** — Proxmox SSH connection | **Wizard Step 4** — Optional modules |
+
+---
+
+<details>
+<summary><b>🧙 Web Installer Wizard</b> — 8-step guided setup, no config editing required</summary>
 
 An 8-step setup wizard — no SSH or config file editing needed:
 
 | Step | What you configure |
-|------|--------------------|
+|------|-------------------|
 | 1. System check | Python, sshpass, paramiko availability |
 | 2. Credentials | Dashboard name, port, username + password (SHA-256 hash, with generator) + optional TOTP 2FA |
 | 3. Proxmox | IP, node name, SSH auth (password **or** generated keypair) |
@@ -76,11 +96,12 @@ An 8-step setup wizard — no SSH or config file editing needed:
 
 For Proxmox and Router modules you can choose between password auth or SSH key. If you choose key, the wizard generates an ed25519 keypair, shows the public key with a **Copy** button, and tells you exactly where to paste it (`~/.ssh/authorized_keys`).
 
+</details>
+
 ---
 
-## Dashboard Modules
-
-All modules are **optional** — inactive ones are completely hidden in the UI.
+<details>
+<summary><b>📦 Dashboard Modules</b> — all optional, inactive ones are completely hidden in the UI</summary>
 
 | Module | What it shows |
 |--------|--------------|
@@ -93,41 +114,7 @@ All modules are **optional** — inactive ones are completely hidden in the UI.
 | **Wake-on-LAN** | Ping status + WoL button for configured devices |
 | **LXC Wizard** | One-click LXC container provisioning (see below) |
 
----
-
-### Cloudflare Module — Token Setup
-
-The Cloudflare module needs an API token with read access to your tunnel and DNS zone.
-
-**Step 1 — Create API Token**
-
-1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Profile** (top right) → **API Tokens**
-2. Click **Create Token** → **Create Custom Token**
-3. Set these permissions:
-   - `Account` → `Cloudflare Tunnel` → **Read**
-   - `Zone` → `DNS` → **Read** (select your zone/domain)
-
-   > ⚠️ **Common mistake:** `Workers Observability:Read`, `Account Analytics:Read`, `Logs:Read` and `Analytics:Read` are **not enough** — the token must have exactly `Cloudflare Tunnel:Read` + `DNS:Read`, otherwise the tunnel shows as *unknown* with no hostnames.
-4. Click **Continue to Summary** → **Create Token**
-5. **Copy the token** — it's shown only once
-
-**Step 2 — Find your IDs**
-
-| Field | Where to find |
-|-------|--------------|
-| **Account ID** | Cloudflare dashboard → right sidebar on any zone page → *Account ID* |
-| **Zone ID** | Cloudflare dashboard → your domain → right sidebar → *Zone ID* |
-| **Tunnel ID** | Cloudflare dashboard → **Zero Trust** → **Networks** → **Tunnels** → click your tunnel → copy the UUID from the URL or tunnel detail page |
-
-**Step 3 — Enter in wizard or Settings**
-
-Paste all four values (token, account ID, zone ID, tunnel ID) into the wizard during install, or later via **Settings → Modules → Cloudflare**.
-
-> **Note:** The cloudflared metrics endpoint (`http://127.0.0.1:20241/metrics`) is only available if `cloudflared` runs on the same machine as lxc-automat with `--metrics localhost:20241`.
-
----
-
-## LXC Provisioning Wizard
+### LXC Provisioning Wizard
 
 Fill in a form, click **"Create LXC and Install"** — the tool handles everything:
 
@@ -146,7 +133,6 @@ Fill in a form, click **"Create LXC and Install"** — the tool handles everythi
   ✓ Base packages installed
   >>> Installing Docker...
   ✓ Docker works
-  ...
 
 ╔══════════════════════════════════════════╗
   Ready! SSH: ssh root@192.168.1.93
@@ -155,9 +141,79 @@ Fill in a form, click **"Create LXC and Install"** — the tool handles everythi
 
 **Selectable packages:** Docker, Node.js LTS, pnpm, Vercel CLI, Claude Code, Supabase CLI, micro editor, Git config
 
+</details>
+
 ---
 
-## Architecture
+<details>
+<summary><b>🔧 Troubleshooting</b> — wrong password, lost 2FA, service won't start, reset wizard</summary>
+
+> **Note on paths:** Commands below use the default installation name `lxc-automat`. If you chose a different name, substitute it in all commands.
+
+### Wrong password — can't log in
+
+```bash
+# Generate a new hash for your chosen password
+python3 -c "import hashlib; print(hashlib.sha256(b'YOUR_NEW_PASSWORD').hexdigest())"
+
+# Edit config.json and replace auth.password_hash
+nano /opt/lxc-automat/config.json
+
+sudo systemctl restart lxc-automat
+```
+
+### Lost TOTP / can't pass 2FA
+
+Edit `config.json` and set `totp_secret` to `null`:
+
+```json
+"auth": {
+  "username": "admin",
+  "password_hash": "...",
+  "totp_secret": null
+}
+```
+
+```bash
+sudo systemctl restart lxc-automat
+```
+
+### Service fails to start
+
+```bash
+sudo journalctl -u lxc-automat -n 50 --no-pager
+```
+
+Common causes:
+- **`ModuleNotFoundError`** — install the missing package: `/opt/lxc-automat/venv/bin/pip install <module>`
+- **Port already in use** — change port in `config.json` and the service file, then `sudo systemctl daemon-reload && sudo systemctl restart lxc-automat`
+- **`config.json` syntax error** — validate: `python3 -m json.tool /opt/lxc-automat/config.json`
+
+### Reset the wizard (start from scratch)
+
+```bash
+sudo rm /opt/lxc-automat/config.json
+sudo systemctl restart lxc-automat
+# Then open http://<your-ip>:8091/setup
+```
+
+> This only resets configuration. The service, venv, and all files remain intact.
+
+### Re-installing from scratch
+
+```bash
+sudo systemctl stop lxc-automat && sudo systemctl disable lxc-automat
+sudo rm -rf /opt/lxc-automat
+sudo rm /etc/systemd/system/lxc-automat.service
+sudo systemctl daemon-reload
+```
+
+</details>
+
+---
+
+<details>
+<summary><b>🏗️ Architecture & File Structure</b></summary>
 
 ```
 Browser  ──→  Web UI (single-page HTML + JS, EN/CS)
@@ -176,9 +232,30 @@ Browser  ──→  Web UI (single-page HTML + JS, EN/CS)
 
 - **Backend**: Python 3.11+ / FastAPI / Uvicorn
 - **Frontend**: Single-page HTML+JS, no framework, no build step
-- **Auth**: Cookie session, SHA-256 password hash, optional TOTP 2FA (pyotp), never stored in plaintext
+- **Auth**: Cookie session, SHA-256 password hash, optional TOTP 2FA (pyotp)
 - **Config**: `config.json` — gitignored, generated by wizard
 - **SSH keys**: `keys/` directory — gitignored, generated by wizard
+
+```
+/opt/lxc-automat/
+├── install.sh             # curl | bash entry point
+├── installer.py           # web wizard backend (FastAPI)
+├── installer.html         # wizard UI (multi-step form)
+├── app.py                 # dashboard backend (config-driven)
+├── index.html             # dashboard frontend
+├── locales/
+│   ├── en.json            # wizard EN translations
+│   ├── cs.json            # wizard CS translations
+│   ├── dashboard-en.json  # dashboard EN translations
+│   └── dashboard-cs.json  # dashboard CS translations
+├── requirements.txt
+├── lxc-automat.service
+├── screenshots/
+├── keys/                  # SSH keys (gitignored)
+└── config.json            # generated by wizard (gitignored)
+```
+
+</details>
 
 ---
 
@@ -187,227 +264,61 @@ Browser  ──→  Web UI (single-page HTML + JS, EN/CS)
 > ### ⚠️ Designed for trusted local networks only
 > **Do not expose this dashboard directly to the internet.**
 > It has no HTTPS, no brute-force protection, and no rate limiting on the login endpoint.
-> If you need remote access, put it behind a reverse proxy (e.g. Nginx or Caddy) with HTTPS,
-> or use a VPN / Cloudflare Tunnel.
+> Use a reverse proxy with HTTPS, or a VPN / Cloudflare Tunnel for remote access.
 
 - `config.json` and `keys/` are gitignored — credentials never reach the repo
 - Passwords stored as SHA-256 hash only
-- TOTP secret stored in `config.json` (600 permissions, gitignored), never logged
-- Cloudflare/NextDNS tokens never logged
+- TOTP secret in `config.json` (600 permissions), never logged
 - SSH keys have `600` permissions
-
----
-
-## File Structure
-
-```
-/opt/lxc-automat/
-├── install.sh           # curl | bash entry point
-├── installer.py         # web wizard backend (FastAPI)
-├── installer.html       # wizard UI (multi-step form)
-├── app.py               # dashboard backend (config-driven)
-├── index.html           # dashboard frontend
-├── locales/
-│   ├── en.json          # wizard EN translations
-│   ├── cs.json          # wizard CS translations
-│   ├── dashboard-en.json  # dashboard EN translations
-│   └── dashboard-cs.json  # dashboard CS translations
-├── requirements.txt
-├── lxc-automat.service
-├── screenshots/         # README screenshots
-├── keys/                # SSH keys generated by wizard (gitignored)
-└── config.json          # generated by wizard (gitignored)
-```
-
----
-
-## Screenshots
-
-### Setup Wizard
-
-#### Step 1 — System Check
-Verifies Python 3, sshpass and paramiko are installed, and detects the local IP address of the server.
-
-![Step 1 - System Check](screenshots/wizard-step1-system-check.png)
-
-#### Step 2 — Dashboard Credentials
-Set the dashboard name (updates the browser title live), port, username, and password. Built-in generator produces 32/64/128-char passwords with a strength bar; live ✓/✗ indicator confirms the two fields match.
-
-**Optional: Two-Factor Authentication (TOTP)** — check "Enable 2FA", click **Generate QR code**, scan with Google Authenticator or Authy, and enter the 6-digit code to confirm before proceeding. The base32 secret is displayed for manual entry if QR scanning isn't possible. The wizard requires a successful verification before you can continue.
-
-![Step 2 - TOTP 2FA setup](screenshots/wizard-step2-totp.png)
-
-#### Step 3 — Proxmox Connection
-Enter the Proxmox IP address, node name, and SSH credentials. Toggle between password auth and a wizard-generated ed25519 keypair (public key is displayed with a Copy button for pasting into `authorized_keys`). A **Test SSH connection** button validates the credentials before proceeding.
-
-![Step 3 - Proxmox](screenshots/wizard-step3-proxmox.png)
-
-#### Step 4 — Optional Modules
-Enable Home Assistant, Router, Cloudflare and/or NextDNS monitoring. Each module expands its own credential form when checked. Inactive modules are completely hidden in the dashboard — no empty cards.
-
-![Step 4 - Modules](screenshots/wizard-step4-modules.png)
-
-#### Step 5 — Monitored Services
-Add any number of URLs (name + URL) to track for HTTP availability. Each service gets a live status indicator on the dashboard.
-
-![Step 5 - Services](screenshots/wizard-step5-services.png)
-
-#### Step 6 — Wake-on-LAN Devices
-Register devices by name, MAC address and IP. The dashboard shows live ping status and a one-click WoL button for each.
-
-![Step 6 - WoL](screenshots/wizard-step6-wol.png)
-
-#### Step 7 — Dev Environment
-Optionally install developer tools on the server in the background after the dashboard starts. Tools are grouped into **Node.js ecosystem** (Node.js LTS + pnpm, Vercel CLI, Supabase CLI, Claude Code as dependents) and **Independent tools** (Bun, Docker, Redis, Python 3, micro editor). Progress is logged to `dev_install.log`.
-
-![Step 7 - Dev Environment](screenshots/wizard-step7-devenv.png)
-
----
-
-### Dashboard
-
-#### Resources — Temperatures & CPU/RAM graphs
-The Resources tab shows live sensor readings (PCH, ACPITZ, per-core temperatures) alongside scrolling historical graphs for temperature and CPU/RAM usage (Proxmox host + active VMs). The status bar at the top shows uptime for each monitored system.
-
-![Dashboard - Resources](screenshots/dashboard-resources-temperatures.png)
-
-#### Tools — LXC Setup Generator
-The Tools tab contains the LXC provisioning wizard. Fill in container identity (CT ID, hostname, RAM, CPU, disk), network configuration (IP address with live availability check, gateway), optional Git config, and select which packages to install. Click **Create LXC and Install** to provision the container on Proxmox with a live log stream.
-
-![Dashboard - LXC Tools](screenshots/dashboard-tools-lxc.png)
-
----
-
-## Troubleshooting
-
-> **Note on paths:** Commands below use the default installation name `lxc-automat`. If you chose a different name, substitute `lxc-automat` with your name in all commands.
-
-### Wrong password — can't log in
-
-The password is stored as a SHA-256 hash in `config.json`. To reset it:
-
-```bash
-# Generate a new hash for your chosen password
-python3 -c "import hashlib; print(hashlib.sha256(b'YOUR_NEW_PASSWORD').hexdigest())"
-
-# Edit config.json and replace the value of auth.password_hash
-nano /opt/lxc-automat/config.json
-```
-
-Then restart the service:
-```bash
-sudo systemctl restart lxc-automat
-```
-
----
-
-### Lost TOTP / can't pass 2FA
-
-If you've lost access to your authenticator app, disable 2FA directly in `config.json`:
-
-```bash
-nano /opt/lxc-automat/config.json
-```
-
-Find the `auth` section and set `totp_secret` to `null`:
-
-```json
-"auth": {
-  "username": "admin",
-  "password_hash": "...",
-  "totp_secret": null
-}
-```
-
-Restart the service — login will work with password only again:
-```bash
-sudo systemctl restart lxc-automat
-```
-
----
-
-### Service fails to start
-
-Check the logs:
-```bash
-sudo journalctl -u lxc-automat -n 50 --no-pager
-```
-
-Common causes:
-- **`ModuleNotFoundError`** — a Python dependency is missing. Install it into the venv:
-  ```bash
-  /opt/lxc-automat/venv/bin/pip install <module-name>
-  ```
-- **Port already in use** — another service is on port 8091. Either stop it or change the port in `config.json` and the service file:
-  ```bash
-  sudo nano /etc/systemd/system/lxc-automat.service
-  sudo systemctl daemon-reload && sudo systemctl restart lxc-automat
-  ```
-- **`config.json` syntax error** — validate it:
-  ```bash
-  python3 -m json.tool /opt/lxc-automat/config.json
-  ```
-
----
-
-### Reset the wizard (start setup from scratch)
-
-Deleting `config.json` causes the app to serve the installer wizard again on next start:
-
-```bash
-sudo rm /opt/lxc-automat/config.json
-sudo systemctl restart lxc-automat
-```
-
-Then open `http://<your-server-ip>:8091/setup` — the full wizard runs again. Your old SSH keys in `keys/` are preserved but can be deleted manually if needed.
-
-> **Note:** This does not uninstall anything — it only resets the configuration. The service, venv, and all files remain intact.
-
----
-
-### Re-installing from scratch
-
-```bash
-sudo systemctl stop lxc-automat
-sudo systemctl disable lxc-automat
-sudo rm -rf /opt/lxc-automat
-sudo rm /etc/systemd/system/lxc-automat.service
-sudo systemctl daemon-reload
-```
-
-Then re-run the install script to start fresh.
+- No `shell=True` on user input — `shlex.quote()` throughout
+- IDs, IPs, hostnames validated with strict regex
 
 ---
 
 ## Planned Features
 
-- [ ] **Theme system** — multiple visual designs (Midnight / Obsidian / Forest / Amber) switchable live in the dashboard navbar and selectable as default in the wizard (with live CSS preview). Each theme defines its own color palette, typography and accent via CSS custom properties — no page reload required.
+- [ ] **Theme system** — Midnight Cyan / Obsidian Amber / Matrix Phosphor, live day/night switching
 - [ ] LXC template selector (not just Ubuntu 22.04)
 - [ ] Container management: start/stop/restart from dashboard
 - [ ] Resource monitoring per-container (CPU, RAM, disk)
 - [ ] Multi-node Proxmox support
-- [ ] Container templates (presets: webdev, database, media server...)
-- [ ] Re-run wizard to update config (currently requires manual edit)
+- [ ] Container templates (webdev, database, media server...)
+- [ ] Re-run wizard to update config
+- [ ] Native system monitor — replace btop iframes with native HTML components
 
 ---
 
-## Development Notes
+<details>
+<summary><b>📓 Development Notes</b> — session log, iterations, bugs fixed</summary>
 
 ### Session log — March 2026
 
 **First iteration (inside private homelab-dashboard):**
 - LXC configurator page with script generator
 - `POST /api/lxc/create` → 9-step background worker with live log polling
-- `POST /api/setup/save` + `GET /setup.sh`
 - IP availability check
 
 **Second iteration — extracted to standalone public repo:**
 - Web installer wizard (8 steps, `installer.py` + `installer.html`)
 - Config-driven `app.py` — all credentials/IPs from `config.json`
-- Conditional endpoint registration per active module
-- `install.sh` one-command installer
+- `install.sh` one-command installer + systemd service
 - Module-aware frontend — hides inactive sections
-- WoL devices loaded dynamically from config
+
+**Third iteration — wizard UX improvements:**
+- EN/CS language switcher with `locales/` JSON files, `t('key')` function
+- Password generator (32/64/128 chars, `crypto.getRandomValues`) + strength bar
+- Grey styling for pre-filled defaults · Generic IP placeholders
+
+**Fourth iteration — dashboard i18n + Dev Env wizard step:**
+- Full English translation of dashboard frontend (114 keys)
+- Flag switcher switches language live without reload
+- Dev Environment step — Node.js ecosystem + independent tools
+- Background install via `subprocess.Popen`, progress in `dev_install.log`
+
+**Fifth iteration — TOTP two-factor authentication:**
+- Optional TOTP 2FA in wizard step 2 — QR code via qrcode.js, verify 6-digit code
+- Two-phase login: password → `pending_totp` cookie → `/login/totp` → pyotp verify → session
+- Zero overhead when 2FA disabled
 
 **Bugs fixed:**
 - `pct restart` → correct command is `pct reboot`
@@ -415,38 +326,15 @@ Then re-run the install script to start fresh.
 - Redirect loop after wizard completes → replaced with "restart instructions" page
 - Port conflict with existing monitor service → changed to 8091
 
-**Third iteration — wizard UX improvements:**
-- EN/CS language switcher with `locales/` JSON files, `t('key')` function
-- Dashboard name field → updates browser title and navbar on the fly
-- Password generator (32/64/128 chars, `crypto.getRandomValues`) + strength bar
-- Grey styling for pre-filled defaults (`admin`, `proxmox`, `root`)
-- Generic IP placeholders (no hardcoded private IPs in the UI)
-- `dashboard_name` saved to `config.json`, exposed via `/api/config/modules`
-
-**Security audit & fixes:**
+**Security audit:**
 - Removed `shell=True` from speedtest subprocess + `server_id` validated as digits-only
-- Backup run: `vmid` validated as digits, `mode` whitelisted to `{stop, suspend, snapshot}`
-- Backup delete: `volid` validated against safe character regex
-- Backup schedule: `vmids`, `dow`, `hour`, `minute`, `maxfiles` all validated/whitelisted
-- LXC script generator: `git_name`, `git_email`, `ssh_key` wrapped with `shlex.quote()` + `printf '%s'` instead of `echo '...'` for SSH key injection prevention
-- `generate_key` name param validated with regex whitelist; `test_ssh` key_path validated against `KEYS_DIR`
-- LXC params: `ct_id`, `hostname`, `ip`, `gw` validated with strict regexes; `shlex.quote()` on password and template
-
-**Fourth iteration — dashboard i18n + Dev Env wizard step:**
-- Full English translation of the dashboard frontend (`locales/dashboard-en.json`, 114 keys)
-- Dashboard language defaults to EN; mirrors wizard language choice via `localStorage`
-- Flag switcher in navbar switches dashboard language live without reload
-- Dev Environment step added to wizard (step 7): Node.js ecosystem + independent tools in 2-col card grid
-- Background install via `subprocess.Popen` after wizard completes; progress in `dev_install.log`
-- LXC form: added CT ID field + "02 — Network Configuration" section (IP + gateway)
-
-**Fifth iteration — TOTP two-factor authentication:**
-- Optional TOTP 2FA added to wizard step 2: checkbox → QR code (qrcode.js) → verify 6-digit code
-- `GET /api/installer/generate_totp` + `POST /api/installer/verify_totp` in `installer.py`
-- `totp_secret` saved to `config.json` (null when disabled)
-- Two-phase login in `app.py`: password → `pending_totp` cookie (120s TTL) → `/login/totp` → pyotp verify → session
-- Zero overhead when 2FA is disabled — login flow unchanged
+- `vmid`, `mode`, `volid` validated/whitelisted throughout backup endpoints
+- LXC script generator: `shlex.quote()` on all user inputs, `printf '%s'` for SSH key injection prevention
+- `generate_key` name param validated with regex; `test_ssh` key_path validated against `KEYS_DIR`
 
 ---
 
-> Ideas for features, improvements and interface design are from my head, but the heavy programming work was done by Claude AI, Sonnet 🙂
+> Ideas for features, improvements and interface design are from my head,
+> but the heavy programming work was done by Claude AI, Sonnet 🙂
+
+</details>

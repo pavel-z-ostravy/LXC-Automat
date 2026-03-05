@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LXC-Automat — Self-hosted Homelab Dashboard</title>
+<meta name="description" content="Config-driven homelab dashboard for Proxmox. Web installer wizard, live monitoring, LXC provisioning. Install with a single command.">
+<meta property="og:title" content="LXC-Automat — Self-hosted Homelab Dashboard">
+<meta property="og:description" content="Config-driven homelab dashboard for Proxmox. Install with a single command.">
+<meta property="og:image" content="screenshots/dashboard-resources-temperatures.png">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: #e8f4ff;
+  color: #0a1a2e;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── CSS VARS (Midnight Cyan · Day) ── */
+:root {
+  --bg:        #e8f4ff;
+  --bg2:       #d8ecff;
+  --surface:   rgba(0,100,180,.06);
+  --surface2:  rgba(0,100,180,.11);
+  --border:    rgba(0,140,200,.18);
+  --border2:   rgba(0,140,200,.38);
+  --accent:    #0077cc;
+  --accent2:   #005fa3;
+  --accent-glow: rgba(0,119,204,.18);
+  --text:      #0a1a2e;
+  --text2:     #4a6a8a;
+  --text3:     #a0c0d8;
+  --ok:        #00874a;
+  --warn:      #b86a00;
+  --danger:    #cc1133;
+  --font-ui:   'Outfit', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius:    14px;
+  --transition: 0.35s cubic-bezier(.4,0,.2,1);
+}
+
+/* grain overlay */
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  opacity: .012;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px;
+}
+
+/* ── LAYOUT ── */
+.container { max-width: 1060px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+section { padding: 88px 0; }
+section + section { border-top: 1px solid var(--border); }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(232,244,255,.88);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px) saturate(1.5);
+}
+.nav-inner {
+  max-width: 1060px; margin: 0 auto; padding: 0 24px;
+  height: 56px; display: flex; align-items: center; gap: 8px;
+}
+.nav-logo {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  color: var(--accent); letter-spacing: .08em;
+  padding-right: 16px; margin-right: 8px;
+  border-right: 1px solid var(--border);
+  text-decoration: none; white-space: nowrap;
+}
+.nav-links { display: flex; gap: 2px; flex: 1; }
+.nav-link {
+  padding: 5px 13px; border-radius: 7px;
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  text-decoration: none; transition: all .2s;
+}
+.nav-link:hover { background: var(--surface2); color: var(--text); }
+.nav-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.btn-ghost {
+  padding: 6px 14px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  font-family: var(--font-ui); font-size: 13px; font-weight: 500;
+  color: var(--text2); text-decoration: none; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+.btn-primary {
+  padding: 7px 18px; border-radius: 8px;
+  background: var(--accent); border: none;
+  font-family: var(--font-ui); font-size: 13px; font-weight: 700;
+  color: #fff; text-decoration: none; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 7px;
+  cursor: pointer;
+}
+.btn-primary:hover { background: var(--accent2); box-shadow: 0 4px 16px var(--accent-glow); transform: translateY(-1px); }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── HERO ── */
+.hero { padding: 100px 0 80px; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 22px; padding: 0 10px;
+  border-radius: 99px; font-size: 12px; font-weight: 600;
+  font-family: var(--font-mono); text-decoration: none;
+  transition: all .2s;
+}
+.badge img { height: 22px; border-radius: 99px; }
+.badge:hover { transform: translateY(-1px); }
+
+.hero-title {
+  font-size: clamp(36px, 6vw, 62px);
+  font-weight: 800; line-height: 1.08;
+  letter-spacing: -.03em; color: var(--text);
+  margin-bottom: 20px;
+}
+.hero-title .accent { color: var(--accent); }
+.hero-sub {
+  font-size: 18px; font-weight: 400; color: var(--text2);
+  max-width: 560px; line-height: 1.65; margin-bottom: 36px;
+}
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 48px; }
+.btn-hero {
+  padding: 13px 28px; border-radius: 10px;
+  background: var(--accent); border: none;
+  font-family: var(--font-ui); font-size: 15px; font-weight: 700;
+  color: #fff; text-decoration: none; transition: all .25s;
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+}
+.btn-hero:hover { background: var(--accent2); box-shadow: 0 8px 28px var(--accent-glow); transform: translateY(-2px); }
+.btn-hero-ghost {
+  padding: 13px 28px; border-radius: 10px;
+  border: 1px solid var(--border2); background: var(--surface);
+  font-family: var(--font-ui); font-size: 15px; font-weight: 600;
+  color: var(--text); text-decoration: none; transition: all .25s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-hero-ghost:hover { background: var(--surface2); border-color: var(--accent); }
+.hero-install {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 20px;
+  display: flex; align-items: center; gap: 12px; max-width: 560px;
+}
+.install-label {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text3); white-space: nowrap;
+}
+.install-cmd {
+  font-family: var(--font-mono); font-size: 13px; color: var(--accent);
+  flex: 1; word-break: break-all;
+}
+.copy-btn {
+  padding: 5px 12px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface2);
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  color: var(--text2); cursor: pointer; white-space: nowrap;
+  transition: all .2s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  transition: all var(--transition); position: relative; overflow: hidden;
+}
+.card::after {
+  content: ''; position: absolute; top: 0; left: 20px; right: 20px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: .2; transition: opacity var(--transition);
+}
+.card:hover { background: var(--surface2); border-color: var(--border2); box-shadow: 0 8px 32px var(--accent-glow); transform: translateY(-2px); }
+.card:hover::after { opacity: .5; }
+.card-icon { font-size: 24px; margin-bottom: 14px; line-height: 1; }
+.card-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -.01em; }
+.card-desc { font-size: 13px; color: var(--text2); line-height: 1.65; }
+
+/* ── GRIDS ── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media(max-width:700px) { .grid2,.grid3,.grid4 { grid-template-columns: 1fr; } }
+@media(max-width:900px) { .grid4 { grid-template-columns: 1fr 1fr; } }
+
+/* ── HOW IT WORKS ── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: flex; gap: 24px; align-items: flex-start;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+.step:last-child { border-bottom: none; }
+.step-num {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  color: var(--accent); letter-spacing: .08em;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 12px; white-space: nowrap; flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -.01em; }
+.step-desc { font-size: 14px; color: var(--text2); line-height: 1.65; }
+
+/* ── CAROUSEL C ── */
+.carousel-wrap {
+  position: relative;
+  padding: 0 64px;
+  overflow: hidden;
+}
+.carousel-wrap::before,
+.carousel-wrap::after {
+  content: ''; position: absolute; top: 0; bottom: 40px; width: 80px; z-index: 10;
+  pointer-events: none;
+}
+.carousel-wrap::before { left: 0;  background: linear-gradient(to right, var(--bg), transparent); }
+.carousel-wrap::after  { right: 0; background: linear-gradient(to left,  var(--bg), transparent); }
+
+.carousel-track {
+  display: flex;
+  transition: transform .55s cubic-bezier(.4,0,.2,1);
+}
+.carousel-slide {
+  min-width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,100,180,.14), 0 4px 16px rgba(0,0,0,.08);
+  position: relative;
+}
+.carousel-slide img {
+  width: 100%; display: block;
+  aspect-ratio: 16/10; object-fit: cover; object-position: top;
+}
+/* glassmorphism caption */
+.slide-caption {
+  position: absolute; bottom: 16px; left: 16px; right: 16px;
+  background: rgba(232,244,255,.82);
+  backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgba(0,140,200,.22);
+  border-radius: 11px; padding: 13px 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.slide-cap-badge {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: .13em; text-transform: uppercase;
+  color: var(--accent); background: rgba(0,119,204,.1);
+  border: 1px solid rgba(0,119,204,.2);
+  padding: 3px 9px; border-radius: 5px; white-space: nowrap; margin-bottom: 3px;
+  display: inline-block;
+}
+.slide-cap-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.slide-cap-sub { font-size: 12px; color: var(--text2); margin-top: 2px; font-family: var(--font-mono); }
+.slide-counter {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  color: var(--text3); white-space: nowrap; flex-shrink: 0;
+}
+.carousel-arrows {
+  display: flex; gap: 8px; justify-content: center; margin-top: 20px;
+}
+.carousel-arrow {
+  width: 38px; height: 38px; border-radius: 9px;
+  border: 1px solid var(--border2); background: var(--surface);
+  color: var(--accent); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 300; transition: all .2s;
+}
+.carousel-arrow:hover { background: var(--surface2); border-color: var(--accent); box-shadow: 0 4px 14px var(--accent-glow); }
+.carousel-dots {
+  display: flex; gap: 6px; justify-content: center; margin-top: 12px;
+}
+.cdot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--text3); border: none; padding: 0; cursor: pointer;
+  transition: all .3s;
+}
+.cdot.active { background: var(--accent); transform: scale(1.4); }
+
+/* ── UPDATES TABLE ── */
+.updates-table { width: 100%; border-collapse: collapse; }
+.updates-table th {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: .17em; text-transform: uppercase; color: var(--text3);
+  padding: 0 16px 12px; text-align: left; border-bottom: 1px solid var(--border);
+}
+.updates-table td {
+  padding: 13px 16px; font-size: 13px; color: var(--text2);
+  border-bottom: 1px solid var(--border); vertical-align: top;
+  line-height: 1.5;
+}
+.updates-table tr:last-child td { border-bottom: none; }
+.updates-table tbody tr:hover td { background: var(--surface); }
+.date-cell { font-family: var(--font-mono); font-size: 11px; white-space: nowrap; color: var(--text3); }
+.update-title { font-weight: 700; color: var(--text); margin-bottom: 3px; }
+
+/* ── PLANNED ── */
+.planned-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.planned-list li {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 14px; color: var(--text2); line-height: 1.5;
+}
+.planned-list li::before {
+  content: '○'; font-family: var(--font-mono); font-size: 12px;
+  color: var(--text3); margin-top: 1px; flex-shrink: 0;
+}
+.planned-list li strong { color: var(--text); }
+
+/* ── SECURITY WARN ── */
+.security-warn {
+  background: rgba(184,106,0,.07);
+  border: 1px solid rgba(184,106,0,.22);
+  border-left: 3px solid var(--warn);
+  border-radius: 10px; padding: 18px 20px; margin-bottom: 28px;
+}
+.security-warn-title {
+  font-size: 14px; font-weight: 700; color: var(--warn);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+}
+.security-warn p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+/* ── CODE BLOCK ── */
+.code-block {
+  background: rgba(7,11,20,.06); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 20px; overflow-x: auto;
+  position: relative;
+}
+.code-block pre {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--text); line-height: 1.65; white-space: pre;
+}
+.code-block .kw  { color: var(--accent); }
+.code-block .cm  { color: var(--text3); }
+
+/* ── DEV NOTES ── */
+.dev-entry {
+  padding: 20px 0; border-bottom: 1px solid var(--border);
+}
+.dev-entry:last-child { border-bottom: none; }
+.dev-iteration {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: .15em; text-transform: uppercase;
+  color: var(--accent); background: rgba(0,119,204,.08);
+  border: 1px solid rgba(0,119,204,.18);
+  padding: 3px 10px; border-radius: 5px; display: inline-block; margin-bottom: 10px;
+}
+.dev-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.dev-items { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.dev-items li {
+  font-size: 13px; color: var(--text2); line-height: 1.5;
+  padding-left: 16px; position: relative;
+}
+.dev-items li::before {
+  content: '—'; position: absolute; left: 0;
+  font-family: var(--font-mono); color: var(--text3);
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 0; position: relative; z-index: 1;
+}
+.footer-inner {
+  max-width: 1060px; margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.footer-logo { font-family: var(--font-mono); font-size: 12px; color: var(--text3); letter-spacing: .08em; }
+.footer-note { font-size: 13px; color: var(--text3); }
+.footer-note a { color: var(--accent); text-decoration: none; }
+.footer-note a:hover { text-decoration: underline; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-title, .hero-sub, .hero-actions, .hero-install {
+  animation: fadeUp .6s cubic-bezier(.4,0,.2,1) both;
+}
+.hero-sub    { animation-delay: .08s; }
+.hero-actions{ animation-delay: .16s; }
+.hero-install{ animation-delay: .22s; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">⚡ LXC-AUTOMAT</a>
+    <div class="nav-links">
+      <a href="#about"    class="nav-link">About</a>
+      <a href="#install"  class="nav-link">Install</a>
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#screenshots" class="nav-link">Screenshots</a>
+      <a href="#security" class="nav-link">Security</a>
+    </div>
+    <div class="nav-right">
+      <a href="https://github.com/pavel-z-ostravy/LXC-Automat" class="btn-ghost" target="_blank">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <a href="https://github.com/pavel-z-ostravy/LXC-Automat" class="btn-primary" target="_blank">
+        ⭐ Star
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="about">
+  <div class="container">
+    <div class="hero-badges">
+      <img src="https://img.shields.io/github/v/release/pavel-z-ostravy/LXC-Automat?style=flat&label=version&color=0077cc" alt="version" class="badge">
+      <img src="https://img.shields.io/github/license/pavel-z-ostravy/LXC-Automat?style=flat&color=0077cc" alt="license" class="badge">
+      <img src="https://img.shields.io/github/stars/pavel-z-ostravy/LXC-Automat?style=flat&color=0077cc" alt="stars" class="badge">
+      <img src="https://img.shields.io/badge/python-3.11+-0077cc?style=flat" alt="python" class="badge">
+      <img src="https://img.shields.io/badge/proxmox-required-e57000?style=flat" alt="proxmox" class="badge">
+    </div>
+
+    <h1 class="hero-title">
+      Self-hosted<br>
+      <span class="accent">Homelab Dashboard</span><br>
+      for Proxmox
+    </h1>
+    <p class="hero-sub">
+      Config-driven dashboard with live monitoring, LXC provisioning,
+      and a web-based installer wizard. No config file editing — one command and you're running.
+    </p>
+    <div class="hero-actions">
+      <a href="#install" class="btn-hero">⚡ Quick Install</a>
+      <a href="https://github.com/pavel-z-ostravy/LXC-Automat" class="btn-hero-ghost" target="_blank">View on GitHub →</a>
+    </div>
+    <div class="hero-install">
+      <span class="install-label">Install</span>
+      <code class="install-cmd">curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/LXC-Automat/main/install.sh | sudo bash</code>
+      <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / MODULES -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">// what it does</div>
+    <h2 style="font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:12px">Everything your homelab needs</h2>
+    <p style="font-size:15px;color:var(--text2);max-width:560px;line-height:1.65;margin-bottom:48px">All modules are optional — inactive ones are completely hidden in the UI. Install only what you use.</p>
+
+    <div class="grid4" style="margin-bottom:48px">
+      <div class="card">
+        <div class="card-icon">🖥️</div>
+        <div class="card-title">Proxmox Monitor</div>
+        <div class="card-desc">CPU, RAM, disk, processes, sensors, backups, speedtest — all in one place.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏠</div>
+        <div class="card-title">Home Assistant</div>
+        <div class="card-desc">Live stats from your HA VM via SSH. Uptime, resource usage at a glance.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <div class="card-title">Cloudflare</div>
+        <div class="card-desc">Tunnel status, DNS records, cloudflared metrics — all configurable in wizard.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛡️</div>
+        <div class="card-title">NextDNS</div>
+        <div class="card-desc">DNS query stats, blocked domains, per-device breakdown.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📡</div>
+        <div class="card-title">Router</div>
+        <div class="card-desc">Per-device network speeds via conntrack. Know who is eating your bandwidth.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <div class="card-title">Service Monitor</div>
+        <div class="card-desc">HTTP availability check for any URL. Status indicator updates live.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💡</div>
+        <div class="card-title">Wake-on-LAN</div>
+        <div class="card-desc">Ping status + one-click WoL button for every registered device.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-title">LXC Wizard</div>
+        <div class="card-desc">Fill a form, click create — container provisioned with live log stream.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="install">
+  <div class="container">
+    <div class="section-label">// how it works</div>
+    <h2 style="font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:48px">Up and running in minutes</h2>
+
+    <div class="grid2" style="gap:48px;align-items:start">
+      <div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">01</div>
+            <div>
+              <div class="step-title">Run the install script</div>
+              <div class="step-desc">One curl command clones the repo, installs dependencies, and starts the service on port 8091.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">02</div>
+            <div>
+              <div class="step-title">Open the web wizard</div>
+              <div class="step-desc">Visit <code style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">http://&lt;your-ip&gt;:8091/setup</code> — an 8-step wizard guides you through every setting. No SSH, no config files.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">03</div>
+            <div>
+              <div class="step-title">Dashboard starts automatically</div>
+              <div class="step-desc">After the wizard saves <code style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">config.json</code>, the app restarts as a full dashboard. Systemd keeps it running.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">04</div>
+            <div>
+              <div class="step-title">Everything is configurable live</div>
+              <div class="step-desc">Modules, WoL devices, services, credentials — all editable from the Settings panel without re-running the wizard.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom:16px">// quick install</div>
+        <div class="code-block" style="margin-bottom:16px">
+          <pre><span class="kw">curl</span> -sSL https://raw.githubusercontent.com/\
+    pavel-z-ostravy/LXC-Automat/main/install.sh \
+  | <span class="kw">sudo bash</span>
+
+<span class="cm"># Then open:</span>
+<span class="kw">http://</span>&lt;your-server-ip&gt;:8091/setup</pre>
+        </div>
+        <div class="section-label" style="margin-bottom:16px">// two-phase startup</div>
+        <div class="code-block">
+          <pre><span class="cm">config.json missing</span>
+  → wizard (port 8091)
+      ↓ wizard completes
+<span class="cm">config.json present</span>
+  → dashboard (port 8091)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENSHOTS CAROUSEL -->
+<section id="screenshots">
+  <div class="container">
+    <div class="section-label">// screenshots</div>
+    <h2 style="font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:48px">See it in action</h2>
+
+    <div class="carousel-wrap">
+      <div class="carousel-track" id="carouselTrack">
+
+        <div class="carousel-slide">
+          <img src="screenshots/dashboard-resources-temperatures.png" alt="Dashboard Resources" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Monitor</div>
+              <div class="slide-cap-title">Resources &amp; Temperature Graphs</div>
+              <div class="slide-cap-sub">Live CPU, RAM and temperature history · Proxmox host + VMs</div>
+            </div>
+            <div class="slide-counter" id="counter">01 / 09</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/dashboard-tools-lxc.png" alt="LXC Tools" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Tools</div>
+              <div class="slide-cap-title">LXC Setup Generator</div>
+              <div class="slide-cap-sub">One-click container provisioning with live install log</div>
+            </div>
+            <div class="slide-counter">02 / 09</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/wizard-step1-system-check.png" alt="Wizard Step 1" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Installer — Step 1</div>
+              <div class="slide-cap-title">System Check</div>
+              <div class="slide-cap-sub">Verifies Python, sshpass, paramiko · Detects local IP</div>
+            </div>
+            <div class="slide-counter">03 / 09</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/wizard-step2-credentials.png" alt="Wizard Credentials" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Installer — Step 2</div>
+              <div class="slide-cap-title">Dashboard Credentials</div>
+              <div class="slide-cap-sub">Name, port, username, password generator · SHA-256 hash</div>
+            </div>
+            <div class="slide-counter">04 / 09</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/wizard-step2-totp.png" alt="TOTP 2FA" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Security</div>
+              <div class="slide-cap-title">Optional TOTP Two-Factor Auth</div>
+              <div class="slide-cap-sub">QR code for Google Authenticator / Authy · Verified before proceeding</div>
+            </div>
+            <div class="slide-counter">05 / 09</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/wizard-step3-proxmox.png" alt="Proxmox Connection" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Installer — Step 3</div>
+              <div class="slide-cap-title">Proxmox Connection</div>
+              <div class="slide-cap-sub">IP, node, SSH auth · ed25519 keypair generator · Test connection</div>
+            </div>
+            <div class="slide-counter">06 / 09</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/wizard-step4-modules.png" alt="Modules" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Installer — Step 4</div>
+              <div class="slide-cap-title">Optional Modules</div>
+              <div class="slide-cap-sub">HA · Router · Cloudflare · NextDNS — each fully optional</div>
+            </div>
+            <div class="slide-counter">07 / 09</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/wizard-step7-devenv.png" alt="Dev Environment" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Installer — Step 7</div>
+              <div class="slide-cap-title">Dev Environment</div>
+              <div class="slide-cap-sub">Docker, Node.js, pnpm, Vercel CLI, Claude Code, Supabase CLI</div>
+            </div>
+            <div class="slide-counter">08 / 09</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/wizard-step7-review.png" alt="Review & Install" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="slide-cap-badge">Installer — Step 8</div>
+              <div class="slide-cap-title">Review &amp; Install</div>
+              <div class="slide-cap-sub">Full config summary · Passwords hidden · One click to install</div>
+            </div>
+            <div class="slide-counter">09 / 09</div>
+          </div>
+        </div>
+
+      </div><!-- /track -->
+    </div><!-- /wrap -->
+
+    <div class="carousel-arrows">
+      <button class="carousel-arrow" onclick="slide(-1)">‹</button>
+      <button class="carousel-arrow" onclick="slide(1)">›</button>
+    </div>
+    <div class="carousel-dots" id="carouselDots"></div>
+  </div>
+</section>
+
+<!-- LATEST UPDATES -->
+<section id="updates">
+  <div class="container">
+    <div class="section-label">// latest major updates</div>
+    <h2 style="font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:36px">What's new</h2>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="updates-table">
+        <thead><tr><th style="width:110px">Date</th><th>Update</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="date-cell">2026-03-04</td>
+            <td><div class="update-title">Cross-browser CSS fixes</div>Unified appearance across Firefox and Safari — webkit prefixes, custom SVG chevron for selects, background shorthand fixes.</td>
+          </tr>
+          <tr>
+            <td class="date-cell">2026-03-04</td>
+            <td><div class="update-title">Full-page settings panels + btop Cloudflare detection</div>Account and Settings now open as full-page overlays. btop URLs configurable in Settings. Auto-detects local vs. Cloudflare tunnel access.</td>
+          </tr>
+          <tr>
+            <td class="date-cell">2026-03-04</td>
+            <td><div class="update-title">User menu + Settings panel</div>Admin dropdown in navbar. Account panel, Settings panel with live-editable Modules, WoL, Services — no wizard re-run needed.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section id="security">
+  <div class="container">
+    <div class="section-label">// security</div>
+    <h2 style="font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:36px">Security model</h2>
+
+    <div class="security-warn">
+      <div class="security-warn-title">⚠️ Designed for trusted local networks only</div>
+      <p>Do not expose this dashboard directly to the internet. It has no HTTPS, no brute-force protection, and no rate limiting. For remote access, use a reverse proxy (Nginx / Caddy) with HTTPS, or a VPN / Cloudflare Tunnel.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-icon">🔑</div>
+        <div class="card-title">Credentials never in plaintext</div>
+        <div class="card-desc">Passwords stored as SHA-256 hash only. <code style="font-family:var(--font-mono);font-size:12px">config.json</code> and <code style="font-family:var(--font-mono);font-size:12px">keys/</code> are gitignored — credentials never reach the repository.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <div class="card-title">Optional TOTP 2FA</div>
+        <div class="card-desc">TOTP secret stored in <code style="font-family:var(--font-mono);font-size:12px">config.json</code> with 600 permissions, never logged. Zero overhead when 2FA is disabled.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">SSH keys protected</div>
+        <div class="card-desc">Generated ed25519 keypairs have 600 permissions. Key paths validated against the keys directory to prevent path traversal.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧹</div>
+        <div class="card-title">Input validation throughout</div>
+        <div class="card-desc">Shell commands use <code style="font-family:var(--font-mono);font-size:12px">shlex.quote()</code>. IDs, IPs, hostnames validated with strict regex. No <code style="font-family:var(--font-mono);font-size:12px">shell=True</code> on user input.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANNED FEATURES -->
+<section id="planned">
+  <div class="container">
+    <div class="section-label">// planned features</div>
+    <h2 style="font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:36px">What's coming</h2>
+    <div class="grid2" style="gap:32px">
+      <div>
+        <ul class="planned-list">
+          <li><strong>Theme system</strong> — Midnight / Obsidian / Matrix themes, live switching, day/night auto-mode</li>
+          <li><strong>LXC template selector</strong> — not just Ubuntu 22.04</li>
+          <li><strong>Container management</strong> — start/stop/restart from dashboard</li>
+          <li><strong>Resource monitoring per-container</strong> — CPU, RAM, disk per LXC</li>
+        </ul>
+      </div>
+      <div>
+        <ul class="planned-list">
+          <li><strong>Multi-node Proxmox support</strong> — manage multiple hosts</li>
+          <li><strong>Container templates</strong> — presets: webdev, database, media server</li>
+          <li><strong>Re-run wizard</strong> — update config without manual file editing</li>
+          <li><strong>Native system monitor</strong> — replace btop iframes with native HTML components</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEV NOTES -->
+<section id="dev">
+  <div class="container">
+    <div class="section-label">// development notes</div>
+    <h2 style="font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:36px">Session log — March 2026</h2>
+
+    <div class="dev-entry">
+      <div class="dev-iteration">Iteration 1</div>
+      <div class="dev-title">Initial homelab dashboard</div>
+      <ul class="dev-items">
+        <li>LXC configurator with script generator</li>
+        <li>POST /api/lxc/create → 9-step background worker with live log polling</li>
+        <li>IP availability check</li>
+      </ul>
+    </div>
+
+    <div class="dev-entry">
+      <div class="dev-iteration">Iteration 2</div>
+      <div class="dev-title">Standalone public repo + web installer</div>
+      <ul class="dev-items">
+        <li>Web installer wizard (8 steps, installer.py + installer.html)</li>
+        <li>Config-driven app.py — all credentials/IPs from config.json</li>
+        <li>install.sh one-command installer + systemd service</li>
+        <li>Module-aware frontend — hides inactive sections</li>
+      </ul>
+    </div>
+
+    <div class="dev-entry">
+      <div class="dev-iteration">Iteration 3</div>
+      <div class="dev-title">Wizard UX improvements</div>
+      <ul class="dev-items">
+        <li>EN/CS language switcher with locales/ JSON files</li>
+        <li>Password generator (32/64/128 chars, crypto.getRandomValues) + strength bar</li>
+        <li>Grey styling for pre-filled defaults, generic IP placeholders</li>
+        <li>dashboard_name saved to config, exposed via API</li>
+      </ul>
+    </div>
+
+    <div class="dev-entry">
+      <div class="dev-iteration">Iteration 4</div>
+      <div class="dev-title">Dashboard i18n + Dev Environment wizard step</div>
+      <ul class="dev-items">
+        <li>Full English translation of dashboard frontend (114 keys)</li>
+        <li>Flag switcher in navbar switches language live without reload</li>
+        <li>Dev Environment step — Node.js ecosystem + independent tools</li>
+        <li>Background install via subprocess.Popen, progress in dev_install.log</li>
+      </ul>
+    </div>
+
+    <div class="dev-entry">
+      <div class="dev-iteration">Iteration 5</div>
+      <div class="dev-title">TOTP two-factor authentication</div>
+      <ul class="dev-items">
+        <li>Optional TOTP 2FA in wizard step 2 — QR code via qrcode.js, verify 6-digit code</li>
+        <li>Two-phase login: password → pending_totp cookie → /login/totp → pyotp verify → session</li>
+        <li>Zero overhead when 2FA disabled — login flow unchanged</li>
+      </ul>
+    </div>
+
+    <div class="dev-entry" style="border-bottom:none">
+      <p style="font-size:14px;color:var(--text2);font-style:italic;margin-top:8px">
+        Ideas for features, improvements and interface design are from my head,
+        but the heavy programming work was done by Claude AI, Sonnet 🙂
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-logo">⚡ LXC-AUTOMAT</span>
+    <span class="footer-note">
+      MIT License ·
+      <a href="https://github.com/pavel-z-ostravy/LXC-Automat" target="_blank">GitHub</a> ·
+      Built for homelabbers, by a homelabber
+    </span>
+  </div>
+</footer>
+
+<script>
+// ── CAROUSEL ──
+const TOTAL = 9;
+let idx = 0;
+const track = document.getElementById('carouselTrack');
+const dotsEl = document.getElementById('carouselDots');
+
+// build dots
+for (let i = 0; i < TOTAL; i++) {
+  const d = document.createElement('button');
+  d.className = 'cdot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n) {
+  idx = (n + TOTAL) % TOTAL;
+  track.style.transform = `translateX(-${idx * 100}%)`;
+  document.querySelectorAll('.cdot').forEach((d,i) => d.classList.toggle('active', i === idx));
+}
+
+function slide(dir) { goTo(idx + dir); }
+
+// keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  slide(-1);
+  if (e.key === 'ArrowRight') slide(1);
+});
+
+// touch/swipe
+let touchX = 0;
+track.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, {passive:true});
+track.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 50) slide(dx < 0 ? 1 : -1);
+}, {passive:true});
+
+// ── COPY BUTTON ──
+function copyInstall(btn) {
+  const cmd = 'curl -sSL https://raw.githubusercontent.com/pavel-z-ostravy/LXC-Automat/main/install.sh | sudo bash';
+  navigator.clipboard.writeText(cmd).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+</body>
+</html>
