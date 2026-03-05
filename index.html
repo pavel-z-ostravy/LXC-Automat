@@ -3,12 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- THEME INIT — runs before render to prevent flash -->
+<script>(function(){var t=localStorage.getItem('lxc-theme')||'midnight';var auto=localStorage.getItem('lxc-auto')==='true';var h=new Date().getHours();var v=auto?((h>=7&&h<21)?'day':'night'):(localStorage.getItem('lxc-variant')||'night');document.documentElement.setAttribute('data-theme',t);document.documentElement.setAttribute('data-variant',v);}());</script>
 <title>Home Dashboard</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><style>
+/* ══════════════════════════════════════════════════
+   THEME SYSTEM — 3 themes × 2 variants = 6 combos
+   ══════════════════════════════════════════════════ */
+:root { --transition: 0.4s cubic-bezier(.4,0,.2,1); }
+
+/* ── MIDNIGHT CYAN · NIGHT ── */
+[data-theme="midnight"][data-variant="night"] {
+  --bg:#070b14; --bg2:#0b1020;
+  --surface:rgba(255,255,255,.033); --surface2:rgba(255,255,255,.068);
+  --border:rgba(0,229,255,.11); --border2:rgba(0,229,255,.28);
+  --accent:#00e5ff; --accent2:#00b4cc; --accent3:#6c3cf7;
+  --text:#ddeeff; --text2:#5a7899; --text3:#253040;
+  --ok:#00e676; --warn:#ffab00; --danger:#ff1744;
+  --c1:#00e5ff; --c2:#6c3cf7; --c3:#00e676; --c4:#ffab00;
+  --glow:0 0 28px rgba(0,229,255,.22); --glow-sm:0 0 12px rgba(0,229,255,.18);
+  --font-ui:'Outfit',sans-serif; --font-mono:'DM Mono',monospace;
+  --nav-bg:rgba(7,11,20,.9);
+}
+/* ── MIDNIGHT CYAN · DAY ── */
+[data-theme="midnight"][data-variant="day"] {
+  --bg:#e8f4ff; --bg2:#d8ecff;
+  --surface:rgba(0,100,180,.06); --surface2:rgba(0,100,180,.11);
+  --border:rgba(0,140,200,.18); --border2:rgba(0,140,200,.38);
+  --accent:#0077cc; --accent2:#005fa3; --accent3:#4c2bc4;
+  --text:#0a1a2e; --text2:#4a6a8a; --text3:#a0c0d8;
+  --ok:#00874a; --warn:#b86a00; --danger:#cc1133;
+  --c1:#0077cc; --c2:#4c2bc4; --c3:#00874a; --c4:#b86a00;
+  --glow:0 4px 20px rgba(0,119,204,.18); --glow-sm:0 2px 10px rgba(0,119,204,.14);
+  --font-ui:'Outfit',sans-serif; --font-mono:'DM Mono',monospace;
+  --nav-bg:rgba(232,244,255,.92);
+}
+
+/* ── OBSIDIAN AMBER · NIGHT ── */
+[data-theme="obsidian"][data-variant="night"] {
+  --bg:#0a0703; --bg2:#110d06;
+  --surface:rgba(255,165,0,.042); --surface2:rgba(255,165,0,.088);
+  --border:rgba(255,155,0,.14); --border2:rgba(255,155,0,.32);
+  --accent:#ffa500; --accent2:#cc6600; --accent3:#ff3d00;
+  --text:#fff8ee; --text2:#6e4e20; --text3:#352510;
+  --ok:#69f0ae; --warn:#ffa500; --danger:#ff3d00;
+  --c1:#ffa500; --c2:#ff3d00; --c3:#69f0ae; --c4:#40c4ff;
+  --glow:0 0 28px rgba(255,165,0,.20); --glow-sm:0 0 12px rgba(255,165,0,.16);
+  --font-ui:'Barlow Condensed',sans-serif; --font-mono:'Fira Code',monospace;
+  --nav-bg:rgba(10,7,3,.92);
+}
+/* ── OBSIDIAN AMBER · DAY ── */
+[data-theme="obsidian"][data-variant="day"] {
+  --bg:#fdf6ec; --bg2:#f5e8d0;
+  --surface:rgba(180,90,0,.055); --surface2:rgba(180,90,0,.10);
+  --border:rgba(180,100,0,.18); --border2:rgba(180,100,0,.36);
+  --accent:#c45e00; --accent2:#963d00; --accent3:#c0270d;
+  --text:#1a0d00; --text2:#7a4e20; --text3:#c8a070;
+  --ok:#1a7a3a; --warn:#c45e00; --danger:#c0270d;
+  --c1:#c45e00; --c2:#c0270d; --c3:#1a7a3a; --c4:#0060a0;
+  --glow:0 4px 20px rgba(196,94,0,.16); --glow-sm:0 2px 10px rgba(196,94,0,.12);
+  --font-ui:'Barlow Condensed',sans-serif; --font-mono:'Fira Code',monospace;
+  --nav-bg:rgba(253,246,236,.92);
+}
+
+/* ── MATRIX PHOSPHOR · NIGHT ── */
+[data-theme="steel"][data-variant="night"] {
+  --bg:#000d00; --bg2:#001a00;
+  --surface:rgba(0,255,65,.04); --surface2:rgba(0,255,65,.08);
+  --border:rgba(0,200,50,.14); --border2:rgba(0,255,65,.35);
+  --accent:#00ff41; --accent2:#00c832; --accent3:#00e5ff;
+  --text:#ccffcc; --text2:#3a7a3a; --text3:#1a3a1a;
+  --ok:#00ff41; --warn:#ffcc00; --danger:#ff3131;
+  --c1:#00ff41; --c2:#00e5ff; --c3:#ffcc00; --c4:#ff3131;
+  --glow:0 0 28px rgba(0,255,65,.28); --glow-sm:0 0 14px rgba(0,255,65,.22);
+  --font-ui:'Rajdhani',sans-serif; --font-mono:'Share Tech Mono',monospace;
+  --nav-bg:rgba(0,10,0,.94);
+}
+/* ── MATRIX PHOSPHOR · DAY ── */
+[data-theme="steel"][data-variant="day"] {
+  --bg:#f0fff2; --bg2:#e0f5e4;
+  --surface:rgba(0,120,30,.06); --surface2:rgba(0,120,30,.11);
+  --border:rgba(0,120,30,.16); --border2:rgba(0,140,40,.34);
+  --accent:#007a1e; --accent2:#005a14; --accent3:#006688;
+  --text:#001a05; --text2:#3a6a40; --text3:#90c090;
+  --ok:#007a1e; --warn:#8a6600; --danger:#cc1a00;
+  --c1:#007a1e; --c2:#006688; --c3:#8a6600; --c4:#cc1a00;
+  --glow:0 4px 20px rgba(0,122,30,.18); --glow-sm:0 2px 10px rgba(0,122,30,.14);
+  --font-ui:'Rajdhani',sans-serif; --font-mono:'Share Tech Mono',monospace;
+  --nav-bg:rgba(240,255,242,.94);
+}
+
+/* ── MATRIX PHOSPHOR NIGHT — special effects ── */
+[data-theme="steel"][data-variant="night"] .metric-value,
+[data-theme="steel"][data-variant="night"] .nav-brand {
+  text-shadow: 0 0 20px rgba(0,255,65,.6), 0 0 40px rgba(0,255,65,.2);
+}
+@keyframes flicker { 0%,95%,100%{opacity:1} 96%{opacity:.85} 97%{opacity:1} 98%{opacity:.9} }
+[data-theme="steel"][data-variant="night"] .nav-brand { animation: flicker 8s infinite; }
+
+/* ══════════════════════════════════════════════════ */
+
   *, *::before, *::after { box-sizing: border-box; }
   body { font-family: 'Roboto Flex', sans-serif; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
   /* Cross-browser form reset — removes Safari/Firefox default OS styling */
