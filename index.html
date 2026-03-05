@@ -9,7 +9,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><style>
 /* ══════════════════════════════════════════════════
    THEME SYSTEM — 3 themes × 2 variants = 6 combos
@@ -96,6 +96,39 @@
   --font-ui:'Rajdhani',sans-serif; --font-mono:'Share Tech Mono',monospace;
   --nav-bg:rgba(240,255,242,.94);
 }
+
+/* ── NEUE LIGHT · NIGHT ── */
+[data-theme="neue"][data-variant="night"] {
+  --bg:#111113; --bg2:#18181b;
+  --surface:rgba(255,255,255,.04); --surface2:rgba(255,255,255,.07);
+  --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.15);
+  --accent:#7c6ff7; --accent2:#6254f0; --accent3:#22d3ee;
+  --text:#f4f4f6; --text2:#8a8a96; --text3:#4a4a55;
+  --ok:#4ade80; --warn:#fbbf24; --danger:#f87171;
+  --c1:#7c6ff7; --c2:#22d3ee; --c3:#4ade80; --c4:#fbbf24;
+  --glow:0 4px 20px rgba(124,111,247,.14); --glow-sm:0 2px 10px rgba(124,111,247,.10);
+  --font-ui:'Plus Jakarta Sans',sans-serif; --font-mono:'JetBrains Mono',monospace;
+  --nav-bg:rgba(17,17,19,.92);
+}
+/* ── NEUE LIGHT · DAY ── */
+[data-theme="neue"][data-variant="day"] {
+  --bg:#ffffff; --bg2:#f7f7f8;
+  --surface:rgba(0,0,0,.02); --surface2:rgba(0,0,0,.04);
+  --border:rgba(0,0,0,.08); --border2:rgba(0,0,0,.16);
+  --accent:#5b4cf5; --accent2:#4438e0; --accent3:#06b6d4;
+  --text:#0f0f12; --text2:#6b6b78; --text3:#a8a8b3;
+  --ok:#16a34a; --warn:#d97706; --danger:#dc2626;
+  --c1:#5b4cf5; --c2:#06b6d4; --c3:#16a34a; --c4:#d97706;
+  --glow:0 4px 20px rgba(91,76,245,.10); --glow-sm:0 2px 10px rgba(91,76,245,.08);
+  --font-ui:'Plus Jakarta Sans',sans-serif; --font-mono:'JetBrains Mono',monospace;
+  --nav-bg:rgba(255,255,255,.94);
+}
+/* ── NEUE LIGHT — special overrides ── */
+[data-theme="neue"] .card { box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+[data-theme="neue"] .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-1px); }
+[data-theme="neue"][data-variant="day"] .card { border-color: #e5e5e8; }
+[data-theme="neue"][data-variant="day"] .card:hover { border-color: #d0d0d6; }
+[data-theme="neue"][data-variant="day"] body::before { opacity: 0; }
 
 /* ── MATRIX PHOSPHOR NIGHT — special effects ── */
 [data-theme="steel"][data-variant="night"] .metric-value,
@@ -632,6 +665,19 @@
           <div class="theme-card-info">
             <div class="theme-card-name">Matrix Phosphor</div>
             <div class="theme-card-desc">Rajdhani + Share Tech Mono</div>
+          </div>
+          <div class="theme-card-check">✓</div>
+        </div>
+        <div class="theme-card" data-theme-val="neue" onclick="setTheme('neue')">
+          <div class="theme-card-swatch">
+            <div class="swatch-q" style="background:#ffffff;border:1px solid #e5e5e8"></div>
+            <div class="swatch-q" style="background:#5b4cf5"></div>
+            <div class="swatch-q" style="background:#06b6d4"></div>
+            <div class="swatch-q" style="background:#f7f7f8;border:1px solid #e5e5e8"></div>
+          </div>
+          <div class="theme-card-info">
+            <div class="theme-card-name">Neue Light</div>
+            <div class="theme-card-desc">Plus Jakarta Sans + JetBrains Mono</div>
           </div>
           <div class="theme-card-check">✓</div>
         </div>
