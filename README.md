@@ -4,11 +4,11 @@
 
 [🇨🇿 Česky](README.cs.md) | 🇬🇧 English
 
-[![Version](https://img.shields.io/github/v/release/pavel-z-ostravy/LXC-Automat?style=flat&label=version&color=0077cc)](https://github.com/pavel-z-ostravy/LXC-Automat/releases)
-[![License](https://img.shields.io/github/license/pavel-z-ostravy/LXC-Automat?style=flat&color=0077cc)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/pavel-z-ostravy/LXC-Automat?style=flat&color=0077cc)](https://github.com/pavel-z-ostravy/LXC-Automat/stargazers)
-[![Python](https://img.shields.io/badge/python-3.11+-0077cc?style=flat)](https://www.python.org/)
-[![Proxmox](https://img.shields.io/badge/proxmox-required-e57000?style=flat)](https://www.proxmox.com/)
+[![Version](https://img.shields.io/github/v/release/pavel-z-ostravy/LXC-Automat?style=flat&label=version&color=7c6ff7&labelColor=f0effe)](https://github.com/pavel-z-ostravy/LXC-Automat/releases)
+[![License](https://img.shields.io/github/license/pavel-z-ostravy/LXC-Automat?style=flat&color=7c6ff7&labelColor=f0effe)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/pavel-z-ostravy/LXC-Automat?style=flat&color=7c6ff7&labelColor=f0effe)](https://github.com/pavel-z-ostravy/LXC-Automat/stargazers)
+[![Python](https://img.shields.io/badge/python-3.11+-7c6ff7?style=flat&labelColor=f0effe)](https://www.python.org/)
+[![Proxmox](https://img.shields.io/badge/proxmox-required-e57000?style=flat&labelColor=f5f4f0)](https://www.proxmox.com/)
 
 A config-driven homelab dashboard for Proxmox + optional modules (Home Assistant, Router, Cloudflare, NextDNS). Installs via a single command — a web wizard guides you through the full setup, no config file editing required.
 
@@ -56,12 +56,15 @@ The app automatically detects whether `config.json` exists:
 
 | | |
 |---|---|
-| ![Dashboard — Resources & Temperatures](screenshots/dashboard-resources-temperatures.png) | ![Dashboard — LXC Tools](screenshots/dashboard-tools-lxc.png) |
-| **Monitor** — Live CPU, RAM, temperature graphs | **Tools** — LXC Setup Generator with live log |
-| ![Wizard — System Check](screenshots/wizard-step1-system-check.png) | ![Wizard — Credentials & 2FA](screenshots/wizard-step2-totp.png) |
-| **Wizard Step 1** — System check & prerequisites | **Wizard Step 2** — Credentials + optional TOTP 2FA |
-| ![Wizard — Proxmox](screenshots/wizard-step3-proxmox.png) | ![Wizard — Modules](screenshots/wizard-step4-modules.png) |
-| **Wizard Step 3** — Proxmox SSH connection | **Wizard Step 4** — Optional modules |
+| ![Monitor — System Overview](docs/screenshots/monitor-overview.png) | ![Resources — Storage & SMART](docs/screenshots/resources-storage-smart.png) |
+| **Monitor** — System Overview: CPU 32.8%, RAM 74.8%, Temp 44°C with progress bars, temperature grid per sensor chip, live CPU & temperature graphs | **Resources — Disks** — Server storage + external disk usage, S.M.A.R.T. diagnostics: temperature, runtime hours, reallocated sectors per drive |
+| ![Resources — Backups](docs/screenshots/resources-backups.png) | ![Tools — LXC Generator](docs/screenshots/tools-lxc-generator.png) |
+| **Resources — Backups** — Proxmox backup list with VM, size and storage info; manual backup run; scheduled backup job configurator | **Tools — LXC Generator** — Container identity, network config, Git setup, dev tools selection (Docker, Node.js, pnpm, Claude Code) |
+
+| |
+|---|
+| ![Tools — Speedtest](docs/screenshots/tools-speedtest.png) |
+| **Tools — Speedtest** — One-click network test with live output, download/upload history bar chart, results table with ping and server info |
 
 ---
 
@@ -277,14 +280,14 @@ Browser  ──→  Web UI (single-page HTML + JS, EN/CS)
 
 ## Planned Features
 
-- [ ] **Theme system** — Midnight Cyan / Obsidian Amber / Matrix Phosphor, live day/night switching
+- [x] **Theme system** — Midnight Cyan / Obsidian / Matrix / Neue Light, day/night variants, auto-switch
+- [x] **Native system monitor** — native HTML components (CPU, RAM, temp, load avg, net speed)
 - [ ] LXC template selector (not just Ubuntu 22.04)
 - [ ] Container management: start/stop/restart from dashboard
 - [ ] Resource monitoring per-container (CPU, RAM, disk)
 - [ ] Multi-node Proxmox support
-- [ ] Container templates (webdev, database, media server...)
-- [ ] Re-run wizard to update config
-- [ ] Native system monitor — replace btop iframes with native HTML components
+- [ ] Container presets (webdev, database, media server...)
+- [ ] Disk health alerts — SMART threshold notifications
 
 ---
 

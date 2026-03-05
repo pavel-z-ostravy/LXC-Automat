@@ -764,110 +764,62 @@ footer {
       <div class="carousel-track" id="carouselTrack">
 
         <div class="carousel-slide">
-          <img src="screenshots/dashboard-resources-temperatures.png" alt="Dashboard Resources" loading="lazy">
+          <img src="screenshots/monitor-overview.png" alt="Monitor — System Overview" loading="lazy">
           <div class="slide-caption">
             <div>
               <div class="cap-badge">Monitor</div>
-              <div class="cap-title">Resources &amp; Temperature Graphs</div>
-              <div class="cap-sub">Live CPU, RAM and temperature history · Proxmox host + VMs</div>
+              <div class="cap-title">System Overview — CPU, RAM &amp; Temperature</div>
+              <div class="cap-sub">Large metric cards with progress bars · Temperature grid per sensor chip · Live CPU &amp; Temp graphs</div>
             </div>
-            <div class="cap-counter" id="counter">01 / 09</div>
+            <div class="cap-counter" id="counter">01 / 05</div>
           </div>
         </div>
 
         <div class="carousel-slide">
-          <img src="screenshots/dashboard-tools-lxc.png" alt="LXC Tools" loading="lazy">
+          <img src="screenshots/resources-storage-smart.png" alt="Storage &amp; SMART Diagnostics" loading="lazy">
           <div class="slide-caption">
             <div>
-              <div class="cap-badge">Tools</div>
+              <div class="cap-badge">Resources — Disks</div>
+              <div class="cap-title">Storage Overview &amp; S.M.A.R.T. Diagnostics</div>
+              <div class="cap-sub">Server + external disks with usage bars · SMART health: temperature, runtime, reallocated sectors</div>
+            </div>
+            <div class="cap-counter">02 / 05</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/resources-backups.png" alt="Backups" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="cap-badge">Resources — Backups</div>
+              <div class="cap-title">Backup Management</div>
+              <div class="cap-sub">Proxmox backup list · Manual run with VM selector · Scheduled backup job configurator</div>
+            </div>
+            <div class="cap-counter">03 / 05</div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="screenshots/tools-lxc-generator.png" alt="LXC Setup Generator" loading="lazy">
+          <div class="slide-caption">
+            <div>
+              <div class="cap-badge">Tools — LXC</div>
               <div class="cap-title">LXC Setup Generator</div>
-              <div class="cap-sub">One-click container provisioning with live install log</div>
+              <div class="cap-sub">Container identity · Network config · Git setup · Dev tools: Docker, Node.js, pnpm, Claude Code</div>
             </div>
-            <div class="cap-counter">02 / 09</div>
+            <div class="cap-counter">04 / 05</div>
           </div>
         </div>
 
         <div class="carousel-slide">
-          <img src="screenshots/wizard-step1-system-check.png" alt="Wizard Step 1" loading="lazy">
+          <img src="screenshots/tools-speedtest.png" alt="Speedtest" loading="lazy">
           <div class="slide-caption">
             <div>
-              <div class="cap-badge">Installer — Step 1</div>
-              <div class="cap-title">System Check</div>
-              <div class="cap-sub">Verifies Python, sshpass, paramiko · Detects local IP</div>
+              <div class="cap-badge">Tools — Speedtest</div>
+              <div class="cap-title">Network Speedtest</div>
+              <div class="cap-sub">One-click test · Download / Upload history chart · Results table with ping &amp; server</div>
             </div>
-            <div class="cap-counter">03 / 09</div>
-          </div>
-        </div>
-
-        <div class="carousel-slide">
-          <img src="screenshots/wizard-step2-credentials.png" alt="Wizard Credentials" loading="lazy">
-          <div class="slide-caption">
-            <div>
-              <div class="cap-badge">Installer — Step 2</div>
-              <div class="cap-title">Dashboard Credentials</div>
-              <div class="cap-sub">Name, port, username, password generator · SHA-256 hash</div>
-            </div>
-            <div class="cap-counter">04 / 09</div>
-          </div>
-        </div>
-
-        <div class="carousel-slide">
-          <img src="screenshots/wizard-step2-totp.png" alt="TOTP 2FA" loading="lazy">
-          <div class="slide-caption">
-            <div>
-              <div class="cap-badge">Security</div>
-              <div class="cap-title">Optional TOTP Two-Factor Auth</div>
-              <div class="cap-sub">QR code for Google Authenticator / Authy · Verified before proceeding</div>
-            </div>
-            <div class="cap-counter">05 / 09</div>
-          </div>
-        </div>
-
-        <div class="carousel-slide">
-          <img src="screenshots/wizard-step3-proxmox.png" alt="Proxmox Connection" loading="lazy">
-          <div class="slide-caption">
-            <div>
-              <div class="cap-badge">Installer — Step 3</div>
-              <div class="cap-title">Proxmox Connection</div>
-              <div class="cap-sub">IP, node, SSH auth · ed25519 keypair generator · Test connection</div>
-            </div>
-            <div class="cap-counter">06 / 09</div>
-          </div>
-        </div>
-
-        <div class="carousel-slide">
-          <img src="screenshots/wizard-step4-modules.png" alt="Modules" loading="lazy">
-          <div class="slide-caption">
-            <div>
-              <div class="cap-badge">Installer — Step 4</div>
-              <div class="cap-title">Optional Modules</div>
-              <div class="cap-sub">HA · Router · Cloudflare · NextDNS — each fully optional</div>
-            </div>
-            <div class="cap-counter">07 / 09</div>
-          </div>
-        </div>
-
-        <div class="carousel-slide">
-          <img src="screenshots/wizard-step7-devenv.png" alt="Dev Environment" loading="lazy">
-          <div class="slide-caption">
-            <div>
-              <div class="cap-badge">Installer — Step 7</div>
-              <div class="cap-title">Dev Environment</div>
-              <div class="cap-sub">Docker, Node.js, pnpm, Vercel CLI, Claude Code, Supabase CLI</div>
-            </div>
-            <div class="cap-counter">08 / 09</div>
-          </div>
-        </div>
-
-        <div class="carousel-slide">
-          <img src="screenshots/wizard-step7-review.png" alt="Review &amp; Install" loading="lazy">
-          <div class="slide-caption">
-            <div>
-              <div class="cap-badge">Installer — Step 8</div>
-              <div class="cap-title">Review &amp; Install</div>
-              <div class="cap-sub">Full config summary · Passwords hidden · One click to install</div>
-            </div>
-            <div class="cap-counter">09 / 09</div>
+            <div class="cap-counter">05 / 05</div>
           </div>
         </div>
 
@@ -1077,7 +1029,7 @@ footer {
 
 <script>
 // ── CAROUSEL ──
-const TOTAL = 9;
+const TOTAL = 5;
 let idx = 0;
 const track = document.getElementById('carouselTrack');
 const dotsEl = document.getElementById('carouselDots');
