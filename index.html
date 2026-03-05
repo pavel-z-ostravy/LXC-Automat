@@ -2780,14 +2780,10 @@ function _loadSettingsPanel() {
     _renderModulesForm(d.modules || {});
     _renderWolTable(d.wol_devices || []);
     _renderServicesTable(d.services || []);
-    var btop = d.btop || {};
-    document.getElementById('btopProxmoxUrl').value = btop.proxmox || '';
-    document.getElementById('btopVmUrl').value = btop.vm || '';
-    document.getElementById('btopHaUrl').value = btop.ha || '';
-    ['modulesMsg','wolMsg','servicesMsg','btopMsg'].forEach(function(id) {
-      document.getElementById(id).style.display = 'none';
+    ['modulesMsg','wolMsg','servicesMsg'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
     });
-    loadBtopIframes(d.btop || {});
   }).catch(function() {});
 }
 

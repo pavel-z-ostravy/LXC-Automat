@@ -446,21 +446,7 @@ def _load_dashboard_app():
 
     @dashboard.get("/api/stats")
     def get_stats():
-        result = parse_stats(proxmox_ssh())
-        try:
-            with open("/proc/net/dev") as _f:
-                net_raw = _f.read()
-            net_data = {}
-            for line in net_raw.strip().split("\n")[2:]:
-                parts = line.split()
-                if len(parts) >= 10:
-                    iface = parts[0].rstrip(":")
-                    if iface != "lo":
-                        net_data[iface] = {"rx": int(parts[1]), "tx": int(parts[9])}
-            result["net"] = net_data
-        except Exception:
-            result["net"] = {}
-        return result
+        return parse_stats(proxmox_ssh())
 
     @dashboard.get("/api/vm_stats")
     def get_vm_stats():
