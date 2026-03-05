@@ -165,10 +165,29 @@ def _load_dashboard_app():
                     processes.append({"pid": parts[1], "cpu": parts[2], "mem": parts[3], "name": parts[10][:50]})
             uptime = subprocess.run(ssh_prefix + ["uptime", "-p"], capture_output=True, text=True, timeout=5).stdout.strip()
             hostname = subprocess.run(ssh_prefix + ["hostname"], capture_output=True, text=True, timeout=3).stdout.strip()
+            # Load average
+            load_raw = subprocess.run(ssh_prefix + ["cat", "/proc/loadavg"], capture_output=True, text=True, timeout=3).stdout.strip()
+            load_parts = load_raw.split()
+            load = {"1": float(load_parts[0]), "5": float(load_parts[1]), "15": float(load_parts[2])} if len(load_parts) >= 3 else {"1": 0, "5": 0, "15": 0}
+            # CPU core count
+            cores_raw = subprocess.run(ssh_prefix + ["nproc"], capture_output=True, text=True, timeout=3).stdout.strip()
+            cores = int(cores_raw) if cores_raw.isdigit() else 0
+            # Network stats — first non-loopback interface from /proc/net/dev
+            net_raw = subprocess.run(ssh_prefix + ["cat", "/proc/net/dev"], capture_output=True, text=True, timeout=3).stdout
+            net = {"iface": "", "rx_bytes": 0, "tx_bytes": 0}
+            for line in net_raw.split("\n")[2:]:
+                line = line.strip()
+                if not line or line.startswith("lo:"):
+                    continue
+                parts = line.split()
+                if len(parts) >= 10 and parts[0].endswith(":"):
+                    net = {"iface": parts[0].rstrip(":"), "rx_bytes": int(parts[1]), "tx_bytes": int(parts[9])}
+                    break
             return {"online": True, "cpu": cpu_pct,
                     "mem": {"total": mem_total, "used": mem_used, "pct": mem_pct},
                     "disk": {"total": disk_total, "used": disk_used, "pct": disk_pct},
-                    "processes": processes, "uptime": uptime, "hostname": hostname}
+                    "processes": processes, "uptime": uptime, "hostname": hostname,
+                    "load": load, "cores": cores, "net": net}
         except Exception as e:
             return {"online": False, "error": str(e)}
 
