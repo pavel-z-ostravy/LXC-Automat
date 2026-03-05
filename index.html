@@ -711,21 +711,11 @@
     </div>
 
     <div class="settings-section">
-      <div class="settings-section-title">🖥️ btop terminály (ttyd)</div>
-      <div style="font-size:12px;opacity:0.55;line-height:1.6;margin-bottom:16px">
-        URL adresa ttyd serveru pro každý terminál.<br>
-        Pro přístup přes Cloudflare tunnel zadejte veřejnou URL (např. <code>https://btop-proxmox.tvá-doména.cz</code>).
+      <div class="settings-section-title">🖥️ Monitor nastavení</div>
+      <div style="font-size:12px;line-height:1.6;color:var(--text2)">
+        Data jsou načítána přes SSH — nakonfigurováno při instalaci.<br>
+        Monitor zobrazuje CPU, RAM, Disk, Load average, Network I/O a top procesy pro každý host.
       </div>
-      <label class="modal-label">Proxmox host</label>
-      <input id="btopProxmoxUrl" type="text" class="modal-input" placeholder="http://10.0.1.9:7681">
-      <label class="modal-label">Server / VM</label>
-      <input id="btopVmUrl" type="text" class="modal-input" placeholder="http://10.0.1.9:7682">
-      <label class="modal-label">Home Assistant</label>
-      <input id="btopHaUrl" type="text" class="modal-input" placeholder="http://10.0.1.9:7683">
-      <div class="settings-actions">
-        <button class="run-btn" onclick="saveBtop()">Uložit btop URL</button>
-      </div>
-      <div class="modal-msg" id="btopMsg"></div>
     </div>
 
   </div>
@@ -769,9 +759,9 @@
     </div>
   </div>
   <div class="desktop-btop">
-    <div class="btop-card"><h2>btop — Proxmox host</h2><div id="btopProxmoxContainer"></div></div>
-    <div class="btop-card"><h2 id="btopVmTitle">btop — homelab-server VM</h2><div id="btopVmContainer"></div></div>
-    <div class="btop-card"><h2>btop — Home Assistant</h2><div id="btopHaContainer"></div></div>
+    <div class="btop-card"><h2>// proxmox host</h2><div id="monProxmox"><div class="btop-offline"><span data-dt="lbl_loading">Loading...</span></div></div></div>
+    <div class="btop-card"><h2 id="monVmTitle">// vm</h2><div id="monVM"><div class="btop-offline"><span data-dt="lbl_loading">Loading...</span></div></div></div>
+    <div class="btop-card"><h2>// home assistant</h2><div id="monHA"><div class="btop-offline"><span data-dt="lbl_loading">Loading...</span></div></div></div>
   </div>
 </div>
 
@@ -1528,14 +1518,16 @@ async function loadAllStats() {
     document.getElementById("uptimeProxmox").textContent = lastProxmox.uptime || "N/A";
     document.getElementById("dotProxmox").className = "status-dot dot-green";
     if (window.innerWidth <= 1200) renderStats(lastProxmox, "statRows", "procTable");
+    renderMonitorCard(lastProxmox, "monProxmox");
   } catch(e) { document.getElementById("dotProxmox").className = "status-dot dot-red"; lastProxmox = null; }
   try {
     var res2 = await fetch("/api/vm_stats");
     lastVM = await res2.json();
     document.getElementById("uptimeVM").textContent = lastVM.online ? (lastVM.uptime || "N/A") : "offline";
-    if (lastVM.hostname) { document.getElementById("vmTitle").textContent = lastVM.hostname; document.getElementById("btopVmTitle").textContent = "btop — " + lastVM.hostname; }
+    if (lastVM.hostname) { document.getElementById("vmTitle").textContent = lastVM.hostname; document.getElementById("monVmTitle").textContent = "// " + lastVM.hostname; }
     document.getElementById("dotVM").className = "status-dot " + (lastVM.online ? "dot-green" : "dot-red");
     if (window.innerWidth <= 1200) renderStats(lastVM, "vmStatRows", "vmProcTable");
+    renderMonitorCard(lastVM, "monVM");
   } catch(e) { document.getElementById("dotVM").className = "status-dot dot-red"; lastVM = null; }
   try {
     var res3 = await fetch("/api/ha_stats");
@@ -1543,6 +1535,7 @@ async function loadAllStats() {
     document.getElementById("uptimeHA").textContent = ha.online ? (ha.uptime || "N/A") : "offline";
     document.getElementById("dotHA").className = "status-dot " + (ha.online ? "dot-green" : "dot-red");
     if (window.innerWidth <= 1200) renderStats(ha, "haStatRows", "haProcTable");
+    renderMonitorCard(ha, "monHA");
   } catch(e) { document.getElementById("dotHA").className = "status-dot dot-red"; }
   updateStatsChart(lastProxmox, lastVM);
   document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
@@ -2992,6 +2985,66 @@ function isLocalAccess() {
 function _isBtopUrlLocal(url) {
   return /^https?:\/\/(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|localhost|127\.)/.test(url);
 }
+
+// ── Native monitor cards ──────────────────────────────────
+var _netPrev = {};
+function _calcNetSpeed(key, rx, tx) {
+  var now = Date.now();
+  var prev = _netPrev[key];
+  var res = {rx_kbps: 0, tx_kbps: 0};
+  if (prev && (now - prev.time) > 500) {
+    var secs = (now - prev.time) / 1000;
+    res.rx_kbps = Math.max(0, (rx - prev.rx) / secs / 1024);
+    res.tx_kbps = Math.max(0, (tx - prev.tx) / secs / 1024);
+  }
+  _netPrev[key] = {rx: rx, tx: tx, time: now};
+  return res;
+}
+function fmtSpeed(kbps) {
+  if (kbps < 1) return '0 B/s';
+  if (kbps < 1024) return kbps.toFixed(0) + ' KB/s';
+  return (kbps / 1024).toFixed(1) + ' MB/s';
+}
+function renderMonitorCard(d, elId) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  if (!d || !d.online) {
+    el.innerHTML = '<div class="btop-offline"><span>' + t('lbl_offline') + '</span></div>';
+    return;
+  }
+  var load = d.load ? (d.load['1'] + '  ' + d.load['5'] + '  ' + d.load['15']) : '—';
+  var cores = d.cores ? ' <span style="color:var(--text3)">(' + d.cores + ' cores)</span>' : '';
+  var netHtml = '—';
+  if (d.net && d.net.iface) {
+    var spd = _calcNetSpeed(elId, d.net.rx_bytes, d.net.tx_bytes);
+    netHtml = '<span style="color:var(--text3)">' + esc(d.net.iface) + '</span>'
+      + '  ↓ ' + fmtSpeed(spd.rx_kbps)
+      + '  ↑ ' + fmtSpeed(spd.tx_kbps);
+  }
+  var html = '<div style="display:grid;grid-template-columns:76px 1fr;gap:4px 14px;margin-bottom:14px;font-family:var(--font-mono);font-size:12px">'
+    + '<span style="color:var(--text3)">Load</span><span style="color:var(--text2)">' + load + cores + '</span>'
+    + '<span style="color:var(--text3)">Uptime</span><span style="color:var(--text2)">' + esc(d.uptime || '—') + '</span>'
+    + '<span style="color:var(--text3)">Network</span><span style="color:var(--text2)">' + netHtml + '</span>'
+    + '</div>';
+  html += '<div class="stat-row" style="margin-bottom:14px">'
+    + '<div class="stat-item"><label>CPU</label><div class="val">' + d.cpu.toFixed(1) + '%</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.cpu) + '" style="width:' + Math.min(d.cpu,100) + '%"></div></div></div>'
+    + '<div class="stat-item"><label>RAM</label><div class="val">' + fmt(d.mem.used) + ' / ' + fmt(d.mem.total) + ' (' + d.mem.pct + '%)</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.mem.pct) + '" style="width:' + d.mem.pct + '%"></div></div></div>'
+    + '<div class="stat-item"><label>Disk /</label><div class="val">' + fmt(d.disk.used) + ' / ' + fmt(d.disk.total) + ' (' + d.disk.pct + '%)</div><div class="bar-bg"><div class="bar-fill ' + barColor(d.disk.pct) + '" style="width:' + d.disk.pct + '%"></div></div></div>'
+    + '</div>';
+  if (d.processes && d.processes.length) {
+    html += '<div style="font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.17em;color:var(--text3);margin-bottom:6px">// top processes</div>'
+      + '<table><thead><tr><th>PID</th><th>Name</th><th>CPU%</th><th>MEM%</th></tr></thead><tbody>';
+    for (var i = 0; i < d.processes.length; i++) {
+      var p = d.processes[i];
+      html += '<tr><td>' + esc(p.pid) + '</td>'
+        + '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.name) + '</td>'
+        + '<td>' + esc(p.cpu) + '</td><td>' + esc(p.mem) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+  }
+  el.innerHTML = html;
+}
+// ─────────────────────────────────────────────────────────
 
 function loadBtopIframes(btop) {
   var local = isLocalAccess();
