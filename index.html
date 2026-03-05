@@ -9,7 +9,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><style>
 /* ══════════════════════════════════════════════════
    THEME SYSTEM — 3 themes × 2 variants = 6 combos
@@ -176,9 +176,11 @@
     background: var(--nav-bg);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(20px) saturate(1.4);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; height: 52px; flex-wrap: wrap;
     transition: background var(--transition), border-color var(--transition);
+  }
+  .navbar-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 1104px; margin: 0 auto; padding: 0 28px; height: 56px; flex-wrap: wrap;
   }
   .nav-brand { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: .08em; text-shadow: var(--glow-sm); transition: all var(--transition); }
   .nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -193,7 +195,7 @@
   .last-update { font-family: var(--font-mono); font-size: 11px; color: var(--text3); transition: color var(--transition); }
 
   /* ── Pages ── */
-  .page { display: none; padding: 20px; max-width: 960px; margin: 0 auto; position: relative; z-index: 1; }
+  .page { display: none; padding: 28px 0; max-width: 1104px; margin: 0 auto; position: relative; z-index: 1; }
   .page.active { display: block; }
 
   /* ── Cards ── */
@@ -353,7 +355,7 @@
     .lsblk-sub-mobile { display: block; font-size: 10px; }
   }
   @media (max-width: 1200px) { .mobile-stats { display: block; } .desktop-btop { display: none; } }
-  @media (max-width: 768px) { .nav-tabs { display: none; } .hamburger { display: flex; } .speed-grid { grid-template-columns: 1fr 1fr; } .page { padding: 12px; } .disk-metrics { grid-template-columns: 1fr 1fr; } .usage-row { grid-template-columns: 120px 1fr 100px; } }
+  @media (max-width: 768px) { .nav-tabs { display: none; } .hamburger { display: flex; } .speed-grid { grid-template-columns: 1fr 1fr; } .page { padding: 12px; } .navbar-inner { padding: 0 12px; } .disk-metrics { grid-template-columns: 1fr 1fr; } .usage-row { grid-template-columns: 120px 1fr 100px; } }
   .desktop-only { display: inline; }
   .state-dot { display: none; width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .state-dot-REACHABLE { background: var(--ok); }
@@ -554,12 +556,27 @@
   }
   .chart-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:var(--glow-sm); flex-shrink:0; }
   .chart-wrap { height:172px; }
+
+/* ── TYPOGRAFICKÁ ŠKÁLA (Plus Jakarta Sans) ── */
+.nav-brand { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.nav-tab { font-size: 14px; font-weight: 500; }
+.section-label { font-size: 9px; letter-spacing: .2em; }
+.metric-value { font-size: 44px; }
+.metric-label { font-size: 9px; letter-spacing: .17em; }
+.metric-sub { font-size: 11px; }
+.card { font-size: 14px; }
+table { font-size: 13px; }
+th { font-size: 10px; }
+.temp-key { font-size: 12px; }
+.temp-val { font-size: 12px; }
+.uptime-item { font-size: 13px; }
 </style>
 </head>
 <body>
 
 <nav class="navbar">
-  <span class="nav-brand" id="navBrand">🖥️ Dashboard</span>
+  <div class="navbar-inner">
+  <span class="nav-brand" id="navBrand">⚡ LXC-AUTOMAT</span>
   <button class="hamburger" onclick="toggleMobileMenu()" id="hamburgerBtn">
     <span></span><span></span><span></span>
   </button>
@@ -602,6 +619,7 @@
     </div>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
     <form method="post" action="/logout" style="display:inline"><button class="theme-btn" type="submit" title="Odhlásit">⏻</button></form>
+  </div>
   </div>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
@@ -1510,10 +1528,10 @@ function initStatsChart() {
   statsChart = new Chart(ctx, {
     type: 'line',
     data: { labels: [], datasets: [
-      { label: 'Proxmox CPU%', data: [], borderColor: c1, backgroundColor: hexAlpha(c1, 0.12), borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: true },
-      { label: 'Proxmox RAM%', data: [], borderColor: c2, backgroundColor: hexAlpha(c2, 0.08), borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: true },
-      { label: 'VM CPU%',      data: [], borderColor: c3, backgroundColor: hexAlpha(c3, 0.08), borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: true },
-      { label: 'VM RAM%',      data: [], borderColor: c4, backgroundColor: hexAlpha(c4, 0.08), borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: true }
+      { label: 'Proxmox CPU%', data: [], borderColor: c1, backgroundColor: hexAlpha(c1, 0.12), borderWidth: 1.5, pointRadius: 0, tension: 0.42, fill: true },
+      { label: 'Proxmox RAM%', data: [], borderColor: c2, backgroundColor: 'transparent',      borderWidth: 1.5, pointRadius: 0, tension: 0.42, fill: false },
+      { label: 'VM CPU%',      data: [], borderColor: c3, backgroundColor: 'transparent',      borderWidth: 1.5, pointRadius: 0, tension: 0.42, fill: false },
+      { label: 'VM RAM%',      data: [], borderColor: c4, backgroundColor: hexAlpha(c4, 0.08), borderWidth: 1.5, pointRadius: 0, tension: 0.42, fill: false }
     ]},
     options: {
       responsive: true, maintainAspectRatio: false, animation: false,
@@ -1535,6 +1553,7 @@ async function loadHistory() {
     var res = await fetch("/api/temp_history");
     var data = await res.json();
     var history = data.history || [];
+    if (history.length > 60) history = history.slice(history.length - 60);
     for (var i = 0; i < history.length; i++) {
       var entry = history[i];
       chartLabels.push(entry.time);
@@ -1542,7 +1561,7 @@ async function loadHistory() {
         var color = getColorForSensor(key);
         if (!chartDatasets[key]) {
           chartDatasets[key] = { data: [] };
-          tempChart.data.datasets.push({ label: key, data: chartDatasets[key].data, borderColor: color, backgroundColor: color + "22", borderWidth: 2, pointRadius: 1, tension: 0.3 });
+          tempChart.data.datasets.push({ label: key, data: chartDatasets[key].data, borderColor: color, backgroundColor: 'transparent', borderWidth: 1.5, pointRadius: 0, tension: 0.42, fill: false });
         }
         chartDatasets[key].data.push(entry.sensors[key]);
       }
@@ -1557,6 +1576,7 @@ async function loadStatsHistory() {
     var res = await fetch("/api/stats_history");
     var data = await res.json();
     var history = data.history || [];
+    if (history.length > 60) history = history.slice(history.length - 60);
     for (var i = 0; i < history.length; i++) {
       var e = history[i];
       statsChart.data.labels.push(e.time);
@@ -1572,7 +1592,7 @@ async function loadStatsHistory() {
 function updateTempChart(blocks) {
   var now = new Date().toLocaleTimeString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
   chartLabels.push(now);
-  if (chartLabels.length > 1440) chartLabels.shift();
+  if (chartLabels.length > 60) chartLabels.shift();
   tempChart.data.labels = chartLabels;
   var sensors = {};
   for (var blockName in blocks) {
@@ -1582,10 +1602,10 @@ function updateTempChart(blocks) {
       sensors[key] = blocks[blockName][i].temp;
       if (!chartDatasets[key]) {
         chartDatasets[key] = { data: [] };
-        tempChart.data.datasets.push({ label: key, data: chartDatasets[key].data, borderColor: color, backgroundColor: color + "22", borderWidth: 2, pointRadius: 1, tension: 0.3 });
+        tempChart.data.datasets.push({ label: key, data: chartDatasets[key].data, borderColor: color, backgroundColor: 'transparent', borderWidth: 1.5, pointRadius: 0, tension: 0.42, fill: false });
       }
       chartDatasets[key].data.push(blocks[blockName][i].temp);
-      if (chartDatasets[key].data.length > 1440) chartDatasets[key].data.shift();
+      if (chartDatasets[key].data.length > 60) chartDatasets[key].data.shift();
     }
   }
   tempChart.update();
@@ -1596,7 +1616,7 @@ function updateStatsChart(proxmox, vm) {
   var now = new Date().toLocaleTimeString(DASH_LANG === 'cs' ? 'cs-CZ' : 'en-US');
   var labels = statsChart.data.labels;
   labels.push(now);
-  if (labels.length > 1440) labels.shift();
+  if (labels.length > 60) labels.shift();
   var entry = { proxmox_cpu: 0, proxmox_ram: 0, vm_cpu: 0, vm_ram: 0 };
   if (proxmox && proxmox.online !== false) {
     entry.proxmox_cpu = proxmox.cpu || 0;
@@ -1610,7 +1630,7 @@ function updateStatsChart(proxmox, vm) {
     statsChart.data.datasets[2].data.push(entry.vm_cpu);
     statsChart.data.datasets[3].data.push(entry.vm_ram);
   } else { statsChart.data.datasets[2].data.push(null); statsChart.data.datasets[3].data.push(null); }
-  statsChart.data.datasets.forEach(function(ds) { if (ds.data.length > 1440) ds.data.shift(); });
+  statsChart.data.datasets.forEach(function(ds) { if (ds.data.length > 60) ds.data.shift(); });
   statsChart.update();
   fetch("/api/stats_history/save", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(entry) }).catch(function(){});
 }
