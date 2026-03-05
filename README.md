@@ -106,6 +106,8 @@ The Cloudflare module needs an API token with read access to your tunnel and DNS
 3. Set these permissions:
    - `Account` → `Cloudflare Tunnel` → **Read**
    - `Zone` → `DNS` → **Read** (select your zone/domain)
+
+   > ⚠️ **Common mistake:** `Workers Observability:Read`, `Account Analytics:Read`, `Logs:Read` and `Analytics:Read` are **not enough** — the token must have exactly `Cloudflare Tunnel:Read` + `DNS:Read`, otherwise the tunnel shows as *unknown* with no hostnames.
 4. Click **Continue to Summary** → **Create Token**
 5. **Copy the token** — it's shown only once
 

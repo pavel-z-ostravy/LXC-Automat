@@ -106,6 +106,8 @@ Cloudflare modul potřebuje API token s read přístupem k tunnelu a DNS zóně.
 3. Nastav tato oprávnění:
    - `Account` → `Cloudflare Tunnel` → **Read**
    - `Zone` → `DNS` → **Read** (vyber svou zónu/doménu)
+
+   > ⚠️ **Častá chyba:** `Workers Observability:Read`, `Account Analytics:Read`, `Logs:Read` ani `Analytics:Read` **nestačí** — token musí mít přesně `Cloudflare Tunnel:Read` + `DNS:Read`, jinak tunnel ukazuje *unknown* bez hostnames.
 4. Klikni **Continue to Summary** → **Create Token**
 5. **Zkopíruj token** — zobrazí se jen jednou
 
